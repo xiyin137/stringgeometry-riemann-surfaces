@@ -1,0 +1,13 @@
+import StringGeometry.RiemannSurfaces.Basic
+import StringGeometry.RiemannSurfaces.Topology.Basic
+import StringGeometry.RiemannSurfaces.Topology.SimpleCurves
+import StringGeometry.RiemannSurfaces.Topology.PantsDecomposition
+import StringGeometry.RiemannSurfaces.Topology.HatcherThurston
+-- Algebraic curve infrastructure (migrated to GAGA)
+import StringGeometry.RiemannSurfaces.GAGA.AlgebraicCurves.Divisors
+import StringGeometry.RiemannSurfaces.GAGA.AlgebraicCurves.FunctionField
+import StringGeometry.RiemannSurfaces.GAGA.Moduli.Moduli
+import StringGeometry.RiemannSurfaces.GAGA.Moduli.VectorBundles
+import StringGeometry.RiemannSurfaces.Analytic.Analytic
+import StringGeometry.RiemannSurfaces.Combinatorial.Combinatorial
+import StringGeometry.RiemannSurfaces.GAGA.Basic
