@@ -82,28 +82,28 @@ The zeroth cohomology is the global sections functor. This is concrete and compu
 
     This is the CONCRETE definition of H^0. It is the sections over the whole space.
     The dimension is computed via Module.finrank, not provided as input. -/
-def H0 {RS : RiemannSurface} {O : StructureSheaf RS} (F : CoherentSheaf RS O) : Type* :=
+def H0 {RS : RiemannSurface} {O : StructureSheaf RS} (F : CoherentSheaf.{0} RS O) : Type 0 :=
   F.sections OpenSet.univ
 
 /-- Global sections form an additive group -/
 instance H0.addCommGroup {RS : RiemannSurface} {O : StructureSheaf RS}
-    (F : CoherentSheaf RS O) : AddCommGroup (H0 F) :=
+    (F : CoherentSheaf.{0} RS O) : AddCommGroup (H0 F) :=
   F.addCommGroup OpenSet.univ
 
 /-- Global sections form a module over global functions -/
 instance H0.module {RS : RiemannSurface} {O : StructureSheaf RS}
-    (F : CoherentSheaf RS O) : Module (O.sections OpenSet.univ) (H0 F) :=
+    (F : CoherentSheaf.{0} RS O) : Module (O.sections OpenSet.univ) (H0 F) :=
   F.module OpenSet.univ
 
 /-- Global sections form a ℂ-module via the algebra structure -/
 noncomputable instance H0.moduleComplex {RS : RiemannSurface} {O : StructureSheaf RS}
-    (F : CoherentSheaf RS O) : Module ℂ (H0 F) :=
+    (F : CoherentSheaf.{0} RS O) : Module ℂ (H0 F) :=
   Module.compHom (H0 F) (algebraMap ℂ (O.sections OpenSet.univ))
 
 /-- h^0(F) = dim H^0(F) - the dimension of global sections.
     This is COMPUTED from the vector space, not given as input. -/
 noncomputable def h0 {RS : RiemannSurface} {O : StructureSheaf RS}
-    (F : CoherentSheaf RS O) [Module.Finite ℂ (H0 F)] : ℕ :=
+    (F : CoherentSheaf.{0} RS O) [Module.Finite ℂ (H0 F)] : ℕ :=
   Module.finrank ℂ (H0 F)
 
 /-!
@@ -111,12 +111,12 @@ noncomputable def h0 {RS : RiemannSurface} {O : StructureSheaf RS}
 -/
 
 /-- H^0 of the structure sheaf O -/
-def H0_structure {RS : RiemannSurface} (O : StructureSheaf RS) : Type* :=
+def H0_structure {RS : RiemannSurface} (O : StructureSheaf RS) : Type 0 :=
   O.sections OpenSet.univ
 
 /-- H^0 of a line bundle O(D) -/
 def H0_lineBundle {RS : RiemannSurface} {O : StructureSheaf RS} {D : Divisor RS}
-    (L : LineBundleSheaf RS O D) : Type* :=
+    (L : LineBundleSheaf.{0} RS O D) : Type 0 :=
   L.sections OpenSet.univ
 
 /-!

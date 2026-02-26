@@ -304,25 +304,22 @@ variable {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
     - Linear algebra for quotients -/
 structure FiniteGoodCover (F : CoherentSheaf CRS.toRiemannSurface O) where
   /-- The underlying cover -/
-  cov : Cover CRS.toRiemannSurface OpenSet.univ
+  cov : Cover.{0} CRS.toRiemannSurface OpenSet.univ
   /-- The index set is finite -/
   finiteIndex : Finite cov.ι
   /-- ℂ-module structure on H^n.
       This exists because: O.sections is a ℂ-algebra, F.sections is an O-module,
       restriction of scalars gives ℂ-module, quotients inherit module structure.
       Note: We use the AddCommGroup from instAddCommGroupCechCohomologyGroup. -/
-  cohomologyModule : ∀ n, @Module ℂ (CechCohomologyGroup F cov n) _
-    (instAddCommGroupCechCohomologyGroup F cov n).toAddCommMonoid
+  cohomologyModule : ∀ n, Module ℂ (CechCohomologyGroup F cov n)
   /-- Finite-dimensionality of H^n (Cartan-Serre theorem).
       For coherent sheaves on compact complex manifolds with finite Stein covers,
       the cohomology groups are finite-dimensional. -/
-  cohomologyFiniteDim : ∀ n, @Module.Finite ℂ (CechCohomologyGroup F cov n) _
-    (instAddCommGroupCechCohomologyGroup F cov n).toAddCommMonoid (cohomologyModule n)
+  cohomologyFiniteDim : ∀ n, Module.Finite ℂ (CechCohomologyGroup F cov n)
   /-- The dimension function (caches finrank for efficiency) -/
   dim : ℕ → ℕ
   /-- Dimension equals finrank -/
-  dim_eq : ∀ n, dim n = @Module.finrank ℂ (CechCohomologyGroup F cov n) _
-    (instAddCommGroupCechCohomologyGroup F cov n).toAddCommMonoid (cohomologyModule n)
+  dim_eq : ∀ n, dim n = Module.finrank ℂ (CechCohomologyGroup F cov n)
   /-- **Cohomological dimension vanishing**: H^n = 0 for n ≥ 2 on curves.
 
       This is a fundamental property of coherent sheaf cohomology on curves:

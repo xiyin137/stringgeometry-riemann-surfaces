@@ -8,6 +8,46 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 
 ---
 
+## ✅ Architecture Refactor: Core Layer Introduced (2026-02-26)
+
+**Status:** ✅ Implemented
+
+### What changed
+
+1. Added a shared core abstraction layer for divisors:
+   - `Core/DivisorModel.lean`
+   - `Core/AnalyticDivisor.lean`
+   - `Core/AlgebraicDivisor.lean`
+   - `Core/SchemeDivisor.lean`
+   - `Core/AnalyticAlgebraicBridge.lean`
+
+2. Added GAGA-facing bridge wiring:
+   - `GAGA/Bridge/DivisorCoreBridge.lean`
+   - imported by `GAGA/Basic.lean`
+
+3. Split `lakefile.lean` into architectural targets:
+   - `SGRSCore`
+   - `SGRSTopologySheaves`
+   - `SGRSAnalytic`
+   - `SGRSSchemeTheoretic`
+   - `SGRSGAGA`
+   - `SGRSCombinatorial`
+   - `SGRiemannSurfaces`
+
+### Architectural intent
+
+- Keep `Analytic` and `SchemeTheoretic` as independent engines.
+- Keep `GAGA` as a thin transport/equivalence layer.
+- Move shared contracts and model adapters into `Core` to reduce duplication pressure.
+
+### Next restructuring steps
+
+1. Migrate additional duplicated concepts (`line bundles`, `principal divisors`, `linear equivalence`) behind `Core` interfaces.
+2. Route `GAGA/Cohomology/*` bridge statements through `Core` transports instead of model-specific ad hoc conversions.
+3. Reduce non-essential coupling by keeping `Topology/Homotopy` and `Topology/Spectra` outside RS critical path CI.
+
+---
+
 ## ✅ RESOLVED: GAGA/Cohomology vs Algebraic/Cohomology DUPLICATION (2026-02-04)
 
 **Status:** ✅ RESOLVED

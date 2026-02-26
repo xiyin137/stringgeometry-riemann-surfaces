@@ -3,6 +3,7 @@ import StringGeometry.RiemannSurfaces.GAGA.Cohomology.Basic
 import StringGeometry.RiemannSurfaces.GAGA.Cohomology.ExactSequence
 import StringGeometry.RiemannSurfaces.GAGA.Cohomology.CechTheory
 import StringGeometry.RiemannSurfaces.GAGA.AlgebraicCurves.Divisors
+import StringGeometry.RiemannSurfaces.GAGA.Bridge.DivisorCoreBridge
 
 /-!
 # GAGA for Riemann Surfaces
@@ -105,9 +106,9 @@ The fundamental equivalence between algebraic and analytic categories.
 structure AnalytificationFunctor (S : AlgebraicAnalyticSurface)
     (O : StructureSheaf S.toRiemannSurface) where
   /-- Maps algebraic coherent sheaves to analytic coherent sheaves -/
-  map : CoherentSheaf S.toRiemannSurface O → CoherentSheaf S.toRiemannSurface O
+  map : CoherentSheaf.{0} S.toRiemannSurface O → CoherentSheaf.{0} S.toRiemannSurface O
   /-- The functor is the identity on the underlying sets (coherent = coherent in our setup) -/
-  isIdentity : ∀ F, map F = F
+  isIdentity : ∀ F : CoherentSheaf.{0} S.toRiemannSurface O, map F = F
 
 /-- **GAGA for Coherent Sheaves**: The analytification functor is an equivalence.
 
@@ -125,7 +126,7 @@ structure GAGAEquivalence (S : AlgebraicAnalyticSurface)
   /-- The analytification functor -/
   analytify : AnalytificationFunctor S O
   /-- The functor is essentially the identity (for Riemann surfaces) -/
-  isEquivalence : ∀ F : CoherentSheaf S.toRiemannSurface O, analytify.map F = F
+  isEquivalence : ∀ F : CoherentSheaf.{0} S.toRiemannSurface O, analytify.map F = F
 
 /-!
 ## GAGA for Cohomology

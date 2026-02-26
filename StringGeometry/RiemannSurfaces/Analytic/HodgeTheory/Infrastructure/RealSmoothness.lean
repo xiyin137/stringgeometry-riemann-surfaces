@@ -193,7 +193,7 @@ Complex conjugation is ℝ-smooth but not ℂ-smooth (it's antiholomorphic).
 -/
 
 /-- Complex conjugation as a continuous ℝ-linear map (from Mathlib's conjCLE). -/
-def conjCLM : ℂ →L[ℝ] ℂ := Complex.conjCLE.toContinuousLinearMap
+noncomputable def conjCLM : ℂ →L[ℝ] ℂ := Complex.conjCLE.toContinuousLinearMap
 
 /-- Complex conjugation is ℝ-smooth as a map ℂ → ℂ. -/
 theorem conj_contDiff_real : ContDiff ℝ ⊤ (starRingEnd ℂ : ℂ → ℂ) :=

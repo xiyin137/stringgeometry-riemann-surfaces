@@ -94,7 +94,7 @@ Integration of 1-forms over cycles defines the period matrix.
     Elements are equivalence classes of closed curves. -/
 structure FirstHomology (RS : RiemannSurfaces.RiemannSurface) where
   /-- Elements are formal sums of closed curves -/
-  cycles : Type*
+  cycles : Type
   /-- Abelian group structure -/
   [addCommGroup : AddCommGroup cycles]
   /-- The rank (number of generators) = first Betti number -/
@@ -251,7 +251,7 @@ def latticeEquiv {CRS : RiemannSurfaces.CompactRiemannSurface}
     complex torus that is also an abelian variety (projective via theta functions). -/
 structure Jacobian' (CRS : RiemannSurfaces.CompactRiemannSurface) where
   /-- The underlying set (quotient ℂ^g / Λ) -/
-  points : Type*
+  points : Type
   /-- The period lattice defining the quotient -/
   lattice : PeriodLattice CRS
   /-- Group structure on points -/
@@ -408,7 +408,7 @@ The Abel-Jacobi map Σ^(g) → J(Σ) is surjective.
 /-- The d-th symmetric power Σ^(d) -/
 structure SymmetricPower (RS : RiemannSurfaces.RiemannSurface) (d : ℕ) where
   /-- Points are effective divisors of degree d -/
-  points : Type*
+  points : Type
   /-- Each point is [p₁ + ... + p_d] (unordered) -/
   divisor : points → Divisor RS
   /-- Degree is d -/

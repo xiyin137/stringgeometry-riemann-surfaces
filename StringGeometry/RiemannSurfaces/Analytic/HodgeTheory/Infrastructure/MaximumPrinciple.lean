@@ -208,7 +208,8 @@ theorem harmonic_maximum_principle_ball {f : ℂ → ℝ} {z₀ : ℂ} {r : ℝ}
   · rw [hzz]
   -- Otherwise, z lies on some sphere of radius ρ = ‖z - z₀‖ with 0 < ρ ≤ r
   · have hρ_pos : 0 < ‖z - z₀‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hzz)
-    have hρ_le : ‖z - z₀‖ ≤ r := mem_closedBall.mp hz
+    have hρ_le : ‖z - z₀‖ ≤ r := by
+      simpa [Complex.dist_eq] using (mem_closedBall.mp hz)
     set ρ := ‖z - z₀‖ with hρ_def
     -- f is harmonic on closedBall z₀ ρ
     have hf_ρ : HarmonicOnNhd f (closedBall z₀ ρ) := fun w hw =>

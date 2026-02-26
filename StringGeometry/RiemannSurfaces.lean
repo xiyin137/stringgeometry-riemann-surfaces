@@ -1,4 +1,5 @@
 import StringGeometry.RiemannSurfaces.Basic
+import StringGeometry.RiemannSurfaces.Core
 import StringGeometry.RiemannSurfaces.Topology.Basic
 import StringGeometry.RiemannSurfaces.Topology.SimpleCurves
 import StringGeometry.RiemannSurfaces.Topology.PantsDecomposition

@@ -154,7 +154,7 @@ structure LineBundleSheafAssignment (RS : RiemannSurface) (O : StructureSheaf RS
       This is not explicitly encoded as a field since we don't have
       sheaf isomorphism infrastructure. Instead, when constructing a
       LineBundleSheafAssignment, ensure sheafOf 0 corresponds to O. -/
-  sheafOf : Divisor RS → CoherentSheaf RS O
+  sheafOf : Divisor RS → CoherentSheaf.{0} RS O
 
 /-- Cohomology data for a line bundle O(D), given a sheaf assignment.
 
@@ -210,7 +210,7 @@ This is provided by a `LineBundleSheafAssignment`.
     for each divisor D. The sheaf O(D) is the sheaf of meromorphic functions with
     poles bounded by D. -/
 def coherentSheafOfDivisor (RS : RiemannSurface) (O : StructureSheaf RS)
-    (L : LineBundleSheafAssignment RS O) (D : Divisor RS) : CoherentSheaf RS O :=
+    (L : LineBundleSheafAssignment RS O) (D : Divisor RS) : CoherentSheaf.{0} RS O :=
   L.sheafOf D
 
 /-!

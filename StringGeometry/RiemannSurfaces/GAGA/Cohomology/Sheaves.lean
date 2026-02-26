@@ -132,7 +132,7 @@ The structure sheaf O assigns to each open set U the ring of holomorphic functio
     functions requires complex analysis infrastructure. -/
 structure StructureSheaf (RS : RiemannSurface) where
   /-- Sections over an open set (abstractly, this is the ℂ-algebra O(U)) -/
-  sections : OpenSet RS → Type*
+  sections : OpenSet RS → Type 0
   /-- Each section space is a ℂ-algebra -/
   [algebraStructure : ∀ U, CommRing (sections U)]
   /-- ℂ-algebra structure: the structure map ℂ → O(U) (constant functions) -/
@@ -221,7 +221,7 @@ namespace StructureSheaf
 variable {RS : RiemannSurface}
 
 /-- Global sections H⁰(Σ, O) = O(Σ) -/
-def globalSections (O : StructureSheaf RS) : Type* := O.sections OpenSet.univ
+def globalSections (O : StructureSheaf RS) : Type 0 := O.sections OpenSet.univ
 
 /-- Global sections form a ℂ-algebra -/
 instance (O : StructureSheaf RS) : CommRing O.globalSections := O.algebraStructure _
@@ -257,7 +257,7 @@ For a divisor D, the sheaf O(D) consists of meromorphic functions with poles bou
     Each L(U) is an O(U)-module, and locally L(U) ≃ O(U) as O(U)-modules. -/
 structure LineBundleSheaf (RS : RiemannSurface) (O : StructureSheaf RS) (D : Divisor RS) where
   /-- Sections over an open set -/
-  sections : OpenSet RS → Type*
+  sections : OpenSet RS → Type 0
   /-- Each section space is an additive commutative group -/
   [addCommGroup : ∀ U, AddCommGroup (sections U)]
   /-- Each section space is an O(U)-module -/
@@ -305,7 +305,7 @@ namespace LineBundleSheaf
 variable {RS : RiemannSurface} {O : StructureSheaf RS} {D : Divisor RS}
 
 /-- Global sections H⁰(Σ, O(D)) -/
-def H0 (L : LineBundleSheaf RS O D) : Type* := L.sections OpenSet.univ
+def H0 (L : LineBundleSheaf RS O D) : Type 0 := L.sections OpenSet.univ
 
 /-- The Riemann-Roch space L(D) = H⁰(Σ, O(D)) -/
 abbrev RiemannRochSpace (L : LineBundleSheaf RS O D) := L.H0
@@ -334,10 +334,21 @@ The canonical sheaf K = Ω¹ is the sheaf of holomorphic 1-forms.
     it is a computational result (Riemann-Hurwitz theorem) that must be PROVED.
     See `canonical_sheaf_degree` theorem below. -/
 structure CanonicalSheaf (RS : RiemannSurface) (O : StructureSheaf RS) where
-  /-- The canonical divisor K -/
-  canonicalDivisor : Divisor RS
-  /-- The underlying line bundle sheaf O(K) -/
-  toLineBundleSheaf : LineBundleSheaf RS O canonicalDivisor
+  /-- The pair (K, O(K)) where K is the canonical divisor. -/
+  data : Σ D : Divisor RS, LineBundleSheaf.{0} RS O D
+
+namespace CanonicalSheaf
+
+variable {RS : RiemannSurface} {O : StructureSheaf RS}
+
+/-- The canonical divisor K. -/
+def canonicalDivisor (K : CanonicalSheaf RS O) : Divisor RS := K.data.1
+
+/-- The canonical line bundle sheaf O(K). -/
+def toLineBundleSheaf (K : CanonicalSheaf RS O) :
+    LineBundleSheaf.{0} RS O K.canonicalDivisor := K.data.2
+
+end CanonicalSheaf
 
 /-- Riemann-Hurwitz theorem for canonical sheaf: deg(K) = 2g - 2.
 
@@ -382,7 +393,7 @@ Coherent sheaves form an abelian category, which is essential for cohomology.
     is O(U)-linear, where O(U) acts on F(V) via the restriction O(U) → O(V). -/
 structure CoherentSheaf (RS : RiemannSurface) (O : StructureSheaf RS) where
   /-- Sections over an open set -/
-  sections : OpenSet RS → Type*
+  sections : OpenSet RS → Type 0
   /-- Each section space is an additive group -/
   [addCommGroup : ∀ U, AddCommGroup (sections U)]
   /-- Each section space is an O(U)-module (module over holomorphic functions) -/

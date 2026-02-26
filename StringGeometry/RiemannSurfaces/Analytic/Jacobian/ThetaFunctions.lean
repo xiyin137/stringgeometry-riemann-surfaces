@@ -3,6 +3,7 @@ import StringGeometry.RiemannSurfaces.Analytic.Jacobian.Helpers.ThetaHelpers
 import StringGeometry.RiemannSurfaces.Analytic.Moduli.SiegelSpace
 import Mathlib.Analysis.SpecialFunctions.Pow.Complex
 import Mathlib.Analysis.SpecialFunctions.ExpDeriv
+import Mathlib.Analysis.Matrix.Normed
 import Mathlib.LinearAlgebra.Matrix.PosDef
 
 /-!
@@ -58,6 +59,7 @@ The 2^{2g} half-integer characteristics give the theta constants.
 namespace RiemannSurfaces.Analytic
 
 open Complex Real
+open scoped Matrix.Norms.Elementwise
 
 /-!
 ## Riemann Theta Function

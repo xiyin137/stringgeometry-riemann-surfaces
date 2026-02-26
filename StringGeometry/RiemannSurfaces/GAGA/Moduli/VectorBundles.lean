@@ -86,7 +86,7 @@ def isStable (g n : ℕ) : Prop :=
     By Riemann-Roch, this has dimension 3g - 3 + n when the stability condition holds. -/
 structure ModuliSpacePointed (g n : ℕ) where
   /-- The underlying set of points (isomorphism classes of pointed curves) -/
-  points : Type*
+  points : Type
   /-- Stability condition -/
   stable : isStable g n
   /-- Complex dimension of the moduli space (intrinsic property from deformation theory) -/
@@ -124,11 +124,11 @@ We set up an abstract framework for vector bundles over moduli space.
     A full definition would require gluing data and cocycle conditions. -/
 structure VectorBundle (Base : Type*) where
   /-- The total space -/
-  total : Type*
+  total : Type
   /-- Projection to base -/
   proj : total → Base
   /-- Fiber type at each point -/
-  Fiber : Base → Type*
+  Fiber : Base → Type
   /-- Each fiber is a ℂ-vector space -/
   [fiberAddCommGroup : ∀ b, AddCommGroup (Fiber b)]
   [fiberModule : ∀ b, Module ℂ (Fiber b)]
@@ -221,7 +221,7 @@ def psiClass' (g n : ℕ) (i : Fin n) (L : CotangentLineBundle g n i) :
     - Carries the relative dualizing sheaf ω_{C/M} -/
 structure UniversalCurve (g n : ℕ) where
   /-- The total space -/
-  total : Type*
+  total : Type
   /-- Projection to moduli space -/
   proj : total → ModuliSpacePointed g n
   /-- The n canonical sections σᵢ : M_{g,n} → C_{g,n} -/
@@ -238,7 +238,7 @@ def CanonicalSection (g n : ℕ) (C : UniversalCurve g n) (i : Fin n) :
     Its restriction to each fiber is the canonical bundle of that fiber. -/
 structure RelativeDualizingSheaf (g n : ℕ) (C : UniversalCurve g n) where
   /-- The sections of the sheaf over an open set -/
-  sections : C.total → Type*
+  sections : C.total → Type
   /-- Degree of the restriction to each fiber is 2g - 2 (canonical bundle) -/
   fiberDegree : ℤ := 2 * g - 2
 
@@ -275,7 +275,7 @@ structure KappaClass (g n a : ℕ) where
     - λₖ = cₖ(E) for k = 1,...,g (Chern classes of Hodge bundle) -/
 structure TautologicalRing (g n : ℕ) where
   /-- Elements of the ring -/
-  elements : Type*
+  elements : Type
   /-- Ring structure -/
   [ring : Ring elements]
   /-- Number of ψ-generators (one for each marked point) -/
@@ -328,7 +328,7 @@ structure SymmetricPowerBundle (Base : Type*) (E : VectorBundle Base) (k : ℕ) 
 /-- Sheaf cohomology of a vector bundle (abstract) -/
 structure SheafCohomology (Base : Type*) (E : VectorBundle Base) (i : ℕ) where
   /-- The cohomology group H^i(Base, E) -/
-  group : Type*
+  group : Type
   /-- Vector space structure over ℂ -/
   [vectorSpace : AddCommGroup group]
 
