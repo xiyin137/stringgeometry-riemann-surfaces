@@ -70,6 +70,9 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 5. Added CI checks preventing reintroduction of:
    - `degree_eq : representative.degree ...` in analytic canonical-divisor data
    - `vanishing : ...` in `FiniteGoodCover`
+6. Replaced `PointExactData` (theorem-bearing structure) by explicit hypothesis-driven theorems
+   in `GAGA/Cohomology/PointExactProof.lean`
+7. Added CI check preventing reintroduction of `structure PointExactData`
 
 ---
 

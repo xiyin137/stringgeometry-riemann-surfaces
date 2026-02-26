@@ -66,6 +66,11 @@ check_forbidden \
   '^[[:space:]]+vanishing[[:space:]]*:' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
 
+check_forbidden \
+  "Point-exact bridge must not reintroduce bundled theorem-data structure" \
+  '^structure PointExactData' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
+
 if [[ "$fail" -ne 0 ]]; then
   echo
   echo "Riemann-Roch independence checks failed."
