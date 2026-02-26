@@ -170,7 +170,7 @@ GAGA/Cohomology/
 **Fix applied:**
 - Removed `CohomologyData` structure entirely from AlgebraicCech.lean
 - Removed `RiemannRochCohomologyData` structure entirely from CechTheory.lean
-- Key properties are now THEOREMS with sorrys: `h0_structure_cech`, `h1_structure_cech`, `point_exact_cech`
+- Key properties are now THEOREMS with sorrys: `h0_structure_cech`, `h1_structure_cech`, `point_recursion_cech`
 - The inductive proof of `eulerChar_formula_cech` depends on these theorems
 
 ### 2. DEFINITIONS WITH SORRY FIXED
@@ -257,7 +257,7 @@ theorem eulerChar_formula_cech (L : LineBundleSheafAssignment ...)
 |---------|------|---------------------|----------------------|
 | `h0_structure_cech` | 571-576 | h⁰(O) = 1 | Maximum principle OR properness |
 | `h1_structure_cech` | 592-597 | h¹(O) = g | Hodge theory OR define genus as h¹(O) |
-| `point_exact_cech` | 610-620 | χ(D) - χ(D-p) = 1 | Algebraic sheaf cohomology long exact sequence |
+| `point_recursion_cech` | 434-449 | χ(D) - χ(D-p) = 1 | Algebraic sheaf cohomology long exact sequence |
 
 **Note on analytic vs algebraic proofs**: The GAGA path uses `CompactRiemannSurface` (analytic),
 but Čech cohomology itself is purely sheaf-theoretic. The "analytic" content is only in
@@ -267,7 +267,7 @@ connecting topological genus to cohomological genus. The proofs can be done alge
 
 | Theorem | Line | Notes |
 |---------|------|-------|
-| `point_recursion_cech` | 434-449 | Essentially same as point_exact_cech |
+| `point_exact_cech` | 610-620 | Proven wrapper around `point_recursion_cech` via `gc` specialization |
 | `negative_degree_vanishing_cech` | 467-479 | Needs argument principle |
 | `large_degree_h1_vanishing_cech` | 492-504 | Needs Serre duality + vanishing |
 | `serre_duality_dim_cech` | 522-532 | Needs cup product + residue pairing |
@@ -601,7 +601,7 @@ RiemannRoch 4→3, ArgumentPrinciple created with 5→2 sorrys. Net: -8 sorrys f
 
 | Component | Location | Priority | Notes |
 |-----------|----------|----------|-------|
-| `point_exact_cech` | CechTheory.lean | **HIGH** | Construct concrete LES/cohomology input used by PointExactProof bridge |
+| `point_recursion_cech` | CechTheory.lean | **HIGH** | Construct concrete LES/cohomology input used by PointExactProof bridge |
 | `RiemannRochSubmodule` | AlgebraicCech.lean | HIGH | For proper h0 definition |
 | `FunctionField.instComplexAlgebra` | FunctionField.lean | MEDIUM | ℂ-algebra structure (partial) |
 | ~~`skyscraper_h0`, `skyscraper_h1`~~ | ExactSequence.lean | ~~HIGH~~ ✅ DONE | Now proven |
@@ -633,7 +633,7 @@ Uses `CompactRiemannSurface` with Čech cohomology via `FiniteGoodCover`.
 **Sorrys (all in theorems, NOT structures):**
 - `h0_structure_cech` - h⁰(O) = 1 (maximum principle)
 - `h1_structure_cech` - h¹(O) = g (Hodge theory)
-- `point_exact_cech` - χ(D) - χ(D-p) = 1 (long exact sequence)
+- `point_recursion_cech` - χ(D) - χ(D-p) = 1 (long exact sequence)
 - `negative_degree_vanishing_cech` - deg(D) < 0 → h⁰(D) = 0
 - `serre_duality_dim_cech` - h¹(D) = h⁰(K-D)
 
@@ -734,7 +734,6 @@ GAGA proves that algebraic and analytic coherent sheaf categories are equivalent
 | `Cohomology/CechTheory.lean` | `negative_degree_vanishing_cech` | sorry | Argument principle |
 | `Cohomology/CechTheory.lean` | `h0_structure_cech` | sorry | Maximum principle |
 | `Cohomology/CechTheory.lean` | `h1_structure_cech` | sorry | Genus definition |
-| `Cohomology/CechTheory.lean` | `point_exact_cech` | sorry | Long exact sequence |
 | `Cohomology/SerreDuality.lean` | Various | sorry | Serre duality proofs |
 | `Basic.lean` | `period_matrix_exists` | sorry | Needs integration theory |
 

@@ -582,7 +582,7 @@ theorem point_exact_cech
     let H0Dp := cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) (gc (D - Divisor.point p)) 0
     let H1Dp := cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) (gc (D - Divisor.point p)) 1
     eulerCharacteristic H0D H1D - eulerCharacteristic H0Dp H1Dp = 1 := by
-  sorry
+  simpa using point_recursion_cech L D p (gc D) (gc (D - Divisor.point p))
 
 /-- **Cohomological dimension vanishing**: H^i = 0 for i ≥ 2 on curves. -/
 theorem vanishing_cech
