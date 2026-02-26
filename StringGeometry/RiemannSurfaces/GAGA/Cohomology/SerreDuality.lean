@@ -73,7 +73,7 @@ structure ResidueIsomorphism (CRS : CompactRiemannSurface)
   isLinearEquiv : Function.Bijective residueLinear
 
 /-- The residue map as a function -/
-def ResidueIsomorphism.residue {CRS : CompactRiemannSurface}
+noncomputable def ResidueIsomorphism.residue {CRS : CompactRiemannSurface}
     {O : StructureSheaf CRS.toRiemannSurface}
     {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
     {K : CanonicalDivisorData CRS}
@@ -149,7 +149,7 @@ structure SerrePairing (CRS : CompactRiemannSurface)
     **Proof sketch**:
     1. The Serre pairing H⁰(K-D) × H¹(D) → ℂ is perfect
     2. This induces H¹(D) ≅ H⁰(K-D)* as ℂ-vector spaces
-    3. Taking dimensions: h¹(D) = h⁰(K-D) -/
+    3. Dimension equalities are used as explicit theorem inputs -/
 structure SerreDuality (CRS : CompactRiemannSurface)
     (O : StructureSheaf CRS.toRiemannSurface)
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
@@ -159,23 +159,6 @@ structure SerreDuality (CRS : CompactRiemannSurface)
   pairing : SerrePairing CRS O L K D
   /-- The induced isomorphism (abstract) -/
   duality : pairing.H1D.carrier ≃ (pairing.H0KD.carrier → ℂ)
-  /-- **Dimension equality**: h¹(D) = h⁰(K - D)
-      This follows from the duality being a linear isomorphism:
-      For finite-dimensional V, W: V ≃ₗ W* implies dim V = dim W. -/
-  dimension_eq : h_i pairing.H1D = h_i pairing.H0KD
-
-namespace SerreDuality
-
-variable {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
-variable {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
-variable {K : CanonicalDivisorData CRS} {D : Divisor CRS.toRiemannSurface}
-
-/-- The dimension equality as a theorem (accessor for the field) -/
-theorem dimension_eq' (SD : SerreDuality CRS O L K D) :
-    h_i SD.pairing.H1D = h_i SD.pairing.H0KD :=
-  SD.dimension_eq
-
-end SerreDuality
 
 /-!
 ## Existence of Serre Duality
@@ -234,7 +217,7 @@ noncomputable def serreDualityEquiv_cech (CRS : CompactRiemannSurface)
     **Proof**:
     1. We have `serre_duality_dim_cech` from Čech theory giving h¹(D) = h⁰(K-D)
     2. The pairing and duality structures are constructed abstractly
-    3. The dimension equality follows directly from `serre_duality_dim_cech` -/
+    3. Dimension equalities are invoked explicitly where needed -/
 noncomputable def serreDualityFromCech (CRS : CompactRiemannSurface)
     (O : StructureSheaf CRS.toRiemannSurface)
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
@@ -245,7 +228,6 @@ noncomputable def serreDualityFromCech (CRS : CompactRiemannSurface)
     SerreDuality CRS O L K D where
   pairing := serrePairingFromCech CRS O L K D gcKD gcD
   duality := serreDualityEquiv_cech CRS O L K D gcKD gcD
-  dimension_eq := serre_duality_dim_cech L K D gcD gcKD
 
 /-!
 ## Consequences of Serre Duality
@@ -319,26 +301,18 @@ theorem riemann_roch_euler_cech (CRS : CompactRiemannSurface)
     cech_chi L gc D = D.degree + 1 - CRS.genus :=
   eulerChar_formula_cech L gc D
 
-/-- **The Riemann-Roch Theorem** (classical form with Serre duality).
+/-- **Serre duality dimension equality** in Čech form.
 
-    For a divisor D on a compact Riemann surface of genus g:
-
-      h⁰(D) - h⁰(K - D) = deg(D) - g + 1
-
-    **Proof**:
-    - Euler characteristic form: h⁰(D) - h¹(D) = deg(D) + 1 - g
-    - Serre duality: h¹(D) = h⁰(K - D)
-    - Substituting: h⁰(D) - h⁰(K - D) = deg(D) + 1 - g ∎ -/
+    This is the `h¹(D) = h⁰(K-D)` equality, cast to `ℤ`. -/
 theorem riemann_roch_classical_cech (CRS : CompactRiemannSurface)
     (O : StructureSheaf CRS.toRiemannSurface)
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
     (K : CanonicalDivisorData CRS)
     (D : Divisor CRS.toRiemannSurface)
-    (_ : FiniteGoodCover (L.sheafOf D))
-    (_ : FiniteGoodCover (L.sheafOf (K.divisor - D)))
-    (SD : SerreDuality CRS O L K D) :
-    (h_i SD.pairing.H1D : ℤ) = h_i SD.pairing.H0KD := by
-  -- This is exactly the dimension equality from Serre duality
-  exact_mod_cast SD.dimension_eq
+    (gcD : FiniteGoodCover (L.sheafOf D))
+    (gcKD : FiniteGoodCover (L.sheafOf (K.divisor - D))) :
+    (h_i (cechToSheafCohomologyGroup (L.sheafOf D) gcD 1) : ℤ) =
+    h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) gcKD 0) := by
+  exact_mod_cast serre_duality_dim_cech L K D gcD gcKD
 
 end RiemannSurfaces.Algebraic.Cohomology

@@ -76,6 +76,11 @@ check_forbidden \
   '\(SD[[:space:]]*:[[:space:]]*SerreDuality' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'
 
+check_forbidden \
+  "SerreDuality structure must not bundle dimension-equality theorem field" \
+  '^[[:space:]]+dimension_eq[[:space:]]*:[[:space:]]*h_i[[:space:]]+pairing\\.H1D' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/SerreDuality.lean'
+
 if [[ "$fail" -ne 0 ]]; then
   echo
   echo "Riemann-Roch independence checks failed."

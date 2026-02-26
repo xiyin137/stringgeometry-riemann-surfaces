@@ -77,6 +77,10 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
    bundled `SD : SerreDuality ...` theorem-data input from the classical theorem
 9. Added CI check preventing reintroduction of `SD : SerreDuality` in
    `GAGA/Cohomology/RiemannRoch.lean`
+10. Removed `dimension_eq` as a theorem field from `structure SerreDuality` in
+    `GAGA/Cohomology/SerreDuality.lean`
+11. Added CI check preventing reintroduction of `dimension_eq : h_i pairing.H1D = ...`
+    as a field of `SerreDuality`
 
 ---
 
