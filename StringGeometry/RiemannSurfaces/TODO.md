@@ -65,7 +65,11 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 
 1. Removed `CanonicalDivisor.degree_eq` as a structure field in `Analytic/RiemannRoch.lean`
 2. Replaced with explicit theorem/hypothesis usage (`hKdeg`) in high-degree corollaries
-3. Added CI check preventing reintroduction of a `degree_eq : representative.degree ...` field
+3. Removed `FiniteGoodCover.vanishing` as a structure field in `GAGA/Cohomology/CechTheory.lean`
+4. Kept `vanishing_cech` as an explicit theorem obligation (now a theorem `sorry`, not bundled data)
+5. Added CI checks preventing reintroduction of:
+   - `degree_eq : representative.degree ...` in analytic canonical-divisor data
+   - `vanishing : ...` in `FiniteGoodCover`
 
 ---
 

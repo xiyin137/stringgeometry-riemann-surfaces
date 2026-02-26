@@ -61,6 +61,11 @@ check_forbidden \
   'degree_eq[[:space:]]*:[[:space:]]*representative\\.degree' \
   'StringGeometry/RiemannSurfaces/Analytic/RiemannRoch.lean'
 
+check_forbidden \
+  "FiniteGoodCover must not bundle vanishing theorem as a structure field" \
+  '^[[:space:]]+vanishing[[:space:]]*:' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
+
 if [[ "$fail" -ne 0 ]]; then
   echo
   echo "Riemann-Roch independence checks failed."

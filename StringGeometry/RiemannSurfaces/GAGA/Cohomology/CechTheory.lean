@@ -320,17 +320,6 @@ structure FiniteGoodCover (F : CoherentSheaf CRS.toRiemannSurface O) where
   dim : ℕ → ℕ
   /-- Dimension equals finrank -/
   dim_eq : ∀ n, dim n = Module.finrank ℂ (CechCohomologyGroup F cov n)
-  /-- **Cohomological dimension vanishing**: H^n = 0 for n ≥ 2 on curves.
-
-      This is a fundamental property of coherent sheaf cohomology on curves:
-      the cohomological dimension of a smooth projective curve is 1.
-
-      **Proof sketch** (when constructing FiniteGoodCover):
-      1. Use a Stein cover (coordinate disks on Riemann surface)
-      2. On Stein manifolds, coherent sheaves have vanishing higher cohomology
-      3. By Leray's theorem, Čech cohomology with acyclic cover = derived functor cohomology
-      4. Cohomological dimension of a curve is 1, so H^n = 0 for n ≥ 2 -/
-  vanishing : ∀ n, n ≥ 2 → dim n = 0
 
 end FiniteDimensionality
 
@@ -600,8 +589,10 @@ theorem vanishing_cech
     {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
     (F : CoherentSheaf CRS.toRiemannSurface O)
     (gc : FiniteGoodCover F) (i : ℕ) (hi : i ≥ 2) :
-    h_i (cechToSheafCohomologyGroup F gc i) = 0 :=
-  gc.vanishing i hi
+    h_i (cechToSheafCohomologyGroup F gc i) = 0 := by
+  -- This is the geometric vanishing theorem (cohomological dimension 1 for curves).
+  -- It must be proved from Stein/Leray infrastructure rather than bundled as data.
+  sorry
 
 /-!
 ## Euler Characteristic and Riemann-Roch Formula
