@@ -32,6 +32,8 @@ For a compact Riemann surface of genus g:
 
 namespace RiemannSurfaces
 
+universe u v
+
 /-!
 ## Spin Parity
 -/
@@ -64,7 +66,7 @@ def SpinParity.arfInvariant : SpinParity → Fin 2
 
     A local trivialization over U ⊂ Σ is an isomorphism φ : L|_U → U × ℂ.
     The transition functions g_{ij} = φ_j ∘ φ_i⁻¹ on U_i ∩ U_j must be holomorphic. -/
-structure LocalTrivialization (RS : RiemannSurface) where
+structure LocalTrivialization (RS : RiemannSurface.{u}) where
   /-- The open subset U where the trivialization is defined -/
   domain : Set RS.carrier
   /-- Trivialization function (abstractly represented) -/
@@ -86,9 +88,9 @@ structure LocalTrivialization (RS : RiemannSurface) where
     **Note on degree:** The degree is included as intrinsic data of the bundle.
     On a compact surface, deg(L) = c₁(L) (first Chern class integrated over Σ).
     For a divisor line bundle O(D), deg(O(D)) = deg(D). -/
-structure HolomorphicLineBundle (RS : RiemannSurface) where
+structure HolomorphicLineBundle (RS : RiemannSurface.{u}) where
   /-- The total space of the bundle -/
-  totalSpace : Type*
+  totalSpace : Type v
   /-- Bundle projection -/
   proj : totalSpace → RS.carrier
   /-- Local trivializations covering the surface -/
@@ -122,7 +124,7 @@ structure HolomorphicLineBundle (RS : RiemannSurface) where
     - Transition: dz' = (dz'/dz) dz, so g_{ij} = dz_j/dz_i
     - deg(K) = 2g - 2 (Riemann-Hurwitz)
     - dim H⁰(K) = g (by Riemann-Roch) -/
-structure CanonicalBundle (RS : RiemannSurface) extends HolomorphicLineBundle RS where
+structure CanonicalBundle (RS : RiemannSurface.{u}) extends HolomorphicLineBundle.{u, v} RS where
   /-- The canonical bundle has specific transition functions determined by the atlas.
       For charts (U_i, z_i) and (U_j, z_j), the transition function is g_{ij} = dz_j/dz_i.
       This encodes that sections transform as 1-forms: f(z)dz → f(z(w))(dz/dw)dw.
@@ -169,11 +171,11 @@ theorem canonical_degree (CRS : CompactRiemannSurface)
 
     **Note:** The parity is included as intrinsic data of the spin structure,
     as computing it requires cohomology theory (see Algebraic/RiemannRoch.lean). -/
-structure SpinStructure (RS : RiemannSurface) where
+structure SpinStructure (RS : RiemannSurface.{u}) where
   /-- The spin bundle S with S ⊗ S ≅ K -/
-  spinBundle : HolomorphicLineBundle RS
+  spinBundle : HolomorphicLineBundle.{u, v} RS
   /-- The canonical bundle K -/
-  canonical : CanonicalBundle RS
+  canonical : CanonicalBundle.{u, v} RS
   /-- The degree of S is half the degree of K: deg(S) = g - 1.
       This is a necessary condition for S ⊗ S ≅ K. -/
   degree_half : spinBundle.degree * 2 = canonical.degree
