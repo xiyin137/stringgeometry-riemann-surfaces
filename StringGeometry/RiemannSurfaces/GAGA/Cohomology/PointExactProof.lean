@@ -99,4 +99,58 @@ theorem point_exact_cech_proof
   exact cech_point_exact_of_data L gc D p ses les h''0_dim h''1_dim
     h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq
 
+/-- Riemann-Roch Euler formula from explicit point-exact sequence data.
+
+    This instantiates `CechTheory.eulerChar_formula_cech_of` by deriving its
+    point-recursion hypothesis from explicit short/long exact-sequence inputs
+    for each pair `(E, p)`. -/
+theorem eulerChar_formula_cech_from_point_exact_data
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (h0 :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
+    (h1 :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
+    (ses : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      ShortExactSeq CRS.toRiemannSurface O
+        (DivisorSheaf O L (E - Divisor.point p))
+        (DivisorSheaf O L E)
+        (skyscraperSheaf O p))
+    (les : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      LongExactSequence CRS.toRiemannSurface
+        (DivisorSheaf O L (E - Divisor.point p))
+        (DivisorSheaf O L E)
+        (skyscraperSheaf O p)
+        (ses E p))
+    (h''0_dim : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H''0.dimension = 1)
+    (h''1_dim : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H''1.dimension = 0)
+    (h0_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H'0.dimension = (gc (E - Divisor.point p)).dim 0)
+    (h1_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H'1.dimension = (gc (E - Divisor.point p)).dim 1)
+    (h0_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H0.dimension = (gc E).dim 0)
+    (h1_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H1.dimension = (gc E).dim 1)
+    (D : Divisor CRS.toRiemannSurface) :
+    cech_chi L gc D = D.degree + 1 - CRS.genus := by
+  apply eulerChar_formula_cech_of L gc h0 h1
+  intro E p
+  exact cech_point_exact_of_data L gc E p (ses E p) (les E p)
+    (h''0_dim E p) (h''1_dim E p)
+    (h0_Dp_eq E p) (h1_Dp_eq E p)
+    (h0_D_eq E p) (h1_D_eq E p)
+
 end RiemannSurfaces.Algebraic.Cohomology.PointExactProof

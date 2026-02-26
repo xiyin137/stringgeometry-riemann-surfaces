@@ -111,6 +111,16 @@ check_required \
   '^theorem eulerChar_formula_cech_of' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
 
+check_required \
+  "PointExactProof must provide RR instantiation from explicit point-exact data" \
+  '^theorem eulerChar_formula_cech_from_point_exact_data' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
+
+check_required \
+  "RiemannRoch must expose explicit-data Euler-form entry point" \
+  '^theorem riemann_roch_euler_from_point_exact_data' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'
+
 if [[ "$fail" -ne 0 ]]; then
   echo
   echo "Riemann-Roch independence checks failed."

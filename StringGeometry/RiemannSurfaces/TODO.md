@@ -87,6 +87,11 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
     and routed RR induction through explicit inputs `(h0, h1, hpoint)`
 14. Added CI checks requiring `eulerChar_point_exact_cech_of` and
     `eulerChar_formula_cech_of` to remain present
+15. Added `PointExactProof.eulerChar_formula_cech_from_point_exact_data`
+    to instantiate RR induction directly from explicit `(ses, les, dim-identification)` data
+16. Added `RiemannRoch.riemann_roch_euler_from_point_exact_data` as public
+    explicit-data Euler-form entry point (avoids direct dependence on `point_exact_cech`)
+17. Added CI checks requiring the two explicit-data entry theorems above
 
 ---
 
