@@ -2,3 +2,9 @@
 .elan/
 build/
 .DS_Store
+agent.md
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

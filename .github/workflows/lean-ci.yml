@@ -14,5 +14,17 @@ jobs:
           use-mathlib-cache: true
       - name: Riemann-Roch Independence Guard
         run: ./scripts/check_rr_independence.sh
-      - name: Build
-        run: lake build
+      - name: Build SGRSCore
+        run: lake build SGRSCore
+      - name: Build SGRSTopologySheaves
+        run: lake build SGRSTopologySheaves
+      - name: Build SGRSAnalytic
+        run: lake build SGRSAnalytic
+      - name: Build SGRSSchemeTheoretic
+        run: lake build SGRSSchemeTheoretic
+      - name: Build SGRSGAGA
+        run: lake build SGRSGAGA
+      - name: Build SGRSCombinatorial
+        run: lake build SGRSCombinatorial
+      - name: Build SGRiemannSurfaces
+        run: lake build SGRiemannSurfaces

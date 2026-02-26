@@ -302,8 +302,8 @@ structure SmoothProjectiveCurve extends ProperCurve where
       The relative dimension 1 is part of the DEFINITION of being a curve,
       not a computed result.
 
-      `IsSmoothOfRelativeDimension 1` implies `IsSmooth`. -/
-  [smooth : IsSmoothOfRelativeDimension 1 structureMorphism]
+      `SmoothOfRelativeDimension 1` implies `Smooth`. -/
+  [smooth : SmoothOfRelativeDimension 1 structureMorphism]
 
 attribute [instance] SmoothProjectiveCurve.smooth
 
@@ -317,9 +317,9 @@ instance : Coe SmoothProjectiveCurve ProperCurve := ⟨SmoothProjectiveCurve.toP
 /-- Coercion to AlgebraicCurve. -/
 instance : Coe SmoothProjectiveCurve AlgebraicCurve := ⟨fun C => C.toProperCurve.toAlgebraicCurve⟩
 
-/-- Derive IsSmooth from IsSmoothOfRelativeDimension 1. -/
-instance toSchemeIsSmooth : IsSmooth C.structureMorphism :=
-  IsSmoothOfRelativeDimension.isSmooth (n := 1) (f := C.structureMorphism)
+/-- Derive `Smooth` from `SmoothOfRelativeDimension 1`. -/
+instance toSchemeIsSmooth : Smooth C.structureMorphism :=
+  SmoothOfRelativeDimension.smooth (n := 1) (f := C.structureMorphism)
 
 /-!
 ### Convenience accessors

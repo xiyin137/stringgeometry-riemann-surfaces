@@ -4,7 +4,7 @@ open Lake DSL
 package "stringgeometry-riemann-surfaces" where
 
 require mathlib from git
-  "https://github.com/leanprover-community/mathlib4.git" @ "master"
+  "https://github.com/leanprover-community/mathlib4.git" @ "6672fdb5eaace8bd6e541be199dfbfc8b42629af"
 
 
 lean_lib SGRSCore where
