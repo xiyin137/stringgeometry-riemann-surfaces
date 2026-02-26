@@ -58,6 +58,8 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
   `iotaH0_injective_holds : Function.Injective (iotaH0 ses U)`
 - [x] Partial automation constructor for six-term LES witnesses:
   `CechSixTermLES.ofRemaining` (auto-fills `H⁰` injectivity/exactness)
+- [x] Full exactness at `H⁰(F'')` proved from connecting-map construction:
+  `exactness_at_H0Fpp_holds : exactness_at_H0Fpp ses U`
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover

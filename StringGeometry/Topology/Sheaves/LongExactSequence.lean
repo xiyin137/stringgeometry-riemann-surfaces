@@ -701,6 +701,84 @@ theorem exactness_at_H0F_holds (ses : ShortExactSequence F' F F'') (U : OpenCove
 abbrev exactness_at_H0Fpp (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
   ExactAt (piH0 ses U) (deltaH0 ses U) (zeroHSucc F' U 0)
 
+/-- Exactness at `H⁰(F'')` from the explicit connecting-map construction. -/
+theorem exactness_at_H0Fpp_holds (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    exactness_at_H0Fpp ses U := by
+  intro σ''
+  constructor
+  · intro hδ
+    have hrel :
+        CechCohomologyRelSucc F' U 0 (connectingCocycle ses U 0 σ'') (zeroCocycle F' U 1) := by
+      exact Quotient.exact (by simpa [deltaH0, zeroHSucc] using hδ)
+    rcases hrel with ⟨ξ, hξ⟩
+    have hξ' : cechDiff F' U 0 ξ = connectingCochainAux ses U 0 σ'' := by
+      simpa [connectingCocycle, zeroCocycle] using hξ
+
+    let τcochain : CechCochain F U 0 :=
+      liftCochain ses U 0 σ''.val - inducedCochainMap ses.ι U 0 ξ
+    have hτ_cocycle : cechDiff F U 0 τcochain = 0 := by
+      unfold τcochain
+      rw [cechDiff_sub]
+      have hcomm := inducedCochainMap_comm_cechDiff ses.ι U 0 ξ
+      rw [← hcomm, hξ']
+      have haux :
+          inducedCochainMap ses.ι U 1 (connectingCochainAux ses U 0 σ'') =
+            cechDiff F U 0 (liftCochain ses U 0 σ''.val) := by
+        funext f
+        simp [inducedCochainMap, connectingCochainAux_spec]
+      rw [haux, sub_self]
+
+    let τ : CechH0 F U := ⟨τcochain, hτ_cocycle⟩
+    refine ⟨τ, ?_⟩
+    apply Subtype.ext
+    funext f
+    show ses.π.map (U.inter f) (τcochain f) = σ''.val f
+    unfold τcochain
+    show ses.π.map (U.inter f)
+        (liftCochain ses U 0 σ''.val f - inducedCochainMap ses.ι U 0 ξ f) = σ''.val f
+    rw [ses.π.map_sub, liftCochain_spec ses U 0 σ''.val f]
+    have hcomp : ses.π.map (U.inter f) (inducedCochainMap ses.ι U 0 ξ f) = 0 := by
+      change ses.π.map (U.inter f) (ses.ι.map (U.inter f) (ξ f)) = 0
+      exact ses.comp_zero (U.inter f) (ξ f)
+    rw [hcomp, sub_zero]
+  · intro hmem
+    rcases hmem with ⟨τ, hπτ⟩
+    have hπτ_val : ∀ f : Fin (0 + 1) → U.ι, ses.π.map (U.inter f) (τ.val f) = σ''.val f := by
+      intro f
+      have hval := congrArg (fun t => t.val f) hπτ
+      simpa [piH0, inducedH0, inducedCocycleMap, inducedCochainMap] using hval
+
+    let diff : CechCochain F U 0 := liftCochain ses U 0 σ''.val - τ.val
+    have hdiff_ker : ∀ f : Fin (0 + 1) → U.ι, ses.π.map (U.inter f) (diff f) = 0 := by
+      intro f
+      unfold diff
+      show ses.π.map (U.inter f) (liftCochain ses U 0 σ''.val f - τ.val f) = 0
+      rw [ses.π.map_sub, liftCochain_spec ses U 0 σ''.val f, hπτ_val f, sub_self]
+    let ξ : CechCochain F' U 0 := preimageCochain ses U 0 diff hdiff_ker
+    have hξ_spec : inducedCochainMap ses.ι U 0 ξ = diff := by
+      funext f
+      simp [inducedCochainMap, ξ, preimageCochain_spec]
+
+    have hξ_diff : cechDiff F' U 0 ξ = connectingCochainAux ses U 0 σ'' := by
+      funext f
+      apply ses.ι_injective (U.inter f)
+      have hcomm := inducedCochainMap_comm_cechDiff ses.ι U 0 ξ
+      have hf := congrFun hcomm f
+      simp [inducedCochainMap] at hf
+      rw [hf, hξ_spec]
+      unfold diff
+      rw [cechDiff_sub, connectingCochainAux_spec ses U 0 σ'' f]
+      show cechDiff F U 0 (liftCochain ses U 0 σ''.val) f - cechDiff F U 0 τ.val f =
+        cechDiff F U 0 (liftCochain ses U 0 σ''.val) f
+      have hτ_f := congrFun τ.prop f
+      rw [hτ_f]
+      have h0 : (0 : CechCochain F U 1) f = 0 := rfl
+      rw [h0, sub_zero]
+
+    apply Quotient.sound
+    refine ⟨ξ, ?_⟩
+    simp [connectingCocycle, zeroCocycle, hξ_diff]
+
 /-- Exactness at `H¹(F')`: `ker(H¹(ι)) = im(δ⁰)`. -/
 abbrev exactness_at_H1Fp (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
   ExactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0)
