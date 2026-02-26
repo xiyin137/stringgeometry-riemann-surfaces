@@ -994,6 +994,34 @@ theorem comp_zero_HSucc_to_delta_of_exactness
     ∀ σ : CechHSucc F U n, deltaHSucc ses U n (piHSucc ses U n σ) = zeroHSucc F' U (n + 1) :=
   comp_eq_zero_of_exactAt (piHSucc ses U n) (deltaHSucc ses U n) (zeroHSucc F' U (n + 1)) hexact
 
+/-- Degree-1 specialization: `δ¹ ∘ π¹ = 0` under exactness at `H¹(F'')`. -/
+theorem comp_zero_H1_to_H2_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_HSuccFpp ses U 0) :
+    ∀ σ : CechHSucc F U 0, deltaHSucc ses U 0 (piH1 ses U σ) = zeroHSucc F' U 1 := by
+  simpa [piH1, piHSucc] using comp_zero_HSucc_to_delta_of_exactness ses U 0 hexact
+
+/-- Surjectivity of `π¹` from exactness at `H¹(F'')` plus vanishing of `δ¹`. -/
+theorem piH1_surjective_of_exactness_at_H1Fpp_and_delta_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_HSuccFpp ses U 0)
+    (hdelta_zero : ∀ z : CechHSucc F'' U 0, deltaHSucc ses U 0 z = zeroHSucc F' U 1) :
+    Function.Surjective (piH1 ses U) := by
+  intro z
+  have hz : deltaHSucc ses U 0 z = zeroHSucc F' U 1 := hdelta_zero z
+  rcases (hexact z).1 hz with ⟨x, hx⟩
+  exact ⟨x, by simpa [piH1, piHSucc] using hx⟩
+
+/-- Surjectivity of `π¹` from exactness at `H¹(F'')` when `H²(F')` is subsingleton. -/
+theorem piH1_surjective_of_exactness_at_H1Fpp_and_subsingleton_H2
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_HSuccFpp ses U 0)
+    [Subsingleton (CechHSucc F' U 1)] :
+    Function.Surjective (piH1 ses U) := by
+  refine piH1_surjective_of_exactness_at_H1Fpp_and_delta_zero ses U hexact ?_
+  intro z
+  exact Subsingleton.elim _ _
+
 /-- Consequence of exactness at `Hⁿ⁺²(F')`: `Hⁿ⁺²(ι) ∘ δⁿ⁺¹ = 0`. -/
 theorem comp_zero_delta_to_HSucc_of_exactness
     (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)
@@ -1026,6 +1054,15 @@ theorem CechSixTermLES.ofRemaining
       exactness_H0Fpp := exactness_at_H0Fpp_holds ses U
       exactness_H1Fp := exactness_at_H1Fp_holds ses U
       exactness_H1F := exactness_at_H1F_holds ses U }
+
+/-- Build a six-term LES witness from higher exactness plus `H²(F')` triviality. -/
+theorem CechSixTermLES.ofRemaining_of_exactness_at_H1Fpp_and_subsingleton_H2
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact_H1Fpp : exactness_at_HSuccFpp ses U 0)
+    [Subsingleton (CechHSucc F' U 1)] :
+    CechSixTermLES ses U := by
+  refine CechSixTermLES.ofRemaining ses U ?_
+  exact piH1_surjective_of_exactness_at_H1Fpp_and_subsingleton_H2 ses U hexact_H1Fpp
 
 /-- Constructor alias for the packaged six-term LES interface. -/
 abbrev longExactSequence (ses : ShortExactSequence F' F F'') (U : OpenCover X) :=

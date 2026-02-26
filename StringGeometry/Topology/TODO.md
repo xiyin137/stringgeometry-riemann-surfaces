@@ -67,6 +67,11 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
 - [x] Strengthened six-term witness constructor:
   `CechSixTermLES.ofRemaining` now auto-fills all exactness fields
   (remaining external input: only `piH1` surjectivity)
+- [x] Higher-degree bridge lemmas toward `piH1` surjectivity:
+  `comp_zero_H1_to_H2_of_exactness`,
+  `piH1_surjective_of_exactness_at_H1Fpp_and_delta_zero`,
+  `piH1_surjective_of_exactness_at_H1Fpp_and_subsingleton_H2`,
+  `CechSixTermLES.ofRemaining_of_exactness_at_H1Fpp_and_subsingleton_H2`
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover
