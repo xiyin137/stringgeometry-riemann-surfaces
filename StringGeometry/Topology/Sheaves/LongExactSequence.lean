@@ -1022,6 +1022,41 @@ theorem piH1_surjective_of_exactness_at_H1Fpp_and_subsingleton_H2
   intro z
   exact Subsingleton.elim _ _
 
+/-- Exactness at `H¹(F'')` from surjectivity of `π¹` plus vanishing of `δ¹`. -/
+theorem exactness_at_H1Fpp_of_piH1_surjective_and_delta_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hpiH1_surj : Function.Surjective (piH1 ses U))
+    (hdelta_zero : ∀ z : CechHSucc F'' U 0, deltaHSucc ses U 0 z = zeroHSucc F' U 1) :
+    exactness_at_HSuccFpp ses U 0 := by
+  intro z
+  constructor
+  · intro _
+    rcases hpiH1_surj z with ⟨x, hx⟩
+    exact ⟨x, by simpa [piH1, piHSucc] using hx⟩
+  · intro _
+    exact hdelta_zero z
+
+/-- Exactness at `H¹(F'')` from surjectivity of `π¹` when `H²(F')` is subsingleton. -/
+theorem exactness_at_H1Fpp_of_piH1_surjective_and_subsingleton_H2
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hpiH1_surj : Function.Surjective (piH1 ses U))
+    [Subsingleton (CechHSucc F' U 1)] :
+    exactness_at_HSuccFpp ses U 0 := by
+  refine exactness_at_H1Fpp_of_piH1_surjective_and_delta_zero ses U hpiH1_surj ?_
+  intro z
+  exact Subsingleton.elim _ _
+
+/-- Under `H²(F')` subsingleton, exactness at `H¹(F'')` is equivalent to surjectivity of `π¹`. -/
+theorem exactness_at_H1Fpp_iff_piH1_surjective_of_subsingleton_H2
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    [Subsingleton (CechHSucc F' U 1)] :
+    exactness_at_HSuccFpp ses U 0 ↔ Function.Surjective (piH1 ses U) := by
+  constructor
+  · intro hexact
+    exact piH1_surjective_of_exactness_at_H1Fpp_and_subsingleton_H2 ses U hexact
+  · intro hsurj
+    exact exactness_at_H1Fpp_of_piH1_surjective_and_subsingleton_H2 ses U hsurj
+
 /-- Consequence of exactness at `Hⁿ⁺²(F')`: `Hⁿ⁺²(ι) ∘ δⁿ⁺¹ = 0`. -/
 theorem comp_zero_delta_to_HSucc_of_exactness
     (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)

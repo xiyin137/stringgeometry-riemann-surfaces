@@ -72,6 +72,10 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
   `piH1_surjective_of_exactness_at_H1Fpp_and_delta_zero`,
   `piH1_surjective_of_exactness_at_H1Fpp_and_subsingleton_H2`,
   `CechSixTermLES.ofRemaining_of_exactness_at_H1Fpp_and_subsingleton_H2`
+- [x] Reverse bridge and equivalence under `H²(F')` subsingleton:
+  `exactness_at_H1Fpp_of_piH1_surjective_and_delta_zero`,
+  `exactness_at_H1Fpp_of_piH1_surjective_and_subsingleton_H2`,
+  `exactness_at_H1Fpp_iff_piH1_surjective_of_subsingleton_H2`
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover
