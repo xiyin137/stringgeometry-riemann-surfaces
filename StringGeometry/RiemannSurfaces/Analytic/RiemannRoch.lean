@@ -455,8 +455,6 @@ whose sections are holomorphic 1-forms.
 structure CanonicalDivisor (CRS : CompactRiemannSurface) where
   /-- A representative divisor in the canonical class -/
   representative : Divisor CRS.toRiemannSurface
-  /-- The degree equals 2g - 2 -/
-  degree_eq : representative.degree = 2 * CRS.genus - 2
 
 /-- h⁰(K) = g: holomorphic 1-forms have dimension equal to the topological genus.
 
@@ -482,8 +480,8 @@ theorem canonical_divisor_exists (CRS : CompactRiemannSurface) :
     This fundamental formula connects the genus to the canonical bundle. -/
 theorem deg_canonical_eq_2g_minus_2 (CRS : CompactRiemannSurface)
     (K : CanonicalDivisor CRS) :
-    K.representative.degree = 2 * CRS.genus - 2 :=
-  K.degree_eq
+    K.representative.degree = 2 * CRS.genus - 2 := by
+  sorry
 
 /-!
 ## h⁰(0) = 1: Constant Functions
@@ -931,11 +929,12 @@ theorem riemann_roch_h0_duality (CRS : CompactRiemannSurface)
 /-- For a divisor of degree > 2g - 2, we have h⁰(K - D) = 0 -/
 theorem h0_KminusD_vanishes_high_degree (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (K : CanonicalDivisor CRS)
+    (hKdeg : K.representative.degree = 2 * CRS.genus - 2)
     (hdeg : D.degree > 2 * CRS.genus - 2) :
     h0 CRS (K.representative + (-D)) = 0 := by
   -- deg(K - D) = 2g - 2 - deg(D) < 0
   have hdeg_neg : (K.representative + (-D)).degree < 0 := by
-    rw [Divisor.degree_add, Divisor.degree_neg, K.degree_eq]
+    rw [Divisor.degree_add, Divisor.degree_neg, hKdeg]
     omega
   exact h0_vanishes_negative_degree CRS _ hdeg_neg
 
@@ -944,9 +943,10 @@ theorem h0_KminusD_vanishes_high_degree (CRS : CompactRiemannSurface)
 theorem riemann_roch_high_degree (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (K : CanonicalDivisor CRS)
     (hK : h0 CRS K.representative = CRS.genus)
+    (hKdeg : K.representative.degree = 2 * CRS.genus - 2)
     (hdeg : D.degree > 2 * CRS.genus - 2) :
     (h0 CRS D : ℤ) = D.degree + 1 - CRS.genus := by
-  have h0_zero := h0_KminusD_vanishes_high_degree CRS D K hdeg
+  have h0_zero := h0_KminusD_vanishes_high_degree CRS D K hKdeg hdeg
   have rr := riemann_roch_h0_duality CRS D K hK
   simp only [h0_zero, CharP.cast_eq_zero, sub_zero] at rr
   exact rr

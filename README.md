@@ -56,3 +56,7 @@ This keeps one repository while enabling domain-specific CI and dependency bound
 - Keep `Analytic` and `SchemeTheoretic` as separate engines.
 - Keep `GAGA` as a thin bridge layer.
 - Add shared abstractions only in `Core`; avoid duplicating foundational definitions across engines.
+
+## Integrity Guard
+
+- Run `./scripts/check_rr_independence.sh` to enforce Riemann-Roch track independence and anti-smuggling checks.

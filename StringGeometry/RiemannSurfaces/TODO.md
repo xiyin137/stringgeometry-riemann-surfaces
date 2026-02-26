@@ -48,6 +48,27 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 
 ---
 
+## ✅ Riemann-Roch Independence Hardening (2026-02-26)
+
+**Status:** ✅ Implemented
+
+### Circularity guardrails now enforced
+
+1. Added CI guard script: `scripts/check_rr_independence.sh`
+2. Enforced that `Analytic/*` cannot import `SchemeTheoretic/*` or `GAGA/*`
+3. Enforced that `SchemeTheoretic/*` cannot import `Analytic/*` or `GAGA/*`
+4. Added focused checks for:
+   - `Analytic/RiemannRoch.lean` independence
+   - `SchemeTheoretic/RiemannRoch.lean` independence
+
+### Axiom-smuggling hardening now enforced
+
+1. Removed `CanonicalDivisor.degree_eq` as a structure field in `Analytic/RiemannRoch.lean`
+2. Replaced with explicit theorem/hypothesis usage (`hKdeg`) in high-degree corollaries
+3. Added CI check preventing reintroduction of a `degree_eq : representative.degree ...` field
+
+---
+
 ## ✅ RESOLVED: GAGA/Cohomology vs Algebraic/Cohomology DUPLICATION (2026-02-04)
 
 **Status:** ✅ RESOLVED

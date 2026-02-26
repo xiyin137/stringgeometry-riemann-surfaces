@@ -40,4 +40,28 @@ theorem analytic_to_algebraic_coeff
   simpa using
     (analyticAlgebraicDivisorTransport RS).map_coeff D p
 
+/-- If principal divisors are transported by a `PrincipalDivisorTransport`,
+then linear equivalence is transported as well. -/
+theorem analytic_to_algebraic_linearlyEquivalent
+    {RS : RiemannSurface}
+    [RiemannSurfaces.Core.PrincipalDivisorModel
+      RS.carrier
+      (RiemannSurfaces.Algebraic.Divisor RS)]
+    (P : RiemannSurfaces.Core.PrincipalDivisorTransport
+      RS.carrier
+      (RiemannSurfaces.Analytic.Divisor RS)
+      (RiemannSurfaces.Algebraic.Divisor RS)
+      (analyticAlgebraicDivisorTransport RS))
+    {D₁ D₂ : RiemannSurfaces.Analytic.Divisor RS}
+    (h : RiemannSurfaces.Core.PrincipalDivisorModel.LinearlyEquivalent
+      (Point := RS.carrier)
+      (Divisor := RiemannSurfaces.Analytic.Divisor RS)
+      D₁ D₂) :
+    RiemannSurfaces.Core.PrincipalDivisorModel.LinearlyEquivalent
+      (Point := RS.carrier)
+      (Divisor := RiemannSurfaces.Algebraic.Divisor RS)
+      (RiemannSurfaces.Core.analyticToAlgebraicDivisor D₁)
+      (RiemannSurfaces.Core.analyticToAlgebraicDivisor D₂) := by
+  exact RiemannSurfaces.Core.PrincipalDivisorTransport.map_linearlyEquivalent P h
+
 end RiemannSurfaces.GAGA.Bridge
