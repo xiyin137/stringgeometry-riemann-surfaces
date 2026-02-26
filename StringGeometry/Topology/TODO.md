@@ -54,6 +54,10 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
   `piH0_iotaH0_eq_zero`, `piHSucc_iotaHSucc_eq_zero`, `piH1_iotaH1_eq_zero`
 - [x] First actual LES exactness proof at cohomology level:
   `exactness_at_H0F_holds : exactness_at_H0F ses U`
+- [x] `H⁰` injectivity theorem from SES:
+  `iotaH0_injective_holds : Function.Injective (iotaH0 ses U)`
+- [x] Partial automation constructor for six-term LES witnesses:
+  `CechSixTermLES.ofRemaining` (auto-fills `H⁰` injectivity/exactness)
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover

@@ -644,6 +644,18 @@ theorem comp_eq_zero_of_exactAt {A B C : Type*} (f : A → B) (g : B → C) (z :
 abbrev exactness_at_H0F (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
   ExactAt (iotaH0 ses U) (piH0 ses U) (zeroH0 F'' U)
 
+/-- Injectivity of `H⁰(F') → H⁰(F)` induced by injectivity of `ι`. -/
+theorem iotaH0_injective_holds (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    Function.Injective (iotaH0 ses U) := by
+  intro σ τ hστ
+  apply Subtype.ext
+  funext f
+  have hval := congrArg (fun t => t.val f) hστ
+  have hmap :
+      ses.ι.map (U.inter f) (σ.val f) = ses.ι.map (U.inter f) (τ.val f) := by
+    simpa [iotaH0, inducedH0, inducedCocycleMap, inducedCochainMap] using hval
+  exact ses.ι_injective (U.inter f) hmap
+
 /-- Exactness at `H⁰(F)` follows directly from sectionwise exactness in the SES. -/
 theorem exactness_at_H0F_holds (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
     exactness_at_H0F ses U := by
@@ -767,6 +779,24 @@ structure CechSixTermLES (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
   exactness_H0Fpp : exactness_at_H0Fpp ses U
   exactness_H1Fp : exactness_at_H1Fp ses U
   exactness_H1F : exactness_at_H1F ses U
+
+/-- Build a six-term LES witness from the still-missing higher-degree inputs.
+    The low-degree pieces (`H⁰` injectivity and exactness at `H⁰(F)`) are
+    filled automatically from the short exact sequence. -/
+theorem CechSixTermLES.ofRemaining
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hpiH1_surj : Function.Surjective (piH1 ses U))
+    (hexact_H0Fpp : exactness_at_H0Fpp ses U)
+    (hexact_H1Fp : exactness_at_H1Fp ses U)
+    (hexact_H1F : exactness_at_H1F ses U) :
+    CechSixTermLES ses U := by
+  refine
+    { iotaH0_injective := iotaH0_injective_holds ses U
+      piH1_surjective := hpiH1_surj
+      exactness_H0F := exactness_at_H0F_holds ses U
+      exactness_H0Fpp := hexact_H0Fpp
+      exactness_H1Fp := hexact_H1Fp
+      exactness_H1F := hexact_H1F }
 
 /-- Constructor alias for the packaged six-term LES interface. -/
 abbrev longExactSequence (ses : ShortExactSequence F' F F'') (U : OpenCover X) :=
