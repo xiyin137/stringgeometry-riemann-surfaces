@@ -630,6 +630,19 @@ theorem piH1_iotaH1_eq_zero
     piH1 ses U (iotaH1 ses U x) = zeroHSucc F'' U 0 := by
   simpa [iotaH1, piH1] using piHSucc_iotaHSucc_eq_zero ses U 0 x
 
+/-- The composition `H⁰(F'') → H¹(F') → H¹(F)` is zero, directly from construction. -/
+theorem iotaH1_deltaH0_eq_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (σ'' : CechH0 F'' U) :
+    iotaH1 ses U (deltaH0 ses U σ'') = zeroHSucc F U 0 := by
+  apply Quotient.sound
+  refine ⟨liftCochain ses U 0 σ''.val, ?_⟩
+  have haux :
+      inducedCochainMap ses.ι U 1 (connectingCochainAux ses U 0 σ'') =
+        cechDiff F U 0 (liftCochain ses U 0 σ''.val) := by
+    funext f
+    simp [inducedCochainMap, connectingCochainAux_spec]
+  simp [inducedCocycleMap, connectingCocycle, zeroCocycle, haux]
+
 /-- `ExactAt f g z` means `ker g = im f`, expressed as `g b = z ↔ ∃ a, f a = b`. -/
 def ExactAt {A B C : Type*} (f : A → B) (g : B → C) (z : C) : Prop :=
   ∀ b : B, g b = z ↔ ∃ a : A, f a = b
@@ -779,6 +792,71 @@ theorem exactness_at_H0Fpp_holds (ses : ShortExactSequence F' F F'') (U : OpenCo
     refine ⟨ξ, ?_⟩
     simp [connectingCocycle, zeroCocycle, hξ_diff]
 
+/-- Exactness at `H¹(F')` from the explicit connecting-map construction. -/
+theorem exactness_at_H1Fp_holds (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    ExactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0) := by
+  intro x
+  constructor
+  · intro hx
+    revert hx
+    refine Quotient.inductionOn x ?_
+    intro σ' hx
+    have hrel :
+        CechCohomologyRelSucc F U 0 (inducedCocycleMap ses.ι U 1 σ') (zeroCocycle F U 1) := by
+      exact Quotient.exact (by simpa [iotaH1, iotaHSucc, inducedH, zeroHSucc] using hx)
+    rcases hrel with ⟨τ, hτ⟩
+    have hτ' : cechDiff F U 0 τ = inducedCochainMap ses.ι U 1 σ'.val := by
+      simpa [inducedCocycleMap, zeroCocycle] using hτ
+
+    let σ''cochain : CechCochain F'' U 0 := inducedCochainMap ses.π U 0 τ
+    have hσ''_cocycle : cechDiff F'' U 0 σ''cochain = 0 := by
+      rw [← inducedCochainMap_comm_cechDiff ses.π U 0 τ, hτ']
+      exact inducedCochainMap_comp_zero ses U 1 σ'.val
+    let σ'' : CechH0 F'' U := ⟨σ''cochain, hσ''_cocycle⟩
+
+    let lift := liftCochain ses U 0 σ''.val
+    let diff : CechCochain F U 0 := lift - τ
+    have hdiff_ker : ∀ f : Fin (0 + 1) → U.ι, ses.π.map (U.inter f) (diff f) = 0 := by
+      intro f
+      show ses.π.map (U.inter f) (lift f - τ f) = 0
+      rw [ses.π.map_sub, liftCochain_spec ses U 0 σ''.val f]
+      unfold σ'' σ''cochain
+      simp [inducedCochainMap]
+    let ξ : CechCochain F' U 0 := preimageCochain ses U 0 diff hdiff_ker
+    have hξ_spec : inducedCochainMap ses.ι U 0 ξ = diff := by
+      funext f
+      simp [inducedCochainMap, ξ, preimageCochain_spec]
+
+    have hξ_eq :
+        cechDiff F' U 0 ξ = connectingCochainAux ses U 0 σ'' - σ'.val := by
+      funext f
+      apply ses.ι_injective (U.inter f)
+      have hcomm := inducedCochainMap_comm_cechDiff ses.ι U 0 ξ
+      have hf := congrFun hcomm f
+      simp [inducedCochainMap] at hf
+      rw [hf, hξ_spec]
+      unfold diff
+      rw [cechDiff_sub]
+      show (cechDiff F U 0 lift - cechDiff F U 0 τ) f =
+        ses.ι.map (U.inter f) (connectingCochainAux ses U 0 σ'' f - σ'.val f)
+      rw [ses.ι.map_sub]
+      rw [connectingCochainAux_spec ses U 0 σ'' f]
+      have hτ_f := congrFun hτ' f
+      show cechDiff F U 0 lift f - cechDiff F U 0 τ f =
+        cechDiff F U 0 (liftCochain ses U 0 σ''.val) f - ses.ι.map (U.inter f) (σ'.val f)
+      rw [hτ_f]
+      simp [lift, inducedCochainMap]
+
+    refine ⟨σ'', ?_⟩
+    apply Quotient.sound
+    refine ⟨ξ, ?_⟩
+    simpa [connectingCocycle] using hξ_eq
+  · intro hmem
+    rcases hmem with ⟨σ'', hσ''⟩
+    calc
+      iotaH1 ses U x = iotaH1 ses U (deltaH0 ses U σ'') := by simp [hσ'']
+      _ = zeroHSucc F U 0 := iotaH1_deltaH0_eq_zero ses U σ''
+
 /-- Exactness at `H¹(F')`: `ker(H¹(ι)) = im(δ⁰)`. -/
 abbrev exactness_at_H1Fp (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
   ExactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0)
@@ -859,21 +937,19 @@ structure CechSixTermLES (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
   exactness_H1F : exactness_at_H1F ses U
 
 /-- Build a six-term LES witness from the still-missing higher-degree inputs.
-    The low-degree pieces (`H⁰` injectivity and exactness at `H⁰(F)`) are
-    filled automatically from the short exact sequence. -/
+    The low-degree pieces (`H⁰` injectivity and exactness through `H¹(F')`) are
+    filled automatically from the short exact sequence and connecting construction. -/
 theorem CechSixTermLES.ofRemaining
     (ses : ShortExactSequence F' F F'') (U : OpenCover X)
     (hpiH1_surj : Function.Surjective (piH1 ses U))
-    (hexact_H0Fpp : exactness_at_H0Fpp ses U)
-    (hexact_H1Fp : exactness_at_H1Fp ses U)
     (hexact_H1F : exactness_at_H1F ses U) :
     CechSixTermLES ses U := by
   refine
     { iotaH0_injective := iotaH0_injective_holds ses U
       piH1_surjective := hpiH1_surj
       exactness_H0F := exactness_at_H0F_holds ses U
-      exactness_H0Fpp := hexact_H0Fpp
-      exactness_H1Fp := hexact_H1Fp
+      exactness_H0Fpp := exactness_at_H0Fpp_holds ses U
+      exactness_H1Fp := exactness_at_H1Fp_holds ses U
       exactness_H1F := hexact_H1F }
 
 /-- Constructor alias for the packaged six-term LES interface. -/

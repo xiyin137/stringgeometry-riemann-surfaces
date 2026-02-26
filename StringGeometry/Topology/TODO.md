@@ -56,10 +56,15 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
   `exactness_at_H0F_holds : exactness_at_H0F ses U`
 - [x] `H⁰` injectivity theorem from SES:
   `iotaH0_injective_holds : Function.Injective (iotaH0 ses U)`
-- [x] Partial automation constructor for six-term LES witnesses:
-  `CechSixTermLES.ofRemaining` (auto-fills `H⁰` injectivity/exactness)
 - [x] Full exactness at `H⁰(F'')` proved from connecting-map construction:
   `exactness_at_H0Fpp_holds : exactness_at_H0Fpp ses U`
+- [x] Direct composition-zero theorem for the next adjacent pair:
+  `iotaH1_deltaH0_eq_zero : iotaH1 ses U (deltaH0 ses U σ'') = 0`
+- [x] Full exactness at `H¹(F')` from the connecting construction:
+  `exactness_at_H1Fp_holds : ExactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0)`
+- [x] Strengthened six-term witness constructor:
+  `CechSixTermLES.ofRemaining` now auto-fills exactness through `H¹(F')`
+  (remaining external inputs: `piH1` surjectivity and exactness at `H¹(F)`)
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover
