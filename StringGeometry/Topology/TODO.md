@@ -49,6 +49,9 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
   `CechSixTermLES`, `longExactSequence`
 - [x] Reusable exactness consequence lemmas: `comp_eq_zero_of_exactAt` and degree-specific
   `comp_zero_*_of_exactness`
+- [x] Direct adjacent-composition-zero lemmas from SES (`π ∘ ι = 0`) at cochain/cocycle/cohomology
+  levels: `inducedCochainMap_comp_zero`, `inducedCocycleMap_comp_zero`,
+  `piH0_iotaH0_eq_zero`, `piHSucc_iotaHSucc_eq_zero`, `piH1_iotaH1_eq_zero`
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover

@@ -587,6 +587,49 @@ noncomputable abbrev piH1 (ses : ShortExactSequence F' F F'') (U : OpenCover X) 
     CechHSucc F U 0 → CechHSucc F'' U 0 :=
   piHSucc ses U 0
 
+/-- On cochains, the adjacent maps in a short exact sequence compose to zero. -/
+theorem inducedCochainMap_comp_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)
+    (σ : CechCochain F' U n) :
+    inducedCochainMap ses.π U n (inducedCochainMap ses.ι U n σ) = 0 := by
+  funext f
+  change ses.π.map (U.inter f) (ses.ι.map (U.inter f) (σ f)) = 0
+  exact ses.comp_zero (U.inter f) (σ f)
+
+/-- On cocycles, the adjacent maps in a short exact sequence compose to zero. -/
+theorem inducedCocycleMap_comp_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)
+    (σ : CechCocycles F' U n) :
+    inducedCocycleMap ses.π U n (inducedCocycleMap ses.ι U n σ) = zeroCocycle F'' U n := by
+  apply Subtype.ext
+  exact inducedCochainMap_comp_zero ses U n σ.val
+
+/-- On `H⁰`, the adjacent maps in a short exact sequence compose to zero. -/
+theorem piH0_iotaH0_eq_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (σ : CechH0 F' U) :
+    piH0 ses U (iotaH0 ses U σ) = zeroH0 F'' U :=
+  inducedCocycleMap_comp_zero ses U 0 σ
+
+/-- On `Hⁿ⁺¹`, the adjacent maps in a short exact sequence compose to zero. -/
+theorem piHSucc_iotaHSucc_eq_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) (x : CechHSucc F' U n) :
+    piHSucc ses U n (iotaHSucc ses U n x) = zeroHSucc F'' U n := by
+  refine Quotient.inductionOn x ?_
+  intro σ
+  apply Quotient.sound
+  refine ⟨0, ?_⟩
+  have hcomp :
+      (inducedCocycleMap ses.π U (n + 1) (inducedCocycleMap ses.ι U (n + 1) σ)).val = 0 := by
+    exact inducedCochainMap_comp_zero ses U (n + 1) σ.val
+  simp [zeroCocycle, hcomp]
+  exact cechDiff_zero F'' U n
+
+/-- On `H¹`, the adjacent maps in a short exact sequence compose to zero. -/
+theorem piH1_iotaH1_eq_zero
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (x : CechHSucc F' U 0) :
+    piH1 ses U (iotaH1 ses U x) = zeroHSucc F'' U 0 := by
+  simpa [iotaH1, piH1] using piHSucc_iotaHSucc_eq_zero ses U 0 x
+
 /-- `ExactAt f g z` means `ker g = im f`, expressed as `g b = z ↔ ∃ a, f a = b`. -/
 def ExactAt {A B C : Type*} (f : A → B) (g : B → C) (z : C) : Prop :=
   ∀ b : B, g b = z ↔ ∃ a : A, f a = b
