@@ -71,6 +71,11 @@ check_forbidden \
   '^structure PointExactData' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
 
+check_forbidden \
+  "GAGA Riemann-Roch must not require bundled SerreDuality structure input" \
+  '\(SD[[:space:]]*:[[:space:]]*SerreDuality' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'
+
 if [[ "$fail" -ne 0 ]]; then
   echo
   echo "Riemann-Roch independence checks failed."

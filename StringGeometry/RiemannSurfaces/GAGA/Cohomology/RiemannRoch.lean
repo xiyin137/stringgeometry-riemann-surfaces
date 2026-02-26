@@ -1,6 +1,5 @@
--- Note: CechTheory and SerreDuality use CompactRiemannSurface (analytic),
--- so they live in GAGA/Cohomology, not Algebraic/Cohomology
-import StringGeometry.RiemannSurfaces.GAGA.Cohomology.SerreDuality
+-- Note: CechTheory uses CompactRiemannSurface (analytic),
+-- so it lives in GAGA/Cohomology, not Algebraic/Cohomology
 import StringGeometry.RiemannSurfaces.GAGA.Cohomology.CechTheory
 
 /-!
@@ -30,7 +29,7 @@ The proof proceeds in two steps:
     0 → O(D-p) → O(D) → ℂ_p → 0
   which gives χ(D) - χ(D-p) = 1.
 
-**Step 2** (SerreDuality.lean): Apply Serre duality
+**Step 2** (CechTheory.lean): Apply Serre duality dimension equality
   h¹(D) = h⁰(K - D)
 
   Substituting into χ(D) = h⁰(D) - h¹(D) = deg(D) + 1 - g gives the theorem.
@@ -40,7 +39,8 @@ The proof proceeds in two steps:
 All theorems use Čech cohomology directly via `FiniteGoodCover`.
 
 * `riemann_roch_euler` - Euler characteristic form: χ(D) = deg(D) + 1 - g
-* `riemann_roch` - Classical form: h⁰(D) - h⁰(K-D) = deg(D) - g + 1
+* `riemann_roch_of_serre_dim` - Classical form from explicit Serre-dimension input
+* `riemann_roch` - Classical form via `serre_duality_dim_cech`
 * `h0_vanish_negative_degree` - h⁰(D) = 0 for deg(D) < 0
 * `h1_vanish_large_degree` - h¹(D) = 0 for deg(D) > 2g - 2
 * `h0_K2` - h⁰(K²) = 3g - 3 for g ≥ 2
@@ -84,7 +84,7 @@ theorem riemann_roch_euler (CRS : CompactRiemannSurface)
     cech_chi L gc D = D.degree + 1 - CRS.genus :=
   eulerChar_formula_cech L gc D
 
-/-- **The Riemann-Roch Theorem** (classical form with Serre duality).
+/-- **The Riemann-Roch Theorem** (classical form from explicit Serre dimension input).
 
     For a divisor D on a compact Riemann surface Σ of genus g with
     canonical divisor K:
@@ -93,32 +93,51 @@ theorem riemann_roch_euler (CRS : CompactRiemannSurface)
 
     **Proof**:
     1. By `riemann_roch_euler`: h⁰(D) - h¹(D) = deg(D) - g + 1
-    2. By Serre duality: h¹(D) = h⁰(K - D)
+    2. Assume Serre dimension equality: h¹(D) = h⁰(K - D)
     3. Substituting: h⁰(D) - h⁰(K - D) = deg(D) - g + 1 ∎ -/
-theorem riemann_roch (CRS : CompactRiemannSurface)
+theorem riemann_roch_of_serre_dim (CRS : CompactRiemannSurface)
     (O : StructureSheaf CRS.toRiemannSurface)
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
     (K : CanonicalDivisorData CRS)
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
     (D : Divisor CRS.toRiemannSurface)
-    (SD : SerreDuality CRS O L K D) :
+    (hserre :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 1) =
+      h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0)) :
     (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
     h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) =
     D.degree - CRS.genus + 1 := by
-  -- Step 1: Euler characteristic formula: χ(D) = deg(D) + 1 - g
+  -- Step 1: Euler characteristic formula: h⁰(D) - h¹(D) = deg(D) + 1 - g
   have heuler := eulerChar_formula_cech L gc D
-  -- cech_chi D = h⁰(D) - h¹(D) by definition
   unfold cech_chi eulerCharacteristic at heuler
-  -- heuler : h⁰(D) - h¹(D) = deg(D) + 1 - g
 
-  -- Step 2: Serre duality: h¹(D) = h⁰(K - D)
-  have h_serre := SD.dimension_eq
-  -- h_serre : h_i SD.pairing.H1D = h_i SD.pairing.H0KD
+  -- Step 2: Cast the Serre dimension equality to ℤ and substitute.
+  have hserreZ :
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 1) : ℤ) =
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) : ℤ) := by
+    exact_mod_cast hserre
+  have heuler' :
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) : ℤ) =
+      D.degree + 1 - CRS.genus := by
+    simpa [hserreZ] using heuler
+  linarith
 
-  -- The SerrePairing.H1D and H0KD are the cohomology groups
-  -- We need to show compatibility with our gc-based cohomology
-  -- For now, we use the Euler formula directly with sorry for the exact matching
-  sorry
+/-- **The Riemann-Roch Theorem** (classical form via Čech Serre duality).
+
+    This is `riemann_roch_of_serre_dim` instantiated with
+    `serre_duality_dim_cech`. -/
+theorem riemann_roch (CRS : CompactRiemannSurface)
+    (O : StructureSheaf CRS.toRiemannSurface)
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (K : CanonicalDivisorData CRS)
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (D : Divisor CRS.toRiemannSurface) :
+    (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
+    h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) =
+    D.degree - CRS.genus + 1 := by
+  apply riemann_roch_of_serre_dim CRS O L K gc D
+  exact serre_duality_dim_cech L K D (gc D) (gc (K.divisor - D))
 
 /-!
 ## Corollaries

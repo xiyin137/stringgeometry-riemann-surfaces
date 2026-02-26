@@ -73,6 +73,10 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 6. Replaced `PointExactData` (theorem-bearing structure) by explicit hypothesis-driven theorems
    in `GAGA/Cohomology/PointExactProof.lean`
 7. Added CI check preventing reintroduction of `structure PointExactData`
+8. Refactored `GAGA/Cohomology/RiemannRoch.lean` to remove
+   bundled `SD : SerreDuality ...` theorem-data input from the classical theorem
+9. Added CI check preventing reintroduction of `SD : SerreDuality` in
+   `GAGA/Cohomology/RiemannRoch.lean`
 
 ---
 
