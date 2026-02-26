@@ -36,6 +36,21 @@ check_forbidden() {
   fi
 }
 
+check_required() {
+  local name="$1"
+  local pattern="$2"
+  local path="$3"
+  local matches
+  matches="$(search_matches "$pattern" "$path")"
+  if [[ -z "$matches" ]]; then
+    echo "[FAIL] $name"
+    echo "  Required pattern not found: $pattern"
+    fail=1
+  else
+    echo "[PASS] $name"
+  fi
+}
+
 check_forbidden \
   "Analytic track must not import SchemeTheoretic or GAGA" \
   '^import StringGeometry\\.RiemannSurfaces\\.(SchemeTheoretic|GAGA)' \
@@ -80,6 +95,21 @@ check_forbidden \
   "SerreDuality structure must not bundle dimension-equality theorem field" \
   '^[[:space:]]+dimension_eq[[:space:]]*:[[:space:]]*h_i[[:space:]]+pairing\\.H1D' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/SerreDuality.lean'
+
+check_forbidden \
+  "Cech recursion helper must not call wrapped point theorem directly" \
+  'have hpt := eulerChar_point_exact_cech L gc' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
+
+check_required \
+  "CechTheory must keep explicit-assumption recursion theorem" \
+  '^theorem eulerChar_point_exact_cech_of' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
+
+check_required \
+  "CechTheory must keep explicit-input Euler-characteristic formula theorem" \
+  '^theorem eulerChar_formula_cech_of' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
 
 if [[ "$fail" -ne 0 ]]; then
   echo

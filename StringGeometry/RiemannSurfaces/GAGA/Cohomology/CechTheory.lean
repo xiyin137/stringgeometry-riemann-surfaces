@@ -628,6 +628,23 @@ theorem eulerChar_point_exact_cech {CRS : CompactRiemannSurface}
   have hpe := point_exact_cech L gc D p
   exact hpe
 
+/-- Point-recursion step provided as explicit input data.
+
+    This theorem packages the exact recursion hypothesis in a reusable form,
+    so downstream induction can avoid depending directly on a specific
+    `point_exact_cech` construction. -/
+theorem eulerChar_point_exact_cech_of {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (hpoint : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ q : CRS.toRiemannSurface.carrier,
+      cech_chi L gc E - cech_chi L gc (E - Divisor.point q) = 1)
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier) :
+    cech_chi L gc D - cech_chi L gc (D - Divisor.point p) = 1 :=
+  hpoint D p
+
 -- Helper: degree of D - point p
 private theorem degree_sub_point {RS : RiemannSurface} (D : Divisor RS) (p : RS.carrier) :
     (D - Divisor.point p).degree = D.degree - 1 := by
@@ -651,6 +668,9 @@ private theorem chi_diff_nat_cech {CRS : CompactRiemannSurface}
     {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (hpoint : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ q : CRS.toRiemannSurface.carrier,
+      cech_chi L gc E - cech_chi L gc (E - Divisor.point q) = 1)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) (n : ℕ) :
     cech_chi L gc D - cech_chi L gc (D - (n : ℤ) • Divisor.point p) = n := by
   induction n with
@@ -661,7 +681,7 @@ private theorem chi_diff_nat_cech {CRS : CompactRiemannSurface}
   | succ k ih =>
     rw [sub_succ_smul_point D p k]
     let D' := D - (k : ℤ) • Divisor.point p
-    have hpt := eulerChar_point_exact_cech L gc D' p
+    have hpt := eulerChar_point_exact_cech_of L gc hpoint D' p
     have heq1 : cech_chi L gc D - cech_chi L gc (D' - Divisor.point p) =
         (cech_chi L gc D - cech_chi L gc D') + (cech_chi L gc D' - cech_chi L gc (D' - Divisor.point p)) := by ring
     rw [heq1, ih, hpt]
@@ -672,10 +692,13 @@ private theorem chi_diff_nat_neg_cech {CRS : CompactRiemannSurface}
     {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (hpoint : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ q : CRS.toRiemannSurface.carrier,
+      cech_chi L gc E - cech_chi L gc (E - Divisor.point q) = 1)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) (n : ℕ) :
     cech_chi L gc D - cech_chi L gc (D + (n : ℤ) • Divisor.point p) = -(n : ℤ) := by
   let D' := D + (n : ℤ) • Divisor.point p
-  have h := chi_diff_nat_cech L gc D' p n
+  have h := chi_diff_nat_cech L gc hpoint D' p n
   have hD : D' - (n : ℤ) • Divisor.point p = D := by
     ext q; simp only [Divisor.sub_coeff, Divisor.add_coeff, Divisor.smul_coeff, D']; ring
   rw [hD] at h
@@ -686,6 +709,9 @@ private theorem chi_deg_invariant_smul_cech {CRS : CompactRiemannSurface}
     {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (hpoint : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ q : CRS.toRiemannSurface.carrier,
+      cech_chi L gc E - cech_chi L gc (E - Divisor.point q) = 1)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) (n : ℤ) :
     cech_chi L gc D - D.degree = cech_chi L gc (D - n • Divisor.point p) - (D - n • Divisor.point p).degree := by
   have hdeg : (D - n • Divisor.point p).degree = D.degree - n := by
@@ -695,14 +721,14 @@ private theorem chi_deg_invariant_smul_cech {CRS : CompactRiemannSurface}
 
   have hchi : cech_chi L gc D - cech_chi L gc (D - n • Divisor.point p) = n := by
     rcases n with (m | m)
-    · exact chi_diff_nat_cech L gc D p m
+    · exact chi_diff_nat_cech L gc hpoint D p m
     · have heq_div : D - Int.negSucc m • Divisor.point p = D + ((m + 1 : ℕ) : ℤ) • Divisor.point p := by
         ext q
         simp only [Divisor.sub_coeff, Divisor.add_coeff, Divisor.smul_coeff, Int.negSucc_eq,
                    Nat.cast_add, Nat.cast_one]
         ring
       rw [heq_div]
-      have h := chi_diff_nat_neg_cech L gc D p (m + 1)
+      have h := chi_diff_nat_neg_cech L gc hpoint D p (m + 1)
       simp only [Int.negSucc_eq, Nat.cast_add, Nat.cast_one] at h ⊢
       exact h
 
@@ -712,33 +738,34 @@ private theorem chi_deg_invariant_smul_cech {CRS : CompactRiemannSurface}
 private theorem chi_deg_base_cech {CRS : CompactRiemannSurface}
     {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
-    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D)) :
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (h0 : h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
+    (h1 : h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus) :
     cech_chi L gc 0 - (0 : Divisor CRS.toRiemannSurface).degree = 1 - CRS.genus := by
   rw [Divisor.degree_zero]
   have hsub : cech_chi L gc 0 - (0 : ℤ) = cech_chi L gc 0 := by omega
   rw [hsub]
   -- Simplify to: cech_chi L gc 0 = 1 - CRS.genus
-  -- h⁰(O) = 1, h¹(O) = g from the structure theorems
-  have h0 := h0_structure_cech L gc
-  have h1 := h1_structure_cech L gc
+  -- Use the explicit base-case hypotheses h⁰(O)=1 and h¹(O)=g.
   -- cech_chi is defined as eulerCharacteristic of the two cohomology groups
   show (h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) : ℤ) -
        h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = 1 - CRS.genus
   rw [h0, h1]
   ring
 
-/-- **Riemann-Roch Formula** (Čech version): χ(O(D)) = deg(D) + 1 - g.
+/-- **Riemann-Roch Formula** (Čech version): χ(O(D)) = deg(D) + 1 - g,
+    from explicit core inputs.
 
-    Proved by well-founded induction on the support cardinality of D.
-
-    **Dependencies** (theorems with sorrys):
-    - h0_structure_cech: h⁰(O) = 1 (maximum principle)
-    - h1_structure_cech: h¹(O) = g (Hodge theory)
-    - point_exact_cech: χ(D) - χ(D-p) = 1 (long exact sequence) -/
-theorem eulerChar_formula_cech {CRS : CompactRiemannSurface}
+    Proved by well-founded induction on the support cardinality of D. -/
+theorem eulerChar_formula_cech_of {CRS : CompactRiemannSurface}
     {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (h0 : h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
+    (h1 : h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
+    (hpoint : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      cech_chi L gc E - cech_chi L gc (E - Divisor.point p) = 1)
     (D : Divisor CRS.toRiemannSurface) :
     cech_chi L gc D = D.degree + 1 - CRS.genus := by
   suffices h : cech_chi L gc D - D.degree = 1 - CRS.genus by omega
@@ -747,15 +774,33 @@ theorem eulerChar_formula_cech {CRS : CompactRiemannSurface}
   | _ n ih =>
     by_cases hD : D = 0
     · rw [hD]
-      exact chi_deg_base_cech L gc
+      exact chi_deg_base_cech L gc h0 h1
     · obtain ⟨p, hp⟩ := Divisor.exists_mem_support_of_ne_zero D hD
       simp only [Divisor.support, Set.mem_setOf_eq] at hp
       let D' := D - D.coeff p • Divisor.point p
       have hlt : D'.supportCard < D.supportCard := Divisor.supportCard_sub_coeff_point_lt D p hp
       have hinv : cech_chi L gc D - D.degree = cech_chi L gc D' - D'.degree :=
-        chi_deg_invariant_smul_cech L gc D p (D.coeff p)
+        chi_deg_invariant_smul_cech L gc hpoint D p (D.coeff p)
       rw [hinv]
       have hlt' : D'.supportCard < n := by rw [← hind]; exact hlt
       exact ih D'.supportCard hlt' D' rfl
+
+/-- **Riemann-Roch Formula** (Čech version): χ(O(D)) = deg(D) + 1 - g.
+
+    This is the specialization of `eulerChar_formula_cech_of` using:
+    - `h0_structure_cech`
+    - `h1_structure_cech`
+    - `eulerChar_point_exact_cech` -/
+theorem eulerChar_formula_cech {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (D : Divisor CRS.toRiemannSurface) :
+    cech_chi L gc D = D.degree + 1 - CRS.genus := by
+  apply eulerChar_formula_cech_of L gc
+  · exact h0_structure_cech L gc
+  · exact h1_structure_cech L gc
+  · intro E p
+    exact eulerChar_point_exact_cech L gc E p
 
 end RiemannSurfaces.Algebraic.Cohomology.CechTheory

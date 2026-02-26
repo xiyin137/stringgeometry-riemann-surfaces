@@ -81,6 +81,12 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
     `GAGA/Cohomology/SerreDuality.lean`
 11. Added CI check preventing reintroduction of `dimension_eq : h_i pairing.H1D = ...`
     as a field of `SerreDuality`
+12. Added `eulerChar_point_exact_cech_of` in `GAGA/Cohomology/CechTheory.lean`
+    to expose point-recursion as explicit theorem input
+13. Added `eulerChar_formula_cech_of` in `GAGA/Cohomology/CechTheory.lean`
+    and routed RR induction through explicit inputs `(h0, h1, hpoint)`
+14. Added CI checks requiring `eulerChar_point_exact_cech_of` and
+    `eulerChar_formula_cech_of` to remain present
 
 ---
 
