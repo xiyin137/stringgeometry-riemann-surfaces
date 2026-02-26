@@ -108,6 +108,8 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
     (`PointExactHpp0At`, `PointExactHpp1At`, `PointExactH0DpAt`, `PointExactH1DpAt`, `PointExactH0DAt`, `PointExactH1DAt`)
 25. Refactored `cech_point_exact_of_data` / `point_exact_cech_proof` to use pointwise
     aliases and extended CI checks to require both family and pointwise alias layers
+26. Refactored `CechTheory.point_exact_cech` to be a proven specialization wrapper
+    of `point_recursion_cech` and added CI guard for this derivation pattern
 
 ---
 
