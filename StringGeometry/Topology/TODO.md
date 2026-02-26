@@ -41,13 +41,22 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
 - [x] `connectingCochainAux_cocycle`: The connecting cochain is a cocycle ✓ PROVED
 - [x] `connectingCocycle`, `connectingH0`, `connectingH`: Connecting homomorphisms δⁿ
 - [x] Well-definedness of connecting homomorphism ✓ FULLY PROVED (no sorrys!)
+- [x] LES interface aliases: `iotaH0`, `piH0`, `deltaH0`, `iotaHSucc`, `piHSucc`, `deltaHSucc`
+- [x] Canonical zero classes: `zeroCocycle`, `zeroH0`, `zeroHSucc`
+- [x] Exactness predicates and packaged six-term witness:
+  `exactness_at_H0F`, `exactness_at_H0Fpp`, `exactness_at_H1Fp`, `exactness_at_H1F`,
+  `exactness_at_HSuccF`, `exactness_at_HSuccFpp`, `exactness_at_HSuccFp`,
+  `CechSixTermLES`, `longExactSequence`
+- [x] Reusable exactness consequence lemmas: `comp_eq_zero_of_exactAt` and degree-specific
+  `comp_zero_*_of_exactness`
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover
 - [ ] Comparison with derived functor cohomology (for sheaves)
 
-**Note**: Exactness proofs are provided by Mathlib's snake lemma (`Mathlib.Algebra.Homology.ShortComplex.SnakeLemma`).
-The Čech-specific work (connecting homomorphism, d²=0) is complete.
+**Note**: Exactness predicates are now explicit interfaces at the Čech LES level.
+Supplying concrete exactness proofs still depends on snake-lemma-level input
+(`Mathlib.Algebra.Homology.ShortComplex.SnakeLemma`) and comparison theorems.
 
 **Used by**: `StringGeometry/RiemannSurfaces/Algebraic/Cohomology/`
 

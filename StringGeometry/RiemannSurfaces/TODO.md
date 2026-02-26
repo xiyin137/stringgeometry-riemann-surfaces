@@ -112,6 +112,14 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
     of `point_recursion_cech` and added CI guard for this derivation pattern
 27. Added `CechTheory.point_recursion_cech_of_data` (explicit SES/LES + dimension-input
     theorem), and refactored `PointExactProof.cech_point_exact_of_data` to reuse it
+28. Added packaged explicit witness proposition `CechTheory.PointRecursionDataAt`
+    and theorem `point_recursion_cech_of_exists`; refactored PointExactProof to route
+    via this packaged witness layer and added CI guards for both declarations
+29. Expanded `Topology/Sheaves/LongExactSequence.lean` LES API with:
+    canonical degree-0/1 and general-degree map aliases (`iotaH0`, `piH0`, `deltaH0`,
+    `iotaHSucc`, `piHSucc`, `deltaHSucc`), exactness predicates (`exactness_at_*`),
+    composition-zero consequence lemmas, and packaged six-term witness
+    `CechSixTermLES`/`longExactSequence`
 
 ---
 

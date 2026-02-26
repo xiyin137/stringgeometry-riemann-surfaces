@@ -397,6 +397,36 @@ Since H⁰(ℂ_p) = ℂ and H¹(ℂ_p) = 0 (skyscraper is acyclic), we get:
     2. h⁰(ℂ_p) = 1, h¹(ℂ_p) = 0 (skyscraper sheaf)
     3. Rearranging: (h⁰(D) - h¹(D)) - (h⁰(D-p) - h¹(D-p)) = 1
     4. χ(D) - χ(D-p) = 1 ∎ -/
+noncomputable abbrev SkyscraperSheaf0
+    {CRS : CompactRiemannSurface}
+    (O : StructureSheaf CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier) :
+    CoherentSheaf.{0} CRS.toRiemannSurface O :=
+  skyscraperSheaf O p
+
+abbrev PointRecursionDataAt
+    {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    (gcD : FiniteGoodCover (L.sheafOf D))
+    (gcDp : FiniteGoodCover (L.sheafOf (D - Divisor.point p))) : Prop :=
+  ∃ ses : ShortExactSeq CRS.toRiemannSurface O
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L (D - Divisor.point p))
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L D)
+      (SkyscraperSheaf0 O p),
+    ∃ les : LongExactSequence CRS.toRiemannSurface
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L (D - Divisor.point p))
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L D)
+      (SkyscraperSheaf0 O p)
+      ses,
+      les.H''0.dimension = 1 ∧
+      les.H''1.dimension = 0 ∧
+      les.H'0.dimension = gcDp.dim 0 ∧
+      les.H'1.dimension = gcDp.dim 1 ∧
+      les.H0.dimension = gcD.dim 0 ∧
+      les.H1.dimension = gcD.dim 1
+
 theorem point_recursion_cech_of_data
     {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
@@ -407,11 +437,11 @@ theorem point_recursion_cech_of_data
     (ses : ShortExactSeq CRS.toRiemannSurface O
       (coherentSheafOfDivisor CRS.toRiemannSurface O L (D - Divisor.point p))
       (coherentSheafOfDivisor CRS.toRiemannSurface O L D)
-      (skyscraperSheaf O p))
+      (SkyscraperSheaf0 O p))
     (les : LongExactSequence CRS.toRiemannSurface
       (coherentSheafOfDivisor CRS.toRiemannSurface O L (D - Divisor.point p))
       (coherentSheafOfDivisor CRS.toRiemannSurface O L D)
-      (skyscraperSheaf O p)
+      (SkyscraperSheaf0 O p)
       ses)
     (h''0_dim : les.H''0.dimension = 1)
     (h''1_dim : les.H''1.dimension = 0)
@@ -450,6 +480,24 @@ theorem point_recursion_cech_of_data
   dsimp
   rw [← hchi_D, ← hchi_Dp]
   exact hpoint
+
+/-- Point recursion from packaged explicit SES/LES witness data. -/
+theorem point_recursion_cech_of_exists
+    {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    (gcD : FiniteGoodCover (L.sheafOf D))
+    (gcDp : FiniteGoodCover (L.sheafOf (D - Divisor.point p)))
+    (hdata : PointRecursionDataAt L D p gcD gcDp) :
+    let H0D := cechToSheafCohomologyGroup (L.sheafOf D) gcD 0
+    let H1D := cechToSheafCohomologyGroup (L.sheafOf D) gcD 1
+    let H0Dp := cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) gcDp 0
+    let H1Dp := cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) gcDp 1
+    eulerCharacteristic H0D H1D - eulerCharacteristic H0Dp H1Dp = 1 := by
+  rcases hdata with ⟨ses, les, h''0_dim, h''1_dim, h0_Dp_eq, h1_Dp_eq, h0_D_eq, h1_D_eq⟩
+  exact point_recursion_cech_of_data L D p gcD gcDp ses les
+    h''0_dim h''1_dim h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq
 
 theorem point_recursion_cech
     {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}

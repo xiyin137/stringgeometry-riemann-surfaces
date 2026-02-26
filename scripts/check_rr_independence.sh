@@ -107,8 +107,18 @@ check_required \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
 
 check_required \
+  "CechTheory must keep packaged point-recursion data proposition" \
+  '^abbrev PointRecursionDataAt' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
+
+check_required \
   "CechTheory must keep explicit point-recursion theorem from SES/LES data" \
   '^theorem point_recursion_cech_of_data' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
+
+check_required \
+  "CechTheory must keep point-recursion theorem from packaged witness data" \
+  '^theorem point_recursion_cech_of_exists' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
 
 check_required \

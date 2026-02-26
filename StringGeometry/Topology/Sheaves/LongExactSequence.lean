@@ -516,4 +516,200 @@ noncomputable def connectingH (ses : ShortExactSequence F' F F'') (U : OpenCover
   have h0 : (0 : CechCochain F U (n + 2)) f = 0 := rfl
   rw [h0, sub_zero]
 
+/-!
+## Packaged LES Interface
+
+The constructions above provide canonical maps in the long exact sequence:
+
+0 → H⁰(F') → H⁰(F) → H⁰(F'') → H¹(F') → H¹(F) → H¹(F'') → ...
+
+This section packages those maps and exactness predicates so downstream files
+can consume LES hypotheses in a uniform, non-ad-hoc form.
+-/
+
+/-- The canonical zero cocycle in degree `n`. -/
+noncomputable def zeroCocycle (F : AbPresheaf X) (U : OpenCover X) (n : ℕ) : CechCocycles F U n :=
+  ⟨0, cechDiff_zero F U n⟩
+
+/-- The canonical zero element of `H⁰(U, F)` (remember `H⁰` is cocycles, not a quotient). -/
+noncomputable abbrev zeroH0 (F : AbPresheaf X) (U : OpenCover X) : CechH0 F U :=
+  zeroCocycle F U 0
+
+/-- The canonical zero class in `Hⁿ⁺¹(U, F)`. -/
+noncomputable def zeroHSucc (F : AbPresheaf X) (U : OpenCover X) (n : ℕ) : CechHSucc F U n :=
+  Quotient.mk (CechCohomologySetoidSucc F U n) (zeroCocycle F U (n + 1))
+
+@[simp] theorem zeroCocycle_val (F : AbPresheaf X) (U : OpenCover X) (n : ℕ) :
+    (zeroCocycle F U n).val = 0 := rfl
+
+@[simp] theorem zeroH0_val (F : AbPresheaf X) (U : OpenCover X) :
+    (zeroH0 F U).val = 0 := rfl
+
+variable {F' F F'' : AbPresheaf X}
+
+/-- The map `H⁰(F') → H⁰(F)` induced by `ι`. -/
+noncomputable abbrev iotaH0 (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    CechH0 F' U → CechH0 F U :=
+  inducedH0 ses.ι U
+
+/-- The map `H⁰(F) → H⁰(F'')` induced by `π`. -/
+noncomputable abbrev piH0 (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    CechH0 F U → CechH0 F'' U :=
+  inducedH0 ses.π U
+
+/-- The connecting map `H⁰(F'') → H¹(F')`. -/
+noncomputable abbrev deltaH0 (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    CechH0 F'' U → CechHSucc F' U 0 :=
+  connectingH0 ses U
+
+/-- The map `Hⁿ⁺¹(F') → Hⁿ⁺¹(F)` induced by `ι`. -/
+noncomputable abbrev iotaHSucc (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) :
+    CechHSucc F' U n → CechHSucc F U n :=
+  inducedH ses.ι U n
+
+/-- The map `Hⁿ⁺¹(F) → Hⁿ⁺¹(F'')` induced by `π`. -/
+noncomputable abbrev piHSucc (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) :
+    CechHSucc F U n → CechHSucc F'' U n :=
+  inducedH ses.π U n
+
+/-- The connecting map `Hⁿ⁺¹(F'') → Hⁿ⁺²(F')`. -/
+noncomputable abbrev deltaHSucc (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) :
+    CechHSucc F'' U n → CechHSucc F' U (n + 1) :=
+  connectingH ses U n
+
+/-- The map `H¹(F') → H¹(F)` induced by `ι`. -/
+noncomputable abbrev iotaH1 (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    CechHSucc F' U 0 → CechHSucc F U 0 :=
+  iotaHSucc ses U 0
+
+/-- The map `H¹(F) → H¹(F'')` induced by `π`. -/
+noncomputable abbrev piH1 (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    CechHSucc F U 0 → CechHSucc F'' U 0 :=
+  piHSucc ses U 0
+
+/-- `ExactAt f g z` means `ker g = im f`, expressed as `g b = z ↔ ∃ a, f a = b`. -/
+def ExactAt {A B C : Type*} (f : A → B) (g : B → C) (z : C) : Prop :=
+  ∀ b : B, g b = z ↔ ∃ a : A, f a = b
+
+/-- In any exact pair, the adjacent composition is the distinguished zero element. -/
+theorem comp_eq_zero_of_exactAt {A B C : Type*} (f : A → B) (g : B → C) (z : C)
+    (hexact : ExactAt f g z) : ∀ a : A, g (f a) = z := by
+  intro a
+  exact (hexact (f a)).2 ⟨a, rfl⟩
+
+/-- Exactness at `H⁰(F)`: `ker(H⁰(π)) = im(H⁰(ι))`. -/
+abbrev exactness_at_H0F (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
+  ExactAt (iotaH0 ses U) (piH0 ses U) (zeroH0 F'' U)
+
+/-- Exactness at `H⁰(F'')`: `ker(δ⁰) = im(H⁰(π))`. -/
+abbrev exactness_at_H0Fpp (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
+  ExactAt (piH0 ses U) (deltaH0 ses U) (zeroHSucc F' U 0)
+
+/-- Exactness at `H¹(F')`: `ker(H¹(ι)) = im(δ⁰)`. -/
+abbrev exactness_at_H1Fp (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
+  ExactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0)
+
+/-- Exactness at `H¹(F)`: `ker(H¹(π)) = im(H¹(ι))`. -/
+abbrev exactness_at_H1F (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
+  ExactAt (iotaH1 ses U) (piH1 ses U) (zeroHSucc F'' U 0)
+
+/-- Exactness at `Hⁿ⁺¹(F)`: `ker(Hⁿ⁺¹(π)) = im(Hⁿ⁺¹(ι))`. -/
+abbrev exactness_at_HSuccF (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) : Prop :=
+  ExactAt (iotaHSucc ses U n) (piHSucc ses U n) (zeroHSucc F'' U n)
+
+/-- Exactness at `Hⁿ⁺¹(F'')`: `ker(δⁿ⁺¹) = im(Hⁿ⁺¹(π))`. -/
+abbrev exactness_at_HSuccFpp (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) : Prop :=
+  ExactAt (piHSucc ses U n) (deltaHSucc ses U n) (zeroHSucc F' U (n + 1))
+
+/-- Exactness at `Hⁿ⁺²(F')`: `ker(Hⁿ⁺²(ι)) = im(δⁿ⁺¹)`. -/
+abbrev exactness_at_HSuccFp (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ) : Prop :=
+  ExactAt (deltaHSucc ses U n) (iotaHSucc ses U (n + 1)) (zeroHSucc F U (n + 1))
+
+/-- Consequence of exactness at `H⁰(F)`: `H⁰(π) ∘ H⁰(ι) = 0`. -/
+theorem comp_zero_H0_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_H0F ses U) :
+    ∀ σ : CechH0 F' U, piH0 ses U (iotaH0 ses U σ) = zeroH0 F'' U :=
+  comp_eq_zero_of_exactAt (iotaH0 ses U) (piH0 ses U) (zeroH0 F'' U) hexact
+
+/-- Consequence of exactness at `H⁰(F'')`: `δ⁰ ∘ H⁰(π) = 0`. -/
+theorem comp_zero_H0_to_H1_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_H0Fpp ses U) :
+    ∀ σ : CechH0 F U, deltaH0 ses U (piH0 ses U σ) = zeroHSucc F' U 0 :=
+  comp_eq_zero_of_exactAt (piH0 ses U) (deltaH0 ses U) (zeroHSucc F' U 0) hexact
+
+/-- Consequence of exactness at `H¹(F')`: `H¹(ι) ∘ δ⁰ = 0`. -/
+theorem comp_zero_H1_left_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_H1Fp ses U) :
+    ∀ σ : CechH0 F'' U, iotaH1 ses U (deltaH0 ses U σ) = zeroHSucc F U 0 :=
+  comp_eq_zero_of_exactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0) hexact
+
+/-- Consequence of exactness at `H¹(F)`: `H¹(π) ∘ H¹(ι) = 0`. -/
+theorem comp_zero_H1_right_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (hexact : exactness_at_H1F ses U) :
+    ∀ σ : CechHSucc F' U 0, piH1 ses U (iotaH1 ses U σ) = zeroHSucc F'' U 0 :=
+  comp_eq_zero_of_exactAt (iotaH1 ses U) (piH1 ses U) (zeroHSucc F'' U 0) hexact
+
+/-- Consequence of exactness at `Hⁿ⁺¹(F)`: `Hⁿ⁺¹(π) ∘ Hⁿ⁺¹(ι) = 0`. -/
+theorem comp_zero_HSucc_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)
+    (hexact : exactness_at_HSuccF ses U n) :
+    ∀ σ : CechHSucc F' U n, piHSucc ses U n (iotaHSucc ses U n σ) = zeroHSucc F'' U n :=
+  comp_eq_zero_of_exactAt (iotaHSucc ses U n) (piHSucc ses U n) (zeroHSucc F'' U n) hexact
+
+/-- Consequence of exactness at `Hⁿ⁺¹(F'')`: `δⁿ⁺¹ ∘ Hⁿ⁺¹(π) = 0`. -/
+theorem comp_zero_HSucc_to_delta_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)
+    (hexact : exactness_at_HSuccFpp ses U n) :
+    ∀ σ : CechHSucc F U n, deltaHSucc ses U n (piHSucc ses U n σ) = zeroHSucc F' U (n + 1) :=
+  comp_eq_zero_of_exactAt (piHSucc ses U n) (deltaHSucc ses U n) (zeroHSucc F' U (n + 1)) hexact
+
+/-- Consequence of exactness at `Hⁿ⁺²(F')`: `Hⁿ⁺²(ι) ∘ δⁿ⁺¹ = 0`. -/
+theorem comp_zero_delta_to_HSucc_of_exactness
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X) (n : ℕ)
+    (hexact : exactness_at_HSuccFp ses U n) :
+    ∀ σ : CechHSucc F'' U n, iotaHSucc ses U (n + 1) (deltaHSucc ses U n σ) =
+      zeroHSucc F U (n + 1) :=
+  comp_eq_zero_of_exactAt (deltaHSucc ses U n) (iotaHSucc ses U (n + 1)) (zeroHSucc F U (n + 1)) hexact
+
+/-- Packaged six-term LES data for degrees 0 and 1. -/
+structure CechSixTermLES (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop where
+  iotaH0_injective : Function.Injective (iotaH0 ses U)
+  piH1_surjective : Function.Surjective (piH1 ses U)
+  exactness_H0F : exactness_at_H0F ses U
+  exactness_H0Fpp : exactness_at_H0Fpp ses U
+  exactness_H1Fp : exactness_at_H1Fp ses U
+  exactness_H1F : exactness_at_H1F ses U
+
+/-- Constructor alias for the packaged six-term LES interface. -/
+abbrev longExactSequence (ses : ShortExactSequence F' F F'') (U : OpenCover X) :=
+  CechSixTermLES ses U
+
+/-- Exactness at `H⁰(F)` extracted from a packaged LES witness. -/
+theorem exactness_at_H0F_of_longExactSequence
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (les : longExactSequence ses U) : exactness_at_H0F ses U :=
+  les.exactness_H0F
+
+/-- Exactness at `H⁰(F'')` extracted from a packaged LES witness. -/
+theorem exactness_at_H0Fpp_of_longExactSequence
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (les : longExactSequence ses U) : exactness_at_H0Fpp ses U :=
+  les.exactness_H0Fpp
+
+/-- Exactness at `H¹(F')` extracted from a packaged LES witness. -/
+theorem exactness_at_H1Fp_of_longExactSequence
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (les : longExactSequence ses U) : exactness_at_H1Fp ses U :=
+  les.exactness_H1Fp
+
+/-- Exactness at `H¹(F)` extracted from a packaged LES witness. -/
+theorem exactness_at_H1F_of_longExactSequence
+    (ses : ShortExactSequence F' F F'') (U : OpenCover X)
+    (les : longExactSequence ses U) : exactness_at_H1F ses U :=
+  les.exactness_H1F
+
 end CechCohomology

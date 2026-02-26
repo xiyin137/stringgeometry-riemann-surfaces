@@ -245,9 +245,10 @@ theorem cech_point_exact_of_data
     (h0_D_eq : PointExactH0DAt gc D p les)
     (h1_D_eq : PointExactH1DAt gc D p les) :
     cech_chi L gc D - cech_chi L gc (D - Divisor.point p) = 1 := by
+  have hdata : PointRecursionDataAt L D p (gc D) (gc (D - Divisor.point p)) := by
+    exact ⟨ses, les, h''0_dim, h''1_dim, h0_Dp_eq, h1_Dp_eq, h0_D_eq, h1_D_eq⟩
   simpa [cech_chi] using
-    point_recursion_cech_of_data L D p (gc D) (gc (D - Divisor.point p))
-      ses les h''0_dim h''1_dim h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq
+    point_recursion_cech_of_exists L D p (gc D) (gc (D - Divisor.point p)) hdata
 
 /-- Same statement as `cech_point_exact_of_data`, kept as the public entry point. -/
 theorem point_exact_cech_proof
