@@ -103,6 +103,11 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 22. Refactored all explicit-data RR theorem signatures in `RiemannRoch.lean` to use
     these aliases (no theorem-bearing structure introduced)
 23. Added CI check requiring the short/long exact family alias layer to remain present
+24. Added pointwise signature aliases in `PointExactProof.lean`:
+    `PointExactSESAt`, `PointExactLESAt`, and pointwise dimension-identification aliases
+    (`PointExactHpp0At`, `PointExactHpp1At`, `PointExactH0DpAt`, `PointExactH1DpAt`, `PointExactH0DAt`, `PointExactH1DAt`)
+25. Refactored `cech_point_exact_of_data` / `point_exact_cech_proof` to use pointwise
+    aliases and extended CI checks to require both family and pointwise alias layers
 
 ---
 
@@ -580,9 +585,9 @@ RiemannRoch 4→3, ArgumentPrinciple created with 5→2 sorrys. Net: -8 sorrys f
 | **Long Exact Sequence (Abstract)** | `GAGA/Cohomology/ExactSequence.lean` | ✅ Complete |
 | `LongExactSequence` | ExactSequence.lean:630-664 | Structure with exactness conditions |
 | `eulerChar_additive` | ExactSequence.lean:683-733 | χ(F) = χ(F') + χ(F'') ✅ PROVEN |
-| **Point Exact Proof** | `GAGA/Cohomology/PointExactProof.lean` | ✅ **NEW** |
-| `PointExactData` | PointExactProof.lean:48-78 | Packages LES for 0→O(D-p)→O(D)→ℂ_p→0 |
-| `point_exact` | PointExactProof.lean:112-127 | χ(D) - χ(D-p) = 1 ✅ PROVEN (modulo data) |
+| **Point Exact Proof** | `GAGA/Cohomology/PointExactProof.lean` | ✅ Explicit-data bridge (no theorem-bearing structures) |
+| `PointExactSESFamily`, `PointExactLESFamily`, `PointExactSESAt`, `PointExactLESAt` | PointExactProof.lean | Reusable family/pointwise signatures for 0→O(D-p)→O(D)→ℂ_p→0 |
+| `cech_point_exact_of_data`, `point_exact_cech_proof` | PointExactProof.lean | χ(D) - χ(D-p) = 1 from explicit SES/LES and dimension hypotheses |
 | **Čech Cohomology Groups** | `Topology/Sheaves/CechCohomology.lean` | ✅ Complete |
 | `CechCocycles`, `CechCoboundaries` | CechCohomology.lean | Kernel/image of differential |
 | `cechDiff_comp_zero` | CechCohomology.lean:425-490 | d² = 0 ✅ PROVEN |
@@ -596,7 +601,7 @@ RiemannRoch 4→3, ArgumentPrinciple created with 5→2 sorrys. Net: -8 sorrys f
 
 | Component | Location | Priority | Notes |
 |-----------|----------|----------|-------|
-| `pointExactData_exists` | PointExactProof.lean:180 | **HIGH** | Single remaining sorry for point exact |
+| `point_exact_cech` | CechTheory.lean | **HIGH** | Construct concrete LES/cohomology input used by PointExactProof bridge |
 | `RiemannRochSubmodule` | AlgebraicCech.lean | HIGH | For proper h0 definition |
 | `FunctionField.instComplexAlgebra` | FunctionField.lean | MEDIUM | ℂ-algebra structure (partial) |
 | ~~`skyscraper_h0`, `skyscraper_h1`~~ | ExactSequence.lean | ~~HIGH~~ ✅ DONE | Now proven |
@@ -721,7 +726,7 @@ GAGA proves that algebraic and analytic coherent sheaf categories are equivalent
 - `eulerChar_point_exact` ✅ PROVEN (RiemannRoch.lean) - χ(D) - χ(D-p) = 1
 - `riemann_roch_algebraic` ✅ PROVEN (RiemannRoch.lean) - Main theorem (induction complete)
 
-### GAGA/ (9 sorrys)
+### GAGA/ (RR-critical sorrys)
 
 | File | Definition/Theorem | Type | Notes |
 |------|-------------------|------|-------|
@@ -731,14 +736,12 @@ GAGA proves that algebraic and analytic coherent sheaf categories are equivalent
 | `Cohomology/CechTheory.lean` | `h1_structure_cech` | sorry | Genus definition |
 | `Cohomology/CechTheory.lean` | `point_exact_cech` | sorry | Long exact sequence |
 | `Cohomology/SerreDuality.lean` | Various | sorry | Serre duality proofs |
-| `Cohomology/PointExactProof.lean` | `pointExactData_exists` | sorry | **KEY** - single remaining sorry for point exact |
-| `Cohomology/PointExactProof.lean` | `point_exact_cech_proof` | sorry | Uses pointExactData_exists |
 | `Basic.lean` | `period_matrix_exists` | sorry | Needs integration theory |
 
-**Note on PointExactProof.lean:** This new file provides the proof structure:
-- `PointExactData` packages the LES for 0 → O(D-p) → O(D) → ℂ_p → 0
-- `PointExactData.point_exact` proves χ(D) - χ(D-p) = 1 ✅ (given data)
-- `pointExactData_exists` is the single sorry: constructing the concrete data
+**Note on PointExactProof.lean:** No `sorry`s remain in this bridge file.
+- Uses explicit assumptions (`ses`, `les`, and dimension identifications), not theorem-bearing structures.
+- Provides both family-level and pointwise signature aliases.
+- Exposes `cech_point_exact_of_data` and `eulerChar_formula_cech_from_point_exact_data` for explicit-data RR transport.
 
 ### GAGA/ (additional)
 

@@ -59,6 +59,103 @@ abbrev PointExactLESFamily
       (SkyscraperSheaf0 O p)
       (ses E p)
 
+/-- Pointwise short exact sequence `0 → O(D-p) → O(D) → C_p → 0`
+for a fixed divisor/point pair `(D,p)`. -/
+abbrev PointExactSESAt
+    {CRS : CompactRiemannSurface}
+    (O : StructureSheaf CRS.toRiemannSurface)
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier) :=
+  ShortExactSeq CRS.toRiemannSurface O
+    (DivisorSheaf O L (D - Divisor.point p))
+    (DivisorSheaf O L D)
+    (SkyscraperSheaf0 O p)
+
+/-- Pointwise long exact sequence induced by `PointExactSESAt`. -/
+abbrev PointExactLESAt
+    {CRS : CompactRiemannSurface}
+    (O : StructureSheaf CRS.toRiemannSurface)
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    (ses : PointExactSESAt O L D p) :=
+  LongExactSequence CRS.toRiemannSurface
+    (DivisorSheaf O L (D - Divisor.point p))
+    (DivisorSheaf O L D)
+    (SkyscraperSheaf0 O p)
+    ses
+
+/-- Pointwise dimension input: `H''0` has dimension 1. -/
+abbrev PointExactHpp0At
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    {ses : PointExactSESAt O L D p}
+    (les : PointExactLESAt O L D p ses) :=
+  les.H''0.dimension = 1
+
+/-- Pointwise dimension input: `H''1` has dimension 0. -/
+abbrev PointExactHpp1At
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    {ses : PointExactSESAt O L D p}
+    (les : PointExactLESAt O L D p ses) :=
+  les.H''1.dimension = 0
+
+/-- Pointwise dimension-identification input for `H'0` (the `O(D-p)` side). -/
+abbrev PointExactH0DpAt
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    {ses : PointExactSESAt O L D p}
+    (les : PointExactLESAt O L D p ses) :=
+  les.H'0.dimension = (gc (D - Divisor.point p)).dim 0
+
+/-- Pointwise dimension-identification input for `H'1` (the `O(D-p)` side). -/
+abbrev PointExactH1DpAt
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    {ses : PointExactSESAt O L D p}
+    (les : PointExactLESAt O L D p ses) :=
+  les.H'1.dimension = (gc (D - Divisor.point p)).dim 1
+
+/-- Pointwise dimension-identification input for `H0` (the `O(D)` side). -/
+abbrev PointExactH0DAt
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    {ses : PointExactSESAt O L D p}
+    (les : PointExactLESAt O L D p ses) :=
+  les.H0.dimension = (gc D).dim 0
+
+/-- Pointwise dimension-identification input for `H1` (the `O(D)` side). -/
+abbrev PointExactH1DAt
+    {CRS : CompactRiemannSurface}
+    {O : StructureSheaf CRS.toRiemannSurface}
+    {L : LineBundleSheafAssignment CRS.toRiemannSurface O}
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    {ses : PointExactSESAt O L D p}
+    (les : PointExactLESAt O L D p ses) :=
+  les.H1.dimension = (gc D).dim 1
+
 /-- Dimension input: `H''0` has dimension 1 for each `(E,p)`. -/
 abbrev PointExactHpp0
     {CRS : CompactRiemannSurface}
@@ -139,21 +236,14 @@ theorem cech_point_exact_of_data
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
     (D : Divisor CRS.toRiemannSurface)
     (p : CRS.toRiemannSurface.carrier)
-    (ses : ShortExactSeq CRS.toRiemannSurface O
-      (DivisorSheaf O L (D - Divisor.point p))
-      (DivisorSheaf O L D)
-      (skyscraperSheaf O p))
-    (les : LongExactSequence CRS.toRiemannSurface
-      (DivisorSheaf O L (D - Divisor.point p))
-      (DivisorSheaf O L D)
-      (skyscraperSheaf O p)
-      ses)
-    (h''0_dim : les.H''0.dimension = 1)
-    (h''1_dim : les.H''1.dimension = 0)
-    (h0_Dp_eq : les.H'0.dimension = (gc (D - Divisor.point p)).dim 0)
-    (h1_Dp_eq : les.H'1.dimension = (gc (D - Divisor.point p)).dim 1)
-    (h0_D_eq : les.H0.dimension = (gc D).dim 0)
-    (h1_D_eq : les.H1.dimension = (gc D).dim 1) :
+    (ses : PointExactSESAt O L D p)
+    (les : PointExactLESAt O L D p ses)
+    (h''0_dim : PointExactHpp0At D p les)
+    (h''1_dim : PointExactHpp1At D p les)
+    (h0_Dp_eq : PointExactH0DpAt gc D p les)
+    (h1_Dp_eq : PointExactH1DpAt gc D p les)
+    (h0_D_eq : PointExactH0DAt gc D p les)
+    (h1_D_eq : PointExactH1DAt gc D p les) :
     cech_chi L gc D - cech_chi L gc (D - Divisor.point p) = 1 := by
   have hskyscraper : eulerCharacteristic les.H''0 les.H''1 = 1 := by
     unfold eulerCharacteristic h_i
@@ -185,21 +275,14 @@ theorem point_exact_cech_proof
     (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
     (D : Divisor CRS.toRiemannSurface)
     (p : CRS.toRiemannSurface.carrier)
-    (ses : ShortExactSeq CRS.toRiemannSurface O
-      (DivisorSheaf O L (D - Divisor.point p))
-      (DivisorSheaf O L D)
-      (skyscraperSheaf O p))
-    (les : LongExactSequence CRS.toRiemannSurface
-      (DivisorSheaf O L (D - Divisor.point p))
-      (DivisorSheaf O L D)
-      (skyscraperSheaf O p)
-      ses)
-    (h''0_dim : les.H''0.dimension = 1)
-    (h''1_dim : les.H''1.dimension = 0)
-    (h0_Dp_eq : les.H'0.dimension = (gc (D - Divisor.point p)).dim 0)
-    (h1_Dp_eq : les.H'1.dimension = (gc (D - Divisor.point p)).dim 1)
-    (h0_D_eq : les.H0.dimension = (gc D).dim 0)
-    (h1_D_eq : les.H1.dimension = (gc D).dim 1) :
+    (ses : PointExactSESAt O L D p)
+    (les : PointExactLESAt O L D p ses)
+    (h''0_dim : PointExactHpp0At D p les)
+    (h''1_dim : PointExactHpp1At D p les)
+    (h0_Dp_eq : PointExactH0DpAt gc D p les)
+    (h1_Dp_eq : PointExactH1DpAt gc D p les)
+    (h0_D_eq : PointExactH0DAt gc D p les)
+    (h1_D_eq : PointExactH1DAt gc D p les) :
     cech_chi L gc D - cech_chi L gc (D - Divisor.point p) = 1 := by
   exact cech_point_exact_of_data L gc D p ses les h''0_dim h''1_dim
     h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq

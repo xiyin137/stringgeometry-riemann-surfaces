@@ -117,8 +117,8 @@ check_required \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
 
 check_required \
-  "PointExactProof must keep short/long exact family signature aliases" \
-  '^abbrev PointExactSESFamily|^abbrev PointExactLESFamily' \
+  "PointExactProof must keep short/long exact signature aliases (family + pointwise)" \
+  '^abbrev PointExactSESFamily|^abbrev PointExactLESFamily|^abbrev PointExactSESAt|^abbrev PointExactLESAt' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
 
 check_required \
