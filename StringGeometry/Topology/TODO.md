@@ -62,9 +62,11 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
   `iotaH1_deltaH0_eq_zero : iotaH1 ses U (deltaH0 ses U σ'') = 0`
 - [x] Full exactness at `H¹(F')` from the connecting construction:
   `exactness_at_H1Fp_holds : ExactAt (deltaH0 ses U) (iotaH1 ses U) (zeroHSucc F U 0)`
+- [x] Full exactness at `H¹(F)` from lifting + preimage construction:
+  `exactness_at_H1F_holds : exactness_at_H1F ses U`
 - [x] Strengthened six-term witness constructor:
-  `CechSixTermLES.ofRemaining` now auto-fills exactness through `H¹(F')`
-  (remaining external inputs: `piH1` surjectivity and exactness at `H¹(F)`)
+  `CechSixTermLES.ofRemaining` now auto-fills all exactness fields
+  (remaining external input: only `piH1` surjectivity)
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover
