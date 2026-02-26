@@ -97,6 +97,12 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 19. Added `RiemannRoch.riemann_roch_from_point_exact_data` (classical form via
     `serre_duality_dim_cech` on the same explicit-data path)
 20. Added CI checks requiring both explicit-data classical-form theorems
+21. Added reusable signature aliases in `PointExactProof.lean`:
+    `PointExactSESFamily`, `PointExactLESFamily`, and dimension-identification aliases
+    (`PointExactHpp0`, `PointExactHpp1`, `PointExactH0Dp`, `PointExactH1Dp`, `PointExactH0D`, `PointExactH1D`)
+22. Refactored all explicit-data RR theorem signatures in `RiemannRoch.lean` to use
+    these aliases (no theorem-bearing structure introduced)
+23. Added CI check requiring the short/long exact family alias layer to remain present
 
 ---
 

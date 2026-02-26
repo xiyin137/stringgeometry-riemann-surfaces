@@ -117,6 +117,11 @@ check_required \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
 
 check_required \
+  "PointExactProof must keep short/long exact family signature aliases" \
+  '^abbrev PointExactSESFamily|^abbrev PointExactLESFamily' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/PointExactProof.lean'
+
+check_required \
   "RiemannRoch must expose explicit-data Euler-form entry point" \
   '^theorem riemann_roch_euler_from_point_exact_data' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'

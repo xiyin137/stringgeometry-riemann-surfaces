@@ -98,37 +98,14 @@ theorem riemann_roch_euler_from_point_exact_data (CRS : CompactRiemannSurface)
       h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
     (h1 :
       h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
-    (ses : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      ShortExactSeq CRS.toRiemannSurface O
-        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
-        (PointExactProof.DivisorSheaf O L E)
-        (skyscraperSheaf O p))
-    (les : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      LongExactSequence CRS.toRiemannSurface
-        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
-        (PointExactProof.DivisorSheaf O L E)
-        (skyscraperSheaf O p)
-        (ses E p))
-    (h''0_dim : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H''0.dimension = 1)
-    (h''1_dim : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H''1.dimension = 0)
-    (h0_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H'0.dimension = (gc (E - Divisor.point p)).dim 0)
-    (h1_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H'1.dimension = (gc (E - Divisor.point p)).dim 1)
-    (h0_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H0.dimension = (gc E).dim 0)
-    (h1_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H1.dimension = (gc E).dim 1)
+    (ses : PointExactProof.PointExactSESFamily O L)
+    (les : PointExactProof.PointExactLESFamily O L ses)
+    (h''0_dim : PointExactProof.PointExactHpp0 les)
+    (h''1_dim : PointExactProof.PointExactHpp1 les)
+    (h0_Dp_eq : PointExactProof.PointExactH0Dp gc les)
+    (h1_Dp_eq : PointExactProof.PointExactH1Dp gc les)
+    (h0_D_eq : PointExactProof.PointExactH0D gc les)
+    (h1_D_eq : PointExactProof.PointExactH1D gc les)
     (D : Divisor CRS.toRiemannSurface) :
     cech_chi L gc D = D.degree + 1 - CRS.genus :=
   PointExactProof.eulerChar_formula_cech_from_point_exact_data
@@ -184,37 +161,14 @@ theorem riemann_roch_of_serre_dim_from_point_exact_data (CRS : CompactRiemannSur
       h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
     (h1 :
       h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
-    (ses : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      ShortExactSeq CRS.toRiemannSurface O
-        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
-        (PointExactProof.DivisorSheaf O L E)
-        (skyscraperSheaf O p))
-    (les : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      LongExactSequence CRS.toRiemannSurface
-        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
-        (PointExactProof.DivisorSheaf O L E)
-        (skyscraperSheaf O p)
-        (ses E p))
-    (h''0_dim : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H''0.dimension = 1)
-    (h''1_dim : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H''1.dimension = 0)
-    (h0_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H'0.dimension = (gc (E - Divisor.point p)).dim 0)
-    (h1_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H'1.dimension = (gc (E - Divisor.point p)).dim 1)
-    (h0_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H0.dimension = (gc E).dim 0)
-    (h1_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H1.dimension = (gc E).dim 1)
+    (ses : PointExactProof.PointExactSESFamily O L)
+    (les : PointExactProof.PointExactLESFamily O L ses)
+    (h''0_dim : PointExactProof.PointExactHpp0 les)
+    (h''1_dim : PointExactProof.PointExactHpp1 les)
+    (h0_Dp_eq : PointExactProof.PointExactH0Dp gc les)
+    (h1_Dp_eq : PointExactProof.PointExactH1Dp gc les)
+    (h0_D_eq : PointExactProof.PointExactH0D gc les)
+    (h1_D_eq : PointExactProof.PointExactH1D gc les)
     (D : Divisor CRS.toRiemannSurface)
     (hserre :
       h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 1) =
@@ -249,37 +203,14 @@ theorem riemann_roch_from_point_exact_data (CRS : CompactRiemannSurface)
       h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
     (h1 :
       h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
-    (ses : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      ShortExactSeq CRS.toRiemannSurface O
-        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
-        (PointExactProof.DivisorSheaf O L E)
-        (skyscraperSheaf O p))
-    (les : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      LongExactSequence CRS.toRiemannSurface
-        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
-        (PointExactProof.DivisorSheaf O L E)
-        (skyscraperSheaf O p)
-        (ses E p))
-    (h''0_dim : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H''0.dimension = 1)
-    (h''1_dim : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H''1.dimension = 0)
-    (h0_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H'0.dimension = (gc (E - Divisor.point p)).dim 0)
-    (h1_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H'1.dimension = (gc (E - Divisor.point p)).dim 1)
-    (h0_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H0.dimension = (gc E).dim 0)
-    (h1_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
-      ∀ p : CRS.toRiemannSurface.carrier,
-      (les E p).H1.dimension = (gc E).dim 1)
+    (ses : PointExactProof.PointExactSESFamily O L)
+    (les : PointExactProof.PointExactLESFamily O L ses)
+    (h''0_dim : PointExactProof.PointExactHpp0 les)
+    (h''1_dim : PointExactProof.PointExactHpp1 les)
+    (h0_Dp_eq : PointExactProof.PointExactH0Dp gc les)
+    (h1_Dp_eq : PointExactProof.PointExactH1Dp gc les)
+    (h0_D_eq : PointExactProof.PointExactH0D gc les)
+    (h1_D_eq : PointExactProof.PointExactH1D gc les)
     (D : Divisor CRS.toRiemannSurface) :
     (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
     h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) =
