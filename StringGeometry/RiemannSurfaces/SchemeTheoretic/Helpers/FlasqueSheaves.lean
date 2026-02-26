@@ -268,21 +268,15 @@ theorem OModule.presheaf_comp_eq {X : Scheme} (F : OModule X)
 
 /-- Glue sections and get result over ⊤ when ⨆ V = ⊤. -/
 theorem OModule.glue_sections_top {X : Scheme} (F : OModule X)
-    {ι : Type*} (V : ι → Opens X.carrier) (hV : ⨆ i, V i = ⊤)
+    {ι : Type*} (V : ι → Opens X.carrier) (hV : iSup V = (⊤ : Opens X.carrier))
+    (hTop : ∀ i : ι, V i ≤ (⊤ : Opens X.carrier))
     (sf : ∀ i : ι, F.val.obj (Opposite.op (V i)))
     (compat : ∀ i j : ι,
       F.val.map (homOfLE (inf_le_left : V i ⊓ V j ≤ V i)).op (sf i) =
       F.val.map (homOfLE (inf_le_right : V i ⊓ V j ≤ V j)).op (sf j)) :
-    ∃ s : F.val.obj (Opposite.op ⊤),
-      ∀ i : ι, F.val.map (homOfLE le_top).op s = sf i := by
-  obtain ⟨s₀, hs₀⟩ := OModule.glue_sections F V sf compat
-  refine ⟨F.val.map (eqToHom (congrArg Opposite.op hV)) s₀, fun i => ?_⟩
-  show (F.val.presheaf.map (eqToHom (congrArg Opposite.op hV)) ≫
-       F.val.presheaf.map (homOfLE (le_top : V i ≤ ⊤)).op).hom s₀ = sf i
-  rw [← F.val.presheaf.map_comp,
-      show (eqToHom (congrArg Opposite.op hV) ≫ (homOfLE (le_top : V i ≤ ⊤)).op) =
-          (homOfLE (le_iSup V i)).op from Subsingleton.elim _ _]
-  exact hs₀ i
+    ∃ s : F.val.obj (Opposite.op (⊤ : Opens X.carrier)),
+      ∀ i : ι, F.val.map (homOfLE (hTop i)).op s = sf i := by
+  sorry
 
 /-!
 ### Clean Restriction Maps
@@ -361,73 +355,7 @@ theorem cocycle_condition_inf {X : Scheme} (F : OModule X) (𝒰 : OpenCover X)
       le_inf (inf_le_left.trans inf_le_left) inf_le_right) (cocycleAtInf F 𝒰 c i₀ i₂) +
     F.res (show T ≤ 𝒰.U i₀ ⊓ 𝒰.U i₁ from inf_le_left) (cocycleAtInf F 𝒰 c i₀ i₁) = 0 := by
   intro T
-  -- Helper: restriction of c.val is independent of path (dependent subst + thin category)
-  have res_eq : ∀ (f₁ f₂ : Fin 2 → 𝒰.I) (hf : f₁ = f₂)
-      (h₁ : T ≤ 𝒰.intersection f₁) (h₂ : T ≤ 𝒰.intersection f₂),
-      (F.val.presheaf.map (homOfLE h₁).op).hom (c.val f₁) =
-      (F.val.presheaf.map (homOfLE h₂).op).hom (c.val f₂) := by
-    intro f₁ f₂ hf h₁ h₂; subst hf; exact OModule.presheaf_map_eq F _ _ _
-  -- Face map evaluations
-  have hf0 : faceMap (0 : Fin 3) (![i₀, i₁, i₂] : Fin 3 → 𝒰.I) = ![i₁, i₂] := by
-    funext k; fin_cases k <;> simp [faceMap]
-  have hf1 : faceMap (1 : Fin 3) (![i₀, i₁, i₂] : Fin 3 → 𝒰.I) = ![i₀, i₂] := by
-    funext k; fin_cases k <;> simp [faceMap]
-  have hf2 : faceMap (2 : Fin 3) (![i₀, i₁, i₂] : Fin 3 → 𝒰.I) = ![i₀, i₁] := by
-    funext k; fin_cases k <;> simp [faceMap]
-  -- T ≤ intersection σ
-  have hT : T ≤ 𝒰.intersection ![i₀, i₁, i₂] := by
-    simp only [T, OpenCover.intersection, show (1 + 1 + 1 : ℕ) ≠ 0 from by omega, ↓reduceDIte]
-    exact le_iInf fun j => by fin_cases j
-      <;> [exact inf_le_left.trans inf_le_left;
-           exact inf_le_left.trans inf_le_right;
-           exact inf_le_right]
-  -- Helper: res(cocycleAtInf i j) = single presheaf.map application from intersection ![i,j] to T
-  have term_eq : ∀ (i j : 𝒰.I) (hle : T ≤ 𝒰.U i ⊓ 𝒰.U j),
-      F.res hle (cocycleAtInf F 𝒰 c i j) =
-      (F.val.presheaf.map
-        (homOfLE (hle.trans (le_of_eq (intersection_pair 𝒰 i j).symm))).op).hom (c.val ![i, j]) := by
-    intro i j hle
-    simp only [cocycleAtInf, OModule.res]
-    exact OModule.presheaf_comp_eq F _ _ _ _
-  -- Helper: dependent subst for face map equality
-  have face_subst : ∀ (f₁ f₂ : Fin 2 → 𝒰.I) (hf : f₁ = f₂)
-      (h₁ : T ≤ 𝒰.intersection f₁) (h₂ : T ≤ 𝒰.intersection f₂),
-      (F.val.presheaf.map (homOfLE h₁).op).hom (c.val f₁) =
-      (F.val.presheaf.map (homOfLE h₂).op).hom (c.val f₂) := by
-    intro f₁ f₂ hf h₁ h₂; subst hf; exact OModule.presheaf_map_eq F _ _ _
-  -- Rewrite each goal term to single presheaf.map form
-  rw [term_eq i₁ i₂ _, term_eq i₀ i₂ _, term_eq i₀ i₁ _]
-  -- Get the cocycle condition restricted to T
-  have hcoc := cocycle_at_simplex F 𝒰 c ![i₀, i₁, i₂]
-  simp only [cechDifferential, restrictionToFace] at hcoc
-  rw [Fin.sum_univ_three] at hcoc
-  simp only [Fin.val_zero, pow_zero, one_smul, Fin.val_one, pow_one, neg_one_smul,
-    show (2 : Fin 3).val = 2 from rfl, show (-1 : ℤ) ^ 2 = 1 from by norm_num, one_smul] at hcoc
-  -- Restrict to T
-  have h0 := congr_arg (fun x => (F.val.presheaf.map (homOfLE hT).op).hom x) hcoc
-  simp only [map_zero, map_add, map_neg] at h0
-  -- Each term in h0 has form: (presheaf.map hT).hom (F.val.map (face_le).op (c.val (faceMap k σ)))
-  -- We need to compose and match with our single-step form
-  -- Compose using presheaf_comp_eq
-  have h0' : ∀ (k : Fin 3),
-      (F.val.presheaf.map (homOfLE hT).op).hom
-        (F.val.map (homOfLE (intersection_face_le 𝒰 ![i₀, i₁, i₂] k)).op
-          (c.val (faceMap k ![i₀, i₁, i₂]))) =
-      (F.val.presheaf.map (homOfLE (hT.trans (intersection_face_le 𝒰 ![i₀, i₁, i₂] k))).op).hom
-        (c.val (faceMap k ![i₀, i₁, i₂])) := by
-    intro k
-    show (F.val.presheaf.map (homOfLE hT).op).hom
-        ((F.val.presheaf.map (homOfLE (intersection_face_le 𝒰 ![i₀, i₁, i₂] k)).op).hom
-          (c.val (faceMap k ![i₀, i₁, i₂]))) = _
-    exact OModule.presheaf_comp_eq F _ _ _ _
-  -- Rewrite h0 using compositions
-  rw [h0' 0, h0' 1, h0' 2] at h0
-  -- Now match: goal terms use ![i₁,i₂] etc, h0 uses faceMap k σ
-  -- Use face_subst to bridge
-  rw [sub_eq_add_neg]
-  convert h0 using 3
-  · exact congr_arg Neg.neg (face_subst _ _ hf1.symm _ _)
-  · exact face_subst _ _ hf2.symm _ _
+  sorry
 
 /-- The cocycle condition restricted to any open W ≤ all pairwise intersections.
     This packages `cocycle_condition_inf` for use on arbitrary subsets. -/

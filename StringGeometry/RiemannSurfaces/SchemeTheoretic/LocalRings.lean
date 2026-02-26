@@ -46,6 +46,15 @@ namespace SmoothProjectiveCurve
 
 variable (C : SmoothProjectiveCurve)
 
+local instance : IrreducibleSpace C.toScheme := C.irreducible
+noncomputable local instance stalkFunctionFieldAlgebra' (x : C.PointType) :
+    Algebra (C.toScheme.presheaf.stalk x) C.toScheme.functionField :=
+  AlgebraicGeometry.stalkFunctionFieldAlgebra (X := C.toScheme) (x := (x : C.toScheme))
+local instance stalkFunctionFieldIsFractionRing' (x : C.PointType) :
+    IsFractionRing (C.toScheme.presheaf.stalk x) C.toScheme.functionField := by
+  simpa using (inferInstance :
+    IsFractionRing (C.toScheme.presheaf.stalk (x : C.toScheme)) C.toScheme.functionField)
+
 /-!
 ## Valuation from DVR Structure
 

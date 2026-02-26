@@ -131,8 +131,8 @@ instance toSchemeIsLocallyNoetherian : IsLocallyNoetherian C.toScheme := by
   -- The affine open in C
   let Vi : C.toScheme.affineOpens := ⟨fi.opensRange, isAffineOpen_opensRange fi⟩
   -- LocallyOfFiniteType gives us that the map Γ(Spec ℂ, ⊤) → Γ(C, Vi) has FiniteType
-  have hFT := LocallyOfFiniteType.finiteType_of_affine_subset (f := C.structureMorphism)
-    specTop Vi hpreimg
+  have hFT := C.structureMorphism.finiteType_appLE
+    (U := specTop.1) specTop.2 (V := Vi.1) Vi.2 hpreimg
   -- Γ(affineCover.X i, ⊤) ≅ Γ(C, Vi) via IsOpenImmersion.ΓIsoTop
   have hIso : Ai ≅ Γ(C.toScheme, Vi.1) := IsOpenImmersion.ΓIsoTop fi
   -- Γ(C, Vi) is Noetherian using Hilbert basis theorem

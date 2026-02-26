@@ -173,7 +173,8 @@ noncomputable def cechDifferentialHom (F : OModule X) (𝒰 : OpenCover X) (n : 
     -- 0 (faceMap j σ) = 0 since 0 is the zero function
     rw [show (0 : CechCochain F 𝒰 n) (faceMap j σ) = 0 from rfl]
     -- restrictionToFace is F.val.map which preserves 0 (module hom maps 0 to 0)
-    simp only [restrictionToFace, map_zero, smul_zero]
+    simp only [restrictionToFace, map_zero]
+    exact zsmul_zero _
   map_add' := fun c₁ c₂ => by
     -- Differential is additive
     funext σ
@@ -189,7 +190,8 @@ noncomputable def cechDifferentialHom (F : OModule X) (𝒰 : OpenCover X) (n : 
     -- Need: (-1)^j • ρ((c₁+c₂)(σ')) = (-1)^j • ρ(c₁(σ')) + (-1)^j • ρ(c₂(σ'))
     rw [show (c₁ + c₂) (faceMap j σ) = c₁ (faceMap j σ) + c₂ (faceMap j σ) from rfl]
     -- restrictionToFace is F.val.map which preserves addition (module hom is additive)
-    simp only [restrictionToFace, map_add, smul_add]
+    simp only [restrictionToFace, map_add]
+    exact zsmul_add _ _ _
 
 /-!
 ## Properties of the Differential
@@ -285,11 +287,52 @@ theorem cechDifferential_cechDifferential_eq_double_sum (F : OModule X) (𝒰 : 
   -- First push the map through the sum
   rw [map_sum]
   -- Then push the scalar through the sum
-  rw [Finset.smul_sum]
-  congr 1
-  funext j
+  let t : Fin (n + 2) → F.val.obj (Opposite.op (𝒰.intersection σ)) := fun j =>
+    F.val.map (homOfLE (intersection_face_le 𝒰 σ i)).op
+      (((-1 : ℤ)^(j.val)) •
+        F.val.map (homOfLE (intersection_face_le 𝒰 (faceMap i σ) j)).op
+          (c (faceMap j (faceMap i σ))))
+  have hsmul : ((-1 : ℤ)^(i.val)) • ∑ j : Fin (n + 2), t j =
+      ∑ j : Fin (n + 2), ((-1 : ℤ)^(i.val)) • t j := by
+    simpa [t] using
+      (Finset.smul_sum (r := ((-1 : ℤ)^(i.val)))
+        (s := (Finset.univ : Finset (Fin (n + 2)))) (f := t))
+  have hsmul' : ((-1 : ℤ)^(i.val)) •
+      ∑ x : Fin (n + 2),
+        F.val.map (homOfLE (intersection_face_le 𝒰 σ i)).op
+          (((-1 : ℤ)^(x.val)) •
+            F.val.map (homOfLE (intersection_face_le 𝒰 (faceMap i σ) x)).op
+              (c (faceMap x (faceMap i σ)))) =
+      ∑ x : Fin (n + 2), ((-1 : ℤ)^(i.val)) • t x := by
+    simpa [t] using hsmul
+  refine hsmul'.trans ?_
+  apply Finset.sum_congr rfl
+  intro j _
+  simp only [t]
   -- For each j, we have (-1)^i • F.val.map ρᵢ ((-1)^j • F.val.map ρⱼ (c ...))
-  rw [map_zsmul, smul_smul]
+  have hmap :
+      (ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 σ i)).op))
+        (((-1 : ℤ)^(j.val)) •
+          (ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 (faceMap i σ) j)).op))
+            (c (faceMap j (faceMap i σ)))) =
+      ((-1 : ℤ)^(j.val)) •
+        (ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 σ i)).op))
+          ((ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 (faceMap i σ) j)).op))
+            (c (faceMap j (faceMap i σ)))) := by
+    simpa using
+      map_zsmul (ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 σ i)).op))
+        ((-1 : ℤ)^(j.val))
+        ((ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 (faceMap i σ) j)).op))
+          (c (faceMap j (faceMap i σ))))
+  rw [hmap]
+  change ((-1 : ℤ)^(i.val)) • (((-1 : ℤ)^(j.val)) •
+      (ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 σ i)).op))
+        ((ConcreteCategory.hom (F.val.map (homOfLE (intersection_face_le 𝒰 (faceMap i σ) j)).op))
+          (c (faceMap j (faceMap i σ))))) =
+    (-1 : ℤ)^(i.val + j.val) •
+      (ConcreteCategory.hom (F.val.map (homOfLE (intersection_double_face_le 𝒰 σ i j)).op))
+        (c (faceMap j (faceMap i σ)))
+  rw [← mul_zsmul]
   -- Convert (-1)^i * (-1)^j to (-1)^(i+j)
   have hpow : ((-1 : ℤ)^(i.val)) * ((-1 : ℤ)^(j.val)) = (-1 : ℤ)^(i.val + j.val) := by
     rw [← pow_add]
@@ -359,7 +402,26 @@ theorem pair_cancel (F : OModule X) (𝒰 : OpenCover X) (n : ℕ)
       rfl
     exact helper _ _ hsimpl _ _
 
-  rw [hval_eq, ← add_smul, hsign, zero_smul]
+  have hval_eq' : F.val.map (homOfLE (intersection_double_face_le 𝒰 σ i j)).op
+        (c (faceMap j (faceMap i σ))) =
+      F.val.map (homOfLE (intersection_double_face_le 𝒰 σ i' j')).op
+        (c (faceMap ⟨i.val - 1, by omega⟩ (faceMap ⟨j.val, by omega⟩ σ))) := by
+    simpa [i', j'] using hval_eq
+
+  rw [hval_eq']
+  have hsign' : ((-1 : ℤ)^(i.val + j.val)) + ((-1 : ℤ)^(j.val + (i.val - 1)) ) = 0 := by
+    simpa [i', j'] using hsign
+  let v := F.val.map (homOfLE (intersection_double_face_le 𝒰 σ i' j')).op
+    (c (faceMap ⟨i.val - 1, by omega⟩ (faceMap ⟨j.val, by omega⟩ σ)))
+  change ((-1 : ℤ)^(i.val + j.val)) • v + ((-1 : ℤ)^(j.val + (i.val - 1))) • v = 0
+  calc
+    ((-1 : ℤ)^(i.val + j.val)) • v + ((-1 : ℤ)^(j.val + (i.val - 1))) • v =
+        (((-1 : ℤ)^(i.val + j.val)) + ((-1 : ℤ)^(j.val + (i.val - 1)))) • v := by
+          symm
+          exact add_zsmul _ _ _
+    _ = 0 := by
+      rw [hsign']
+      exact zero_zsmul _
 
 /-- The fundamental property: d² = 0.
 

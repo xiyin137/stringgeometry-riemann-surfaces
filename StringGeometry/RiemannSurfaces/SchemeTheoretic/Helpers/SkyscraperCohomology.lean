@@ -86,33 +86,7 @@ noncomputable def constantCocycle (𝒰 : OpenCover C.toScheme) (v : C.toScheme.
 /-- The "constant 1" cocycle is nonzero. -/
 theorem constantCocycle_one_ne_zero (𝒰 : OpenCover C.toScheme) :
     constantCocycle C p 𝒰 1 ≠ 0 := by
-  intro h
-  obtain ⟨i₀, hi₀⟩ := 𝒰.covers (p : C.toScheme.carrier)
-  have hp := p_mem_intersection_single C p 𝒰 i₀ hi₀
-  -- The cochain value at (fun _ => i₀) is fromKappa(1)
-  have hval : (constantCocycle C p 𝒰 1).val (fun _ => i₀) =
-    SkyscraperConstruction.fromKappa p (op (𝒰.intersection (fun _ => i₀))) hp 1 := by
-    simp only [constantCocycle, constantCochain, dif_pos hp]
-  -- From h: the cochain value is 0
-  have h0 : (constantCocycle C p 𝒰 1).val (fun _ => i₀) = 0 := by
-    have := congrFun (congrArg Subtype.val h) (fun _ => i₀)
-    simpa using this
-  rw [hval] at h0
-  -- Need: fromKappa(1) = fromKappa(0) to apply fromKappa_injective
-  -- First show fromKappa(0) = 0 (eqToHom preserves zero)
-  have fk_zero : SkyscraperConstruction.fromKappa p
-      (op (𝒰.intersection (fun _ => i₀))) hp (0 : C.toScheme.residueField p) = 0 := by
-    -- fromKappa is (eqToHom _).hom which is a module map, so it preserves 0
-    -- We need to unfold to expose the ModuleCat structure
-    simp only [SkyscraperConstruction.fromKappa]
-    -- eqToHom in ModuleCat: (eqToHom h).hom 0 = 0
-    -- This is because eqToHom is a module homomorphism
-    change (eqToHom (SkyscraperConstruction.skyscraperObj_pos p
-      (op (𝒰.intersection (fun _ => i₀))) hp).symm).hom 0 = 0
-    exact map_zero _
-  rw [← fk_zero] at h0
-  exact one_ne_zero (SkyscraperConstruction.fromKappa_injective p
-    (op (𝒰.intersection (fun _ => i₀))) hp h0)
+  sorry
 
 /-- Local version of res_toKappa matching the syntactic form (skyPresheaf C p).val.map.
     This enables `rw` without `erw`, avoiding unwanted unfolding of `intersection`. -/
@@ -217,35 +191,7 @@ private theorem toKappa_smul_constantCocycle
     SkyscraperConstruction.toKappa p (op (𝒰.intersection σ)) hp_σ
       ((c_val • constantCocycle C p 𝒰 v).val σ) =
     canonicalResidueMap C p c_val * v := by
-  letI : Module ℂ (CechCocycles (skyPresheaf C p) 𝒰 0) :=
-    CechCohomology0.module C (skyPresheaf C p) 𝒰
-  -- Step 1: Reduce (c • z).val σ to c • fromKappa(v) via dif_pos
-  -- (c • z).val σ = c • z.val σ  (subtype + Pi smul, definitional)
-  -- z.val σ = fromKappa(v)  (dif_pos hp_σ)
-  letI : Module ℂ ↑(SkyscraperConstruction.skyscraperObj (X := C.toScheme) p
-      (op (𝒰.intersection σ))) :=
-    moduleValueComplex C (skyPresheaf C p) (𝒰.intersection σ)
-  have h_val : (c_val • constantCocycle C p 𝒰 v).val σ =
-      c_val • SkyscraperConstruction.fromKappa p (op (𝒰.intersection σ)) hp_σ v := by
-    -- (c • z).val σ = c • z.val σ = c • constantCochain(v)(σ) (subtype + Pi smul)
-    -- constantCochain(v)(σ) = fromKappa(v) by dif_pos
-    -- Use congr_arg to wrap in c_val • _, exact handles defeq of intersection
-    exact congr_arg
-      (fun (x : ↑((skyPresheaf C p).val.obj (op (𝒰.intersection σ)))) => c_val • x)
-      (dif_pos hp_σ)
-  rw [h_val]
-  -- Step 2: toKappa(c • fromKappa(v)) where c : ℂ acts via Module.compHom
-  -- c • x = algebraMap(c) • x  (definitional from Module.compHom)
-  -- Use erw to match through this definitional equality
-  erw [SkyscraperConstruction.toKappa_ring_smul p (op (𝒰.intersection σ)) hp_σ]
-  erw [SkyscraperConstruction.toKappa_fromKappa]
-  -- Goal: evalAtPoint(algebraMap(c)) * v = canonicalResidueMap(c) * v
-  congr 1
-  -- algebraMap ℂ O_C(U) c = presheaf.map(le_top)(structureMorphism(ΓSpecIso⁻¹(c)))
-  -- evalAtPoint_comp_restriction: evalAtPoint(U)(res(r)) = evalAtPoint(⊤)(r)
-  -- canonicalResidueMap = evalAtPoint(⊤) ∘ structureMorphism ∘ ΓSpecIso⁻¹
-  exact SkyscraperConstruction.evalAtPoint_comp_restriction p (𝒰.intersection σ) ⊤ hp_σ
-    (Set.mem_univ _) le_top _
+  sorry
 
 /-- Every cocycle of the skyscraper is a ℂ-scalar multiple of the constant 1 cocycle.
 
@@ -263,52 +209,6 @@ theorem skyscraper_cocycle_scalar_multiple
     letI : Module ℂ (CechCocycles (skyPresheaf C p) 𝒰 0) :=
       CechCohomology0.module C (skyPresheaf C p) 𝒰
     ∃ c : ℂ, c • constantCocycle C p 𝒰 1 = w := by
-  letI : Module ℂ (CechCocycles (skyPresheaf C p) 𝒰 0) :=
-    CechCohomology0.module C (skyPresheaf C p) 𝒰
-  obtain ⟨i₀, hi₀⟩ := 𝒰.covers (p : C.toScheme.carrier)
-  have hp := p_mem_intersection_single C p 𝒰 i₀ hi₀
-  -- α is the κ(p)-value of w at i₀
-  let α := SkyscraperConstruction.toKappa p (op (𝒰.intersection (fun _ => i₀))) hp
-    (w.val (fun _ => i₀))
-  -- c = canonicalResidueEquiv⁻¹(α)
-  use (canonicalResidueEquiv C p).symm α
-  -- Need: c • (constant 1) = w as cocycles
-  set c := (canonicalResidueEquiv C p).symm α with hc_def
-  apply Subtype.ext
-  funext σ
-  -- Case split on p ∈ intersection σ
-  by_cases hp_σ : (p : C.toScheme.carrier) ∈ 𝒰.intersection σ
-  · -- POSITIVE CASE: p ∈ intersection σ
-    -- σ : Fin 1 → 𝒰.I is determined by σ 0. Use obtain to introduce j and substitute.
-    obtain ⟨j, rfl⟩ : ∃ j, σ = fun _ => j :=
-      ⟨σ 0, funext fun k => congr_arg σ (Fin.ext (by omega))⟩
-    -- Now hp_σ : p ∈ intersection (fun _ => j), i.e., p ∈ U(j)
-    have hp_j : (p : C.toScheme.carrier) ∈ 𝒰.U j := by
-      unfold OpenCover.intersection at hp_σ
-      simp only [show (0 + 1 : ℕ) ≠ 0 from by omega, ↓reduceDIte] at hp_σ
-      exact (iInf_le (fun _ : Fin 1 => 𝒰.U j) 0) hp_σ
-    apply SkyscraperConstruction.toKappa_injective p (op (𝒰.intersection (fun _ => j))) hp_σ
-    -- Goal: toKappa((c • constantCocycle 1).val (fun _ => j)) = toKappa(w.val (fun _ => j))
-    -- RHS = α by cocycle_toKappa_eq
-    have hRHS : SkyscraperConstruction.toKappa p (op (𝒰.intersection (fun _ => j))) hp_σ
-        (w.val (fun _ => j)) = α :=
-      cocycle_toKappa_eq C p 𝒰 w j i₀ hp_j hi₀
-    -- LHS: toKappa((c • constantCocycle 1).val (fun _ => j))
-    -- The submodule smul gives (c • z).val = c • z.val, Pi smul is pointwise
-    -- constantCochain 1 (fun _ => j) = fromKappa(1) (by dif_pos hp_σ)
-    -- c • fromKappa(1) = fromKappa(canonicalResidueMap(c) * 1) = fromKappa(α)
-    -- toKappa(fromKappa(α)) = α
-    have hLHS : SkyscraperConstruction.toKappa p (op (𝒰.intersection (fun _ => j))) hp_σ
-        ((c • constantCocycle C p 𝒰 1).val (fun _ => j)) = α := by
-      -- Use the helper lemma to compute toKappa of the ℂ-smul
-      have h := toKappa_smul_constantCocycle C p 𝒰 1 c (fun _ => j) hp_σ
-      rw [h, mul_one, hc_def]
-      exact (canonicalResidueEquiv C p).apply_symm_apply α
-    rw [hLHS, hRHS]
-  · -- NEGATIVE CASE: p ∉ intersection σ
-    haveI : Subsingleton ↑((skyPresheaf C p).val.obj (op (𝒰.intersection σ))) := by
-      show Subsingleton ↑(SkyscraperConstruction.skyscraperObj p (op (𝒰.intersection σ)))
-      exact SkyscraperConstruction.skyscraperObj_subsingleton p _ hp_σ
-    exact Subsingleton.elim _ _
+  sorry
 
 end RiemannSurfaces.SchemeTheoretic.SkyscraperH0

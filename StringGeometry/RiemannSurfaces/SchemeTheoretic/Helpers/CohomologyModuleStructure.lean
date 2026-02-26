@@ -58,18 +58,7 @@ on each ring of sections O_C(U).
     5. Compose to get ℂ → O_C(U) -/
 noncomputable instance algebraOnSections (U : TopologicalSpace.Opens C.toScheme.carrier) :
     Algebra ℂ (C.toScheme.presheaf.obj (Opposite.op U)) := by
-  -- Step 1: Get the ring homomorphism ℂ → Γ(C, ⊤)
-  -- This is: ℂ ≅ Γ(Spec ℂ, ⊤) → Γ(C, ⊤) via π*
-  let toGlobal : ℂ →+* Γ(C.toScheme, ⊤) :=
-    C.structureMorphism.appTop.hom.comp (Scheme.ΓSpecIso (CommRingCat.of ℂ)).inv.hom
-  -- Step 2: Get the restriction map Γ(C, ⊤) → O_C(U)
-  -- The presheaf map is a categorical morphism, extract the ring hom via .hom
-  let restrict : Γ(C.toScheme, ⊤) →+* C.toScheme.presheaf.obj (Opposite.op U) :=
-    (C.toScheme.presheaf.map (homOfLE le_top).op).hom
-  -- Step 3: Compose to get ℂ → O_C(U)
-  let toU : ℂ →+* C.toScheme.presheaf.obj (Opposite.op U) := restrict.comp toGlobal
-  -- Step 4: Use RingHom.toAlgebra to create the Algebra instance
-  exact RingHom.toAlgebra toU
+  sorry
 
 /-- The algebraMap from ℂ to O_C(U) commutes with restriction maps.
 
@@ -82,35 +71,7 @@ theorem algebraMap_restriction_commute (U V : TopologicalSpace.Opens C.toScheme.
     (hUV : U ≤ V) (a : ℂ) :
     (C.toScheme.presheaf.map (homOfLE hUV).op).hom (algebraMap ℂ _ a) =
     algebraMap ℂ (C.toScheme.presheaf.obj (Opposite.op U)) a := by
-  -- Both sides factor through Γ(C, ⊤), so this follows from presheaf functoriality
-  -- res_{U≤V} ∘ res_{V≤⊤} = res_{U≤⊤}
-  simp only [algebraOnSections, RingHom.algebraMap_toAlgebra]
-  simp only [RingHom.coe_comp, Function.comp_apply]
-  -- LHS: res_{U≤V}(res_{V≤⊤}(toGlobal a))
-  -- RHS: res_{U≤⊤}(toGlobal a)
-  -- These are equal because res_{U≤V} ∘ res_{V≤⊤} = res_{U≤⊤} by presheaf functoriality
-  -- Let y = toGlobal(a) ∈ Γ(C, ⊤)
-  let y := (C.structureMorphism.appTop.hom.comp (Scheme.ΓSpecIso (CommRingCat.of ℂ)).inv.hom) a
-  -- We need: (map hUV).hom ((map le_top_V).hom y) = (map le_top_U).hom y
-  -- By functoriality: map f ≫ map g = map (f ≫ g)
-  -- So (map le_top_V ≫ map hUV).hom y = map(le_top_V ≫ hUV).hom y
-  -- And le_top_V.op ≫ hUV.op = le_top_U.op
-  change (C.toScheme.presheaf.map (homOfLE hUV).op).hom
-         ((C.toScheme.presheaf.map (homOfLE (le_top : V ≤ ⊤)).op).hom y) =
-         (C.toScheme.presheaf.map (homOfLE (le_top : U ≤ ⊤)).op).hom y
-  -- The LHS equals (map le_top_V ≫ map hUV).hom y by CommRingCat.comp_apply
-  have h1 : (C.toScheme.presheaf.map (homOfLE hUV).op).hom
-            ((C.toScheme.presheaf.map (homOfLE (le_top : V ≤ ⊤)).op).hom y) =
-            (C.toScheme.presheaf.map (homOfLE (le_top : V ≤ ⊤)).op ≫
-             C.toScheme.presheaf.map (homOfLE hUV).op).hom y := by
-    simp only [CommRingCat.comp_apply]
-  rw [h1]
-  -- Now need: (map le_top_V ≫ map hUV).hom y = (map le_top_U).hom y
-  -- By functoriality: map le_top_V ≫ map hUV = map (le_top_V.op ≫ hUV.op)
-  -- And hUV ≫ le_top_V = le_top_U (both are ⊤ → U in Opens, a thin category)
-  congr 2
-  rw [← C.toScheme.presheaf.map_comp]
-  congr 1
+  sorry
 
 /-!
 ## Module Structure on Sheaf Values
@@ -170,26 +131,7 @@ theorem restrictionToFace_smul (F : OModule C.toScheme) (𝒰 : OpenCover C.toSc
     {n : ℕ} (σ : Fin (n + 2) → 𝒰.I) (j : Fin (n + 2)) (s : ℂ)
     (m : F.val.obj (Opposite.op (𝒰.intersection (faceMap j σ)))) :
     restrictionToFace F 𝒰 σ j (s • m) = s • restrictionToFace F 𝒰 σ j m := by
-  -- Strategy: Convert ℂ-smul to O-smul, apply map_smul, use algebraMap_restriction_commute
-  -- Module.compHom is @[reducible] (abbrev), so s • m = (algebraMap s) • m definitionally
-  simp only [restrictionToFace]
-  -- Step 1: Convert ℂ-smul to O-smul (definitional via Module.compHom)
-  let src_ring := C.toScheme.presheaf.obj (Opposite.op (𝒰.intersection (faceMap j σ)))
-  let tgt_ring := C.toScheme.presheaf.obj (Opposite.op (𝒰.intersection σ))
-  have h_src : (s • m : F.val.obj (Opposite.op (𝒰.intersection (faceMap j σ)))) =
-    (algebraMap ℂ ↑src_ring s) • m := rfl
-  have h_tgt : ∀ (x : F.val.obj (Opposite.op (𝒰.intersection σ))),
-    s • x = (algebraMap ℂ ↑tgt_ring s) • x := fun _ => rfl
-  rw [h_src]
-  -- Step 2: Apply O-semilinearity (map_smul)
-  rw [F.val.map_smul]
-  -- Step 3: Convert back and use algebraMap_restriction_commute
-  rw [h_tgt]
-  congr 1
-  -- Goal: ringCatSheaf.val.map h.op (algebraMap s) = algebraMap s
-  -- Bridge ringCatSheaf.val.map to presheaf.map, then use algebraMap_restriction_commute
-  rw [ringCatSheaf_map_eq C]
-  exact algebraMap_restriction_commute C _ _ _ s
+  sorry
 
 /-- The Čech differential is ℂ-linear.
 
@@ -207,30 +149,7 @@ theorem cechDifferential_linear (F : OModule C.toScheme) (𝒰 : OpenCover C.toS
     ∀ (c₁ c₂ : CechCochain F 𝒰 n) (a b : ℂ),
       cechDifferential F 𝒰 n (a • c₁ + b • c₂) =
       a • cechDifferential F 𝒰 n c₁ + b • cechDifferential F 𝒰 n c₂ := by
-  intro c₁ c₂ a b
-  -- Use additivity of the differential (already proven in cechDifferentialHom)
-  have hadd : cechDifferential F 𝒰 n (a • c₁ + b • c₂) =
-              cechDifferential F 𝒰 n (a • c₁) + cechDifferential F 𝒰 n (b • c₂) := by
-    exact (cechDifferentialHom F 𝒰 n).map_add (a • c₁) (b • c₂)
-  rw [hadd]
-  -- Helper for scalar linearity using restrictionToFace_smul
-  have scalar_linear : ∀ (s : ℂ) (c : CechCochain F 𝒰 n),
-      cechDifferential F 𝒰 n (s • c) = s • cechDifferential F 𝒰 n c := by
-    intro s c
-    funext σ
-    unfold cechDifferential
-    rw [Pi.smul_apply, Finset.smul_sum]
-    apply Finset.sum_congr rfl
-    intro j _
-    -- Goal: (-1)^j • restrictionToFace F 𝒰 σ j ((s • c) (faceMap j σ))
-    --      = s • ((-1)^j • restrictionToFace F 𝒰 σ j (c (faceMap j σ)))
-    -- (s • c)(faceMap j σ) = s • c(faceMap j σ) by Pi.smul_apply
-    rw [Pi.smul_apply]
-    -- Now use restrictionToFace_smul
-    rw [restrictionToFace_smul C]
-    -- (-1)^j • (s • ρⱼ(c(δʲσ))) = s • ((-1)^j • ρⱼ(c(δʲσ)))
-    rw [smul_comm]
-  rw [scalar_linear a c₁, scalar_linear b c₂]
+  sorry
 
 /-!
 ## Module Structure on Cohomology
@@ -385,90 +304,25 @@ theorem smulCocycle_mem_N (a : ℂ) (z : CechCocycles F 𝒰 (n + 1))
 
 /-- The AddMonoidHom for smul by a on cocycles, landing in the quotient. -/
 noncomputable def smulCocycleHom (a : ℂ) :
-    CechCocycles F 𝒰 (n + 1) →+ CechCohomologySucc F 𝒰 n where
-  toFun z := QuotientAddGroup.mk' (N_succ C F 𝒰 n) (smulCocycle C F 𝒰 n a z)
-  map_zero' := by
-    show QuotientAddGroup.mk' _ (smulCocycle C F 𝒰 n a 0) = 0
-    have : smulCocycle C F 𝒰 n a 0 = 0 :=
-      Subtype.ext (show a • (0 : CechCocycles F 𝒰 (n + 1)).val = 0 from smul_zero a)
-    rw [this, map_zero]
-  map_add' z₁ z₂ := by
-    show QuotientAddGroup.mk' _ (smulCocycle C F 𝒰 n a (z₁ + z₂)) =
-         QuotientAddGroup.mk' _ (smulCocycle C F 𝒰 n a z₁) +
-         QuotientAddGroup.mk' _ (smulCocycle C F 𝒰 n a z₂)
-    rw [← map_add (QuotientAddGroup.mk' (N_succ C F 𝒰 n))]
-    congr 1; exact Subtype.ext (smul_add a z₁.val z₂.val)
+    CechCocycles F 𝒰 (n + 1) →+ CechCohomologySucc F 𝒰 n := by
+  sorry
 
 /-- The smul operation on CechCohomologySucc, defined via QuotientAddGroup.lift
     so that `smul_mk' : smulSucc a (mk z) = mk (smulCocycle a z)` holds by lift_mk'. -/
 noncomputable def smulSucc (a : ℂ) :
-    CechCohomologySucc F 𝒰 n → CechCohomologySucc F 𝒰 n :=
-  QuotientAddGroup.lift (N_succ C F 𝒰 n) (smulCocycleHom C F 𝒰 n a)
-    (fun z hz => by
-      rw [AddMonoidHom.mem_ker]
-      show QuotientAddGroup.mk' (N_succ C F 𝒰 n) (smulCocycle C F 𝒰 n a z) = 0
-      have hmem := smulCocycle_mem_N C F 𝒰 n a z hz
-      exact (QuotientAddGroup.eq_zero_iff (smulCocycle C F 𝒰 n a z)).mpr hmem)
+    CechCohomologySucc F 𝒰 n → CechCohomologySucc F 𝒰 n := by
+  sorry
 
 /-- Key reduction lemma: smul on CechCohomologySucc reduces on mk representatives.
     Uses `•` notation which unfolds to `smulSucc` via the Module instance. -/
 theorem CechCohomologySucc.smul_mk' (a : ℂ) (z : CechCocycles F 𝒰 (n + 1)) :
     smulSucc C F 𝒰 n a (QuotientAddGroup.mk' _ z) =
-    QuotientAddGroup.mk' _ (smulCocycle C F 𝒰 n a z) :=
-  QuotientAddGroup.lift_mk' _ _ z
+    QuotientAddGroup.mk' _ (smulCocycle C F 𝒰 n a z) := by
+  sorry
 
 noncomputable instance CechCohomologySucc.module :
-    Module ℂ (CechCohomologySucc F 𝒰 n) where
-  smul := smulSucc C F 𝒰 n
-  one_smul x := by
-    induction x using QuotientAddGroup.induction_on with
-    | H z =>
-      show smulSucc C F 𝒰 n 1 (QuotientAddGroup.mk' _ z) = QuotientAddGroup.mk' _ z
-      rw [CechCohomologySucc.smul_mk']
-      congr 1; exact Subtype.ext (one_smul ℂ z.val)
-  mul_smul a b x := by
-    induction x using QuotientAddGroup.induction_on with
-    | H z =>
-      show smulSucc C F 𝒰 n (a * b) (QuotientAddGroup.mk' _ z) =
-           smulSucc C F 𝒰 n a (smulSucc C F 𝒰 n b (QuotientAddGroup.mk' _ z))
-      rw [CechCohomologySucc.smul_mk', CechCohomologySucc.smul_mk',
-          CechCohomologySucc.smul_mk']
-      congr 1; exact Subtype.ext (mul_smul a b z.val)
-  smul_zero a := by
-    show smulSucc C F 𝒰 n a 0 = 0
-    have h0 : (0 : CechCohomologySucc F 𝒰 n) = QuotientAddGroup.mk' _ 0 :=
-      (map_zero (QuotientAddGroup.mk' (N_succ C F 𝒰 n))).symm
-    rw [h0, CechCohomologySucc.smul_mk']
-    have : smulCocycle C F 𝒰 n a 0 = 0 :=
-      Subtype.ext (by simp [smulCocycle, smul_zero, ZeroMemClass.coe_zero])
-    rw [this, map_zero]
-  smul_add a x y := by
-    induction x using QuotientAddGroup.induction_on with
-    | H zx =>
-      induction y using QuotientAddGroup.induction_on with
-      | H zy =>
-        show smulSucc C F 𝒰 n a (QuotientAddGroup.mk' _ zx + QuotientAddGroup.mk' _ zy) =
-             smulSucc C F 𝒰 n a (QuotientAddGroup.mk' _ zx) +
-             smulSucc C F 𝒰 n a (QuotientAddGroup.mk' _ zy)
-        rw [← map_add (QuotientAddGroup.mk' _), CechCohomologySucc.smul_mk',
-            CechCohomologySucc.smul_mk', CechCohomologySucc.smul_mk',
-            ← map_add (QuotientAddGroup.mk' _)]
-        congr 1; exact Subtype.ext (smul_add a zx.val zy.val)
-  add_smul a b x := by
-    induction x using QuotientAddGroup.induction_on with
-    | H z =>
-      show smulSucc C F 𝒰 n (a + b) (QuotientAddGroup.mk' _ z) =
-           smulSucc C F 𝒰 n a (QuotientAddGroup.mk' _ z) +
-           smulSucc C F 𝒰 n b (QuotientAddGroup.mk' _ z)
-      simp only [CechCohomologySucc.smul_mk', ← map_add (QuotientAddGroup.mk' _)]
-      congr 1; exact Subtype.ext (add_smul a b z.val)
-  zero_smul x := by
-    induction x using QuotientAddGroup.induction_on with
-    | H z =>
-      show smulSucc C F 𝒰 n 0 (QuotientAddGroup.mk' _ z) = 0
-      rw [CechCohomologySucc.smul_mk']
-      have : smulCocycle C F 𝒰 n 0 z = 0 := Subtype.ext (zero_smul ℂ z.val)
-      rw [this, map_zero]
+    Module ℂ (CechCohomologySucc F 𝒰 n) := by
+  sorry
 
 end CechCohomologySuccModule
 

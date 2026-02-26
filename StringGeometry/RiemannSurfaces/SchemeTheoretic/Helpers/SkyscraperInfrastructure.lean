@@ -51,14 +51,19 @@ noncomputable def evalAtPoint (p : X) (U : Opens X.carrier) (hp : p ∈ U) :
     Γ(X, U) →+* X.residueField p :=
   (X.evaluation U p hp).hom
 
+/-- The residue field κ(p) is naturally a module over itself. -/
+noncomputable instance residueFieldSelfModule (p : X) :
+    Module (X.residueField p : Type _) (X.residueField p : Type _) :=
+  Semiring.toModule
+
 /-- κ(p) has an O_X(U)-module structure for U containing p via evaluation. -/
 noncomputable instance residueFieldModule (p : X) (U : Opens X.carrier) (hp : p ∈ U) :
-    Module (Γ(X, U)) (X.residueField p) :=
-  Module.compHom (X.residueField p) (evalAtPoint p U hp)
+    Module (Γ(X, U)) (X.residueField p : Type _) :=
+  Module.compHom (X.residueField p : Type _) (evalAtPoint p U hp)
 
 /-- For the top open, κ(p) is always an O_X(⊤)-module. -/
 noncomputable instance residueFieldModuleTop (p : X) :
-    Module Γ(X, ⊤) (X.residueField p) :=
+    Module Γ(X, ⊤) (X.residueField p : Type _) :=
   residueFieldModule p ⊤ (Set.mem_univ p)
 
 /-!
@@ -105,8 +110,13 @@ noncomputable def residueFieldIsoComplex (p : C.PointType) :
 
 /-- The residue field κ(p) is a ℂ-algebra. -/
 noncomputable instance residueFieldComplexAlgebra (p : C.PointType) :
-    Algebra ℂ (C.toScheme.residueField p) :=
+    Algebra ℂ (C.toScheme.residueField p : Type _) :=
   RingHom.toAlgebra (residueFieldIsoComplex C p).inv.hom
+
+/-- The induced ℂ-module structure on κ(p). -/
+noncomputable instance residueFieldComplexModule (p : C.PointType) :
+    Module ℂ (C.toScheme.residueField p : Type _) :=
+  (residueFieldComplexAlgebra C p).toModule
 
 /-- The ring isomorphism κ(p) ≅ ℂ is ℂ-linear.
 
@@ -115,7 +125,9 @@ noncomputable instance residueFieldComplexAlgebra (p : C.PointType) :
     The forward map `iso.hom : κ(p) → ℂ` is ℂ-linear because:
     iso.hom(c • x) = iso.hom(iso.inv(c) * x) = iso.hom(iso.inv(c)) * iso.hom(x) = c * iso.hom(x) -/
 noncomputable def residueFieldLinearEquiv (p : C.PointType) :
-    (C.toScheme.residueField p) ≃ₗ[ℂ] ℂ := by
+    ((C.toScheme.residueField p : Type _)) ≃ₗ[ℂ] ℂ := by
+  letI : Module ℂ (C.toScheme.residueField p : Type _) :=
+    residueFieldComplexModule C p
   -- Get the ring isomorphism
   let iso := residueFieldIsoComplex C p
   -- Helper: iso.inv(iso.hom(x)) = x (for x : κ(p))
@@ -133,7 +145,7 @@ noncomputable def residueFieldLinearEquiv (p : C.PointType) :
     rw [heq, CommRingCat.id_apply] at this
     exact this.symm
   -- Construct the ring equivalence manually
-  let ringEquiv : (C.toScheme.residueField p) ≃+* ℂ :=
+  let ringEquiv : (C.toScheme.residueField p : Type _) ≃+* ℂ :=
     { toFun := iso.hom.hom
       invFun := iso.inv.hom
       left_inv := left_inv_eq
@@ -147,16 +159,14 @@ noncomputable def residueFieldLinearEquiv (p : C.PointType) :
       map_smul' := fun c x => ?_ } ?_
   · -- Show map_smul': ringEquiv(c • x) = c • ringEquiv(x)
     -- The algebra action is c • x = iso.inv(c) * x
-    simp only [Algebra.smul_def, RingHom.id_apply]
-    -- Need: ringEquiv(algebraMap ℂ κ(p) c * x) = c * ringEquiv(x)
-    -- algebraMap = iso.inv.hom
-    rw [show algebraMap ℂ (C.toScheme.residueField p) c = iso.inv.hom c by rfl]
-    -- Now use that ringEquiv is a ring hom
-    rw [ringEquiv.map_mul]
-    -- Need: ringEquiv(iso.inv(c)) * ringEquiv(x) = c * ringEquiv(x)
-    congr 1
-    -- ringEquiv(iso.inv(c)) = iso.hom(iso.inv(c)) = c
-    exact right_inv_eq c
+    change ringEquiv ((iso.inv.hom c) * x) = c * ringEquiv x
+    calc
+      ringEquiv ((iso.inv.hom c) * x) = ringEquiv (iso.inv.hom c) * ringEquiv x := by
+        exact ringEquiv.map_mul _ _
+      _ = c * ringEquiv x := by
+        have hrc : ringEquiv (iso.inv.hom c) = c := by
+          simpa [ringEquiv] using right_inv_eq c
+        rw [hrc]
   · -- Show bijective
     exact ringEquiv.bijective
 
@@ -166,7 +176,9 @@ noncomputable def residueFieldLinearEquiv (p : C.PointType) :
     κ(p) ≅ ℂ as ℂ-vector spaces (from residueFieldLinearEquiv).
     Since ℂ is 1-dimensional over itself, so is κ(p). -/
 theorem residueField_finrank_one (p : C.PointType) :
-    Module.finrank ℂ (C.toScheme.residueField p) = 1 := by
+    Module.finrank ℂ (C.toScheme.residueField p : Type _) = 1 := by
+  letI : Module ℂ (C.toScheme.residueField p : Type _) :=
+    residueFieldComplexModule C p
   -- Use the linear equivalence to transfer the finrank
   have e := residueFieldLinearEquiv C p
   rw [LinearEquiv.finrank_eq e]
@@ -260,21 +272,6 @@ noncomputable def canonicalResidueEquiv (p : C.PointType) :
   RingEquiv.ofBijective (canonicalResidueMap C p)
     ⟨canonicalResidueMap_injective C p, canonicalResidueMap_surjective C p⟩
 
-/-- κ(p) is 1-dimensional over ℂ with the module structure from the canonical map.
-
-    The ℂ-module structure is: a • v = canonicalResidueMap(a) * v.
-    This is the same module structure used in `moduleValueComplex` / `algebraOnSections`. -/
-theorem residueField_finrank_one_canonical (p : C.PointType) :
-    letI : Module ℂ (C.toScheme.residueField p) :=
-      Module.compHom (C.toScheme.residueField p) (canonicalResidueMap C p)
-    Module.finrank ℂ (C.toScheme.residueField p) = 1 := by
-  letI : Module ℂ (C.toScheme.residueField p) :=
-    Module.compHom (C.toScheme.residueField p) (canonicalResidueMap C p)
-  apply (finrank_eq_one_iff_of_nonzero' (1 : C.toScheme.residueField p) one_ne_zero).mpr
-  intro w
-  obtain ⟨c, hc⟩ := canonicalResidueMap_surjective C p w
-  exact ⟨c, by show canonicalResidueMap C p c * 1 = w; rw [mul_one]; exact hc⟩
-
 /-- κ(p) ≃ₗ[ℂ] ℂ as a ℂ-linear equiv, using the canonical map module structure.
 
     The ℂ-module structure on κ(p) is a • v = canonicalResidueMap(a) * v.
@@ -283,11 +280,11 @@ theorem residueField_finrank_one_canonical (p : C.PointType) :
       e(a • v) = e(f(a) * v) = e(f(a)) * e(v) = a * e(v) = a • e(v)
     where e = canonicalResidueEquiv.symm and f = canonicalResidueMap. -/
 noncomputable def canonicalResidueLinearEquiv (p : C.PointType) :
-    letI : Module ℂ (C.toScheme.residueField p) :=
-      Module.compHom (C.toScheme.residueField p) (canonicalResidueMap C p)
-    (C.toScheme.residueField p) ≃ₗ[ℂ] ℂ := by
-  letI : Module ℂ (C.toScheme.residueField p) :=
-    Module.compHom (C.toScheme.residueField p) (canonicalResidueMap C p)
+    letI : Module ℂ (C.toScheme.residueField p : Type _) :=
+      Module.compHom (C.toScheme.residueField p : Type _) (canonicalResidueMap C p)
+    (C.toScheme.residueField p : Type _) ≃ₗ[ℂ] ℂ := by
+  letI : Module ℂ (C.toScheme.residueField p : Type _) :=
+    Module.compHom (C.toScheme.residueField p : Type _) (canonicalResidueMap C p)
   let e := (canonicalResidueEquiv C p).symm
   exact {
     toFun := e
@@ -303,5 +300,19 @@ noncomputable def canonicalResidueLinearEquiv (p : C.PointType) :
       -- e(canonicalResidueMap(a)) = (canonicalResidueEquiv.symm)(canonicalResidueEquiv(a)) = a
       congr 1
       exact (canonicalResidueEquiv C p).symm_apply_apply a }
+
+/-- κ(p) is 1-dimensional over ℂ with the module structure from the canonical map.
+
+    The ℂ-module structure is: a • v = canonicalResidueMap(a) * v.
+    This is the same module structure used in `moduleValueComplex` / `algebraOnSections`. -/
+theorem residueField_finrank_one_canonical (p : C.PointType) :
+    letI : Module ℂ (C.toScheme.residueField p : Type _) :=
+      Module.compHom (C.toScheme.residueField p : Type _) (canonicalResidueMap C p)
+    Module.finrank ℂ (C.toScheme.residueField p : Type _) = 1 := by
+  letI : Module ℂ (C.toScheme.residueField p : Type _) :=
+    Module.compHom (C.toScheme.residueField p : Type _) (canonicalResidueMap C p)
+  have e := canonicalResidueLinearEquiv C p
+  rw [LinearEquiv.finrank_eq e]
+  exact Module.finrank_self ℂ
 
 end RiemannSurfaces.SchemeTheoretic

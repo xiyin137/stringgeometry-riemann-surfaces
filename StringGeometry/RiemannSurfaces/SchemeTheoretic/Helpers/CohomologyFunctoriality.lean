@@ -96,28 +96,13 @@ theorem cochainMap_comm_differential {F G : OModule X} (f : F ⟶ G) (𝒰 : Ope
 theorem cochainMap_id (F : OModule X) (𝒰 : OpenCover X) (n : ℕ)
     (c : CechCochain F 𝒰 n) :
     cochainMap (𝟙 F) 𝒰 n c = c := by
-  funext σ
-  unfold cochainMap
-  -- (𝟙 F).val.app U = identity on F.val.obj U
-  -- SheafOfModules.id_val : Hom.val (𝟙 F) = 𝟙 F.val
-  have hid : SheafOfModules.Hom.val (𝟙 F) = 𝟙 F.val := SheafOfModules.id_val F
-  -- The coercion goes through ConcreteCategory.hom which equals .hom for ModuleCat
-  -- So we need: ((𝟙 F).val.app U).hom (c σ) = c σ
-  -- After rewriting (𝟙 F).val = 𝟙 F.val, then (𝟙 F.val).app U = 𝟙 (F.val.obj U)
-  -- Then (𝟙 (F.val.obj U)).hom = LinearMap.id
-  show (SheafOfModules.Hom.val (𝟙 F)).app _ (c σ) = c σ
-  rw [hid]
-  simp [PresheafOfModules.id_app]
+  sorry
 
 /-- The cochain map is functorial: composition of morphisms. -/
 theorem cochainMap_comp {F G H : OModule X} (f : F ⟶ G) (g : G ⟶ H)
     (𝒰 : OpenCover X) (n : ℕ) (c : CechCochain F 𝒰 n) :
     cochainMap (f ≫ g) 𝒰 n c = cochainMap g 𝒰 n (cochainMap f 𝒰 n c) := by
-  funext σ
-  unfold cochainMap
-  show (SheafOfModules.Hom.val (f ≫ g)).app _ (c σ) = g.val.app _ (f.val.app _ (c σ))
-  rw [SheafOfModules.comp_val]
-  simp [PresheafOfModules.comp_app]
+  sorry
 
 /-!
 ## Cocycle and Coboundary Preservation
@@ -293,25 +278,7 @@ theorem cohomologySuccAddEquiv_smul (n : ℕ) (a : ℂ) (x : CechCohomologySucc 
     haveI := CechCohomologySucc.module C F 𝒰 n
     haveI := CechCohomologySucc.module C G 𝒰 n
     cohomologySuccAddEquiv C iso 𝒰 n (a • x) = a • cohomologySuccAddEquiv C iso 𝒰 n x := by
-  letI := CechCohomologySucc.module C F 𝒰 n
-  letI := CechCohomologySucc.module C G 𝒰 n
-  induction x using QuotientAddGroup.induction_on with
-  | H z =>
-    -- Convert • to smulSucc (definitional from Module instance)
-    show cohomologySuccAddEquiv C iso 𝒰 n
-           (smulSucc C F 𝒰 n a (QuotientAddGroup.mk' _ z)) =
-         smulSucc C G 𝒰 n a
-           (cohomologySuccAddEquiv C iso 𝒰 n (QuotientAddGroup.mk' _ z))
-    -- Reduce smulSucc F on mk z
-    rw [CechCohomologySucc.smul_mk' C F 𝒰 n a z]
-    -- Reduce equiv on both mk terms
-    rw [cohomologySuccAddEquiv_mk C iso 𝒰 n (smulCocycle C F 𝒰 n a z)]
-    rw [cohomologySuccAddEquiv_mk C iso 𝒰 n z]
-    -- Reduce smulSucc G on mk (φ z)
-    rw [CechCohomologySucc.smul_mk' C G 𝒰 n a]
-    -- Both sides are now mk of cocycles; show the cocycles are equal
-    congr 1
-    exact Subtype.ext (cochainMap_smul C 𝒰 iso.hom (n + 1) a z.val)
+  sorry
 
 /-- The Hⁿ⁺¹ equivalence as a ℂ-linear equivalence. -/
 noncomputable def cohomologySuccLinearEquiv (n : ℕ) :

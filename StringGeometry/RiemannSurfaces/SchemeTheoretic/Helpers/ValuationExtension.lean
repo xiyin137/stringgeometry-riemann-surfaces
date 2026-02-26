@@ -384,13 +384,24 @@ theorem extendedVal_add_min (f g : K) (hfg : f + g ≠ 0) :
   -- h_ultra : min(addVal(ad), addVal(bc)) ≤ addVal(ad+bc)
   -- Convert to ℕ using toNat
   have h_ultra_nat : min vad vbc ≤ vsum := by
-    have h_ad_enat :
-        IsDiscreteValuationRing.addVal R (a * d) ≤
-        IsDiscreteValuationRing.addVal R (a * d + b * c) := by
-      exact le_trans (min_le_left _ _) h_ultra
-    have h_ad_nat : vad ≤ vsum := by
-      exact (ENat.toNat_le_toNat h_ad_enat had_bc_fin)
-    exact le_trans (Nat.min_le_left vad vbc) h_ad_nat
+    have h_tonat := ENat.toNat_le_toNat h_ultra had_bc_fin
+    by_cases heq : (IsDiscreteValuationRing.addVal R (a * d)) ≤
+                   (IsDiscreteValuationRing.addVal R (b * c))
+    · have h_ad_nat : vad ≤ vsum := by
+        have hmin : min (IsDiscreteValuationRing.addVal R (a * d))
+            (IsDiscreteValuationRing.addVal R (b * c)) =
+            IsDiscreteValuationRing.addVal R (a * d) := min_eq_left heq
+        rw [hmin] at h_tonat
+        exact h_tonat
+      exact le_trans (Nat.min_le_left vad vbc) h_ad_nat
+    · push_neg at heq
+      have h_bc_nat : vbc ≤ vsum := by
+        have hmin : min (IsDiscreteValuationRing.addVal R (a * d))
+            (IsDiscreteValuationRing.addVal R (b * c)) =
+            IsDiscreteValuationRing.addVal R (b * c) := min_eq_right (le_of_lt heq)
+        rw [hmin] at h_tonat
+        exact h_tonat
+      exact le_trans (Nat.min_le_right vad vbc) h_bc_nat
   -- Final arithmetic using omega
   -- min(vad, vbc) ≤ vsum  and  vad = va + vd, vbc = vb + vc, vbd = vb + vd
   -- implies vsum - vbd ≥ min(va - vb, vc - vd)
