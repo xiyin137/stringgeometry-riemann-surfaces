@@ -644,6 +644,47 @@ theorem comp_eq_zero_of_exactAt {A B C : Type*} (f : A → B) (g : B → C) (z :
 abbrev exactness_at_H0F (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
   ExactAt (iotaH0 ses U) (piH0 ses U) (zeroH0 F'' U)
 
+/-- Exactness at `H⁰(F)` follows directly from sectionwise exactness in the SES. -/
+theorem exactness_at_H0F_holds (ses : ShortExactSequence F' F F'') (U : OpenCover X) :
+    exactness_at_H0F ses U := by
+  intro σ
+  constructor
+  · intro hpi
+    have hker : ∀ f : Fin (0 + 1) → U.ι, ses.π.map (U.inter f) (σ.val f) = 0 := by
+      intro f
+      have hval := congrArg (fun t => t.val f) hpi
+      simpa [piH0, inducedH0, inducedCocycleMap, inducedCochainMap, zeroH0, zeroCocycle] using hval
+
+    let τcochain : CechCochain F' U 0 :=
+      fun f => (ses.ker_eq_im (U.inter f) (σ.val f) (hker f)).choose
+    have hτ_spec : ∀ f : Fin (0 + 1) → U.ι, ses.ι.map (U.inter f) (τcochain f) = σ.val f := by
+      intro f
+      exact (ses.ker_eq_im (U.inter f) (σ.val f) (hker f)).choose_spec
+
+    have hτ_cocycle : cechDiff F' U 0 τcochain = 0 := by
+      funext f
+      apply (PresheafMorphism.isInjective_iff_kernel_trivial ses.ι).mp ses.ι_injective (U.inter f)
+      have hcomm := inducedCochainMap_comm_cechDiff ses.ι U 0 τcochain
+      have hf := congrFun hcomm f
+      simp [inducedCochainMap] at hf
+      rw [hf]
+      have hιτ : inducedCochainMap ses.ι U 0 τcochain = σ.val := by
+        funext g
+        simp [inducedCochainMap, hτ_spec g]
+      rw [hιτ, σ.prop]
+      rfl
+
+    let τ : CechH0 F' U := ⟨τcochain, hτ_cocycle⟩
+    refine ⟨τ, ?_⟩
+    apply Subtype.ext
+    funext f
+    simpa [iotaH0, inducedH0, inducedCocycleMap, inducedCochainMap] using hτ_spec f
+  · intro hmem
+    rcases hmem with ⟨τ, hτ⟩
+    calc
+      piH0 ses U σ = piH0 ses U (iotaH0 ses U τ) := by simp [hτ]
+      _ = zeroH0 F'' U := piH0_iotaH0_eq_zero ses U τ
+
 /-- Exactness at `H⁰(F'')`: `ker(δ⁰) = im(H⁰(π))`. -/
 abbrev exactness_at_H0Fpp (ses : ShortExactSequence F' F F'') (U : OpenCover X) : Prop :=
   ExactAt (piH0 ses U) (deltaH0 ses U) (zeroHSucc F' U 0)

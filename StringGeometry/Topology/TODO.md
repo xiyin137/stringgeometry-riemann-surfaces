@@ -52,6 +52,8 @@ Long exact sequence for short exact sequences of presheaves 0 → F' → F → F
 - [x] Direct adjacent-composition-zero lemmas from SES (`π ∘ ι = 0`) at cochain/cocycle/cohomology
   levels: `inducedCochainMap_comp_zero`, `inducedCocycleMap_comp_zero`,
   `piH0_iotaH0_eq_zero`, `piHSucc_iotaHSucc_eq_zero`, `piH1_iotaH1_eq_zero`
+- [x] First actual LES exactness proof at cohomology level:
+  `exactness_at_H0F_holds : exactness_at_H0F ses U`
 
 **Remaining work**:
 - [ ] Refinement maps and independence of cover
