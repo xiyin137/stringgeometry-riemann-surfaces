@@ -92,6 +92,11 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
 16. Added `RiemannRoch.riemann_roch_euler_from_point_exact_data` as public
     explicit-data Euler-form entry point (avoids direct dependence on `point_exact_cech`)
 17. Added CI checks requiring the two explicit-data entry theorems above
+18. Added `RiemannRoch.riemann_roch_of_serre_dim_from_point_exact_data` (classical form
+    from explicit point-exact data + explicit Serre-dimension hypothesis)
+19. Added `RiemannRoch.riemann_roch_from_point_exact_data` (classical form via
+    `serre_duality_dim_cech` on the same explicit-data path)
+20. Added CI checks requiring both explicit-data classical-form theorems
 
 ---
 

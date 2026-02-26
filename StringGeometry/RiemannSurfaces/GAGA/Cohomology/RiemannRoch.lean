@@ -173,6 +173,121 @@ theorem riemann_roch_of_serre_dim (CRS : CompactRiemannSurface)
     simpa [hserreZ] using heuler
   linarith
 
+/-- Classical-form Riemann-Roch from explicit point-exact bridge data
+    and explicit Serre-dimension input. -/
+theorem riemann_roch_of_serre_dim_from_point_exact_data (CRS : CompactRiemannSurface)
+    (O : StructureSheaf CRS.toRiemannSurface)
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (K : CanonicalDivisorData CRS)
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (h0 :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
+    (h1 :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
+    (ses : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      ShortExactSeq CRS.toRiemannSurface O
+        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
+        (PointExactProof.DivisorSheaf O L E)
+        (skyscraperSheaf O p))
+    (les : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      LongExactSequence CRS.toRiemannSurface
+        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
+        (PointExactProof.DivisorSheaf O L E)
+        (skyscraperSheaf O p)
+        (ses E p))
+    (h''0_dim : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H''0.dimension = 1)
+    (h''1_dim : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H''1.dimension = 0)
+    (h0_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H'0.dimension = (gc (E - Divisor.point p)).dim 0)
+    (h1_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H'1.dimension = (gc (E - Divisor.point p)).dim 1)
+    (h0_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H0.dimension = (gc E).dim 0)
+    (h1_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H1.dimension = (gc E).dim 1)
+    (D : Divisor CRS.toRiemannSurface)
+    (hserre :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 1) =
+      h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0)) :
+    (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
+    h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) =
+    D.degree - CRS.genus + 1 := by
+  have heuler := riemann_roch_euler_from_point_exact_data CRS O L gc
+    h0 h1 ses les h''0_dim h''1_dim h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq D
+  unfold cech_chi eulerCharacteristic at heuler
+  have hserreZ :
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 1) : ℤ) =
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) : ℤ) := by
+    exact_mod_cast hserre
+  have heuler' :
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
+      (h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) : ℤ) =
+      D.degree + 1 - CRS.genus := by
+    simpa [hserreZ] using heuler
+  linarith
+
+/-- Classical-form Riemann-Roch from explicit point-exact bridge data.
+
+    This is `riemann_roch_of_serre_dim_from_point_exact_data` instantiated with
+    `serre_duality_dim_cech`. -/
+theorem riemann_roch_from_point_exact_data (CRS : CompactRiemannSurface)
+    (O : StructureSheaf CRS.toRiemannSurface)
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (K : CanonicalDivisorData CRS)
+    (gc : ∀ D : Divisor CRS.toRiemannSurface, FiniteGoodCover (L.sheafOf D))
+    (h0 :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 0) = 1)
+    (h1 :
+      h_i (cechToSheafCohomologyGroup (L.sheafOf 0) (gc 0) 1) = CRS.genus)
+    (ses : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      ShortExactSeq CRS.toRiemannSurface O
+        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
+        (PointExactProof.DivisorSheaf O L E)
+        (skyscraperSheaf O p))
+    (les : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      LongExactSequence CRS.toRiemannSurface
+        (PointExactProof.DivisorSheaf O L (E - Divisor.point p))
+        (PointExactProof.DivisorSheaf O L E)
+        (skyscraperSheaf O p)
+        (ses E p))
+    (h''0_dim : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H''0.dimension = 1)
+    (h''1_dim : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H''1.dimension = 0)
+    (h0_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H'0.dimension = (gc (E - Divisor.point p)).dim 0)
+    (h1_Dp_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H'1.dimension = (gc (E - Divisor.point p)).dim 1)
+    (h0_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H0.dimension = (gc E).dim 0)
+    (h1_D_eq : ∀ E : Divisor CRS.toRiemannSurface,
+      ∀ p : CRS.toRiemannSurface.carrier,
+      (les E p).H1.dimension = (gc E).dim 1)
+    (D : Divisor CRS.toRiemannSurface) :
+    (h_i (cechToSheafCohomologyGroup (L.sheafOf D) (gc D) 0) : ℤ) -
+    h_i (cechToSheafCohomologyGroup (L.sheafOf (K.divisor - D)) (gc (K.divisor - D)) 0) =
+    D.degree - CRS.genus + 1 := by
+  apply riemann_roch_of_serre_dim_from_point_exact_data CRS O L K gc
+    h0 h1 ses les h''0_dim h''1_dim h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq D
+  exact serre_duality_dim_cech L K D (gc D) (gc (K.divisor - D))
+
 /-- **The Riemann-Roch Theorem** (classical form via Čech Serre duality).
 
     This is `riemann_roch_of_serre_dim` instantiated with

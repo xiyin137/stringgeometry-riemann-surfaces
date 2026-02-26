@@ -121,6 +121,16 @@ check_required \
   '^theorem riemann_roch_euler_from_point_exact_data' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'
 
+check_required \
+  "RiemannRoch must expose explicit-data classical-form theorem with explicit Serre input" \
+  '^theorem riemann_roch_of_serre_dim_from_point_exact_data' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'
+
+check_required \
+  "RiemannRoch must expose explicit-data classical-form theorem via Cech Serre duality" \
+  '^theorem riemann_roch_from_point_exact_data' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/RiemannRoch.lean'
+
 if [[ "$fail" -ne 0 ]]; then
   echo
   echo "Riemann-Roch independence checks failed."
