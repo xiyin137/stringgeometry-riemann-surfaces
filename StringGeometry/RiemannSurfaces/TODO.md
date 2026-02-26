@@ -110,6 +110,8 @@ Last verified: 2026-02-10 (Infrastructure Phases 1-7 all created and building)
     aliases and extended CI checks to require both family and pointwise alias layers
 26. Refactored `CechTheory.point_exact_cech` to be a proven specialization wrapper
     of `point_recursion_cech` and added CI guard for this derivation pattern
+27. Added `CechTheory.point_recursion_cech_of_data` (explicit SES/LES + dimension-input
+    theorem), and refactored `PointExactProof.cech_point_exact_of_data` to reuse it
 
 ---
 

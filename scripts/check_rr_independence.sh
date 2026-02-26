@@ -107,6 +107,11 @@ check_required \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
 
 check_required \
+  "CechTheory must keep explicit point-recursion theorem from SES/LES data" \
+  '^theorem point_recursion_cech_of_data' \
+  'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'
+
+check_required \
   "point_exact_cech must remain derived from point_recursion_cech specialization" \
   'simpa using point_recursion_cech L D p \(gc D\) \(gc \(D - Divisor.point p\)\)' \
   'StringGeometry/RiemannSurfaces/GAGA/Cohomology/CechTheory.lean'

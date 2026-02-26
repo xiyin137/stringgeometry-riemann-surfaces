@@ -1,6 +1,7 @@
 import StringGeometry.RiemannSurfaces.GAGA.Cohomology.GeneralCechBridge
 import StringGeometry.Topology.Sheaves.LongExactSequence
 import StringGeometry.RiemannSurfaces.GAGA.Cohomology.Basic
+import StringGeometry.RiemannSurfaces.GAGA.Cohomology.ExactSequence
 import Mathlib.LinearAlgebra.Dimension.Finrank
 import Mathlib.GroupTheory.QuotientGroup.Defs
 
@@ -396,6 +397,60 @@ Since H⁰(ℂ_p) = ℂ and H¹(ℂ_p) = 0 (skyscraper is acyclic), we get:
     2. h⁰(ℂ_p) = 1, h¹(ℂ_p) = 0 (skyscraper sheaf)
     3. Rearranging: (h⁰(D) - h¹(D)) - (h⁰(D-p) - h¹(D-p)) = 1
     4. χ(D) - χ(D-p) = 1 ∎ -/
+theorem point_recursion_cech_of_data
+    {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
+    (L : LineBundleSheafAssignment CRS.toRiemannSurface O)
+    (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier)
+    (gcD : FiniteGoodCover (L.sheafOf D))
+    (gcDp : FiniteGoodCover (L.sheafOf (D - Divisor.point p)))
+    (ses : ShortExactSeq CRS.toRiemannSurface O
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L (D - Divisor.point p))
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L D)
+      (skyscraperSheaf O p))
+    (les : LongExactSequence CRS.toRiemannSurface
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L (D - Divisor.point p))
+      (coherentSheafOfDivisor CRS.toRiemannSurface O L D)
+      (skyscraperSheaf O p)
+      ses)
+    (h''0_dim : les.H''0.dimension = 1)
+    (h''1_dim : les.H''1.dimension = 0)
+    (h0_Dp_eq : les.H'0.dimension = gcDp.dim 0)
+    (h1_Dp_eq : les.H'1.dimension = gcDp.dim 1)
+    (h0_D_eq : les.H0.dimension = gcD.dim 0)
+    (h1_D_eq : les.H1.dimension = gcD.dim 1) :
+    let H0D := cechToSheafCohomologyGroup (L.sheafOf D) gcD 0
+    let H1D := cechToSheafCohomologyGroup (L.sheafOf D) gcD 1
+    let H0Dp := cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) gcDp 0
+    let H1Dp := cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) gcDp 1
+    eulerCharacteristic H0D H1D - eulerCharacteristic H0Dp H1Dp = 1 := by
+  have hskyscraper : eulerCharacteristic les.H''0 les.H''1 = 1 := by
+    unfold eulerCharacteristic h_i
+    rw [h''0_dim, h''1_dim]
+    norm_num
+  have hadd := les.eulerChar_additive
+  have hpoint : eulerCharacteristic les.H0 les.H1 - eulerCharacteristic les.H'0 les.H'1 = 1 := by
+    omega
+  have hchi_D :
+      eulerCharacteristic les.H0 les.H1 =
+      eulerCharacteristic
+        (cechToSheafCohomologyGroup (L.sheafOf D) gcD 0)
+        (cechToSheafCohomologyGroup (L.sheafOf D) gcD 1) := by
+    unfold eulerCharacteristic h_i
+    unfold cechToSheafCohomologyGroup
+    simp only [h0_D_eq, h1_D_eq]
+  have hchi_Dp :
+      eulerCharacteristic les.H'0 les.H'1 =
+      eulerCharacteristic
+        (cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) gcDp 0)
+        (cechToSheafCohomologyGroup (L.sheafOf (D - Divisor.point p)) gcDp 1) := by
+    unfold eulerCharacteristic h_i
+    unfold cechToSheafCohomologyGroup
+    simp only [h0_Dp_eq, h1_Dp_eq]
+  dsimp
+  rw [← hchi_D, ← hchi_Dp]
+  exact hpoint
+
 theorem point_recursion_cech
     {CRS : CompactRiemannSurface} {O : StructureSheaf CRS.toRiemannSurface}
     (L : LineBundleSheafAssignment CRS.toRiemannSurface O)

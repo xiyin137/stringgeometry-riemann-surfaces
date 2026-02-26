@@ -245,27 +245,9 @@ theorem cech_point_exact_of_data
     (h0_D_eq : PointExactH0DAt gc D p les)
     (h1_D_eq : PointExactH1DAt gc D p les) :
     cech_chi L gc D - cech_chi L gc (D - Divisor.point p) = 1 := by
-  have hskyscraper : eulerCharacteristic les.H''0 les.H''1 = 1 := by
-    unfold eulerCharacteristic h_i
-    rw [h''0_dim, h''1_dim]
-    norm_num
-
-  have hadd := les.eulerChar_additive
-  have hpoint : eulerCharacteristic les.H0 les.H1 - eulerCharacteristic les.H'0 les.H'1 = 1 := by
-    omega
-
-  have hchi_D : eulerCharacteristic les.H0 les.H1 = cech_chi L gc D := by
-    unfold cech_chi eulerCharacteristic h_i
-    unfold cechToSheafCohomologyGroup
-    simp only [h0_D_eq, h1_D_eq]
-
-  have hchi_Dp : eulerCharacteristic les.H'0 les.H'1 = cech_chi L gc (D - Divisor.point p) := by
-    unfold cech_chi eulerCharacteristic h_i
-    unfold cechToSheafCohomologyGroup
-    simp only [h0_Dp_eq, h1_Dp_eq]
-
-  rw [← hchi_D, ← hchi_Dp]
-  exact hpoint
+  simpa [cech_chi] using
+    point_recursion_cech_of_data L D p (gc D) (gc (D - Divisor.point p))
+      ses les h''0_dim h''1_dim h0_Dp_eq h1_Dp_eq h0_D_eq h1_D_eq
 
 /-- Same statement as `cech_point_exact_of_data`, kept as the public entry point. -/
 theorem point_exact_cech_proof
