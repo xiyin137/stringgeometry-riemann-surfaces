@@ -100,13 +100,28 @@ theorem hyperbolic_nondegenerate : hyperbolic.NonDegenerate := by
   fin_cases i
   · -- i = 0: need to show x 0 = 0
     have h := hx (fun j => if j = 1 then 1 else 0)
-    simp only [bilinearForm, hyperbolic] at h
-    -- B(x, e_1) = q(x + e_1) + q(x) + q(e_1) = ... = x_0
-    sorry
+    have h0 : x 0 * (x 1 + 1) + x 0 * x 1 = 0 := by
+      simpa [bilinearForm, hyperbolic] using h
+    -- B(x, e₁) = x₀ in characteristic 2.
+    have h' : x 0 * (x 1 + 1) + x 0 * x 1 = x 0 := by
+      ring_nf
+      have htwo : (2 : ZMod 2) = 0 := by native_decide
+      rw [htwo]
+      simp
+    rw [h'] at h0
+    exact h0
   · -- i = 1: need to show x 1 = 0
     have h := hx (fun j => if j = 0 then 1 else 0)
-    simp only [bilinearForm, hyperbolic] at h
-    sorry
+    have h0 : (x 0 + 1) * x 1 + x 0 * x 1 = 0 := by
+      simpa [bilinearForm, hyperbolic] using h
+    -- B(x, e₀) = x₁ in characteristic 2.
+    have h' : (x 0 + 1) * x 1 + x 0 * x 1 = x 1 := by
+      ring_nf
+      have htwo : (2 : ZMod 2) = 0 := by native_decide
+      rw [htwo]
+      simp
+    rw [h'] at h0
+    exact h0
 
 end QuadFormZ2
 
