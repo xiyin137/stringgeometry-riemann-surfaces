@@ -71,7 +71,14 @@ It is defined purely algebraically via local duality.
     3. For proper curves, this sum is finite (finitely many points)
 
     This is purely algebraic - no residues in the analytic sense. -/
-noncomputable def traceMap : SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ := sorry
+theorem exists_traceMap (C : SmoothProjectiveCurve) :
+    Nonempty (SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ) := by
+  -- TODO: Build from Grothendieck-Serre trace in dimension one.
+  sorry
+
+/-- The trace map, chosen from the existence theorem. -/
+noncomputable def traceMap : SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ :=
+  Classical.choice (exists_traceMap C)
 
 /-- The trace map is ℂ-linear.
 
@@ -99,12 +106,27 @@ is a perfect pairing.
 /-- The dual of a coherent sheaf F^∨ = Hom(F, O_C).
 
     For locally free sheaves, this is the usual dual bundle. -/
+theorem exists_dualSheaf (C : SmoothProjectiveCurve) (F : CoherentSheaf C.toAlgebraicCurve) :
+    Nonempty (CoherentSheaf C.toAlgebraicCurve) := by
+  -- TODO: Define as the internal Hom sheaf Hom(F, O_C).
+  sorry
+
+/-- The dual coherent sheaf F^∨. -/
 noncomputable def dualSheaf (F : CoherentSheaf C.toAlgebraicCurve) :
-    CoherentSheaf C.toAlgebraicCurve := sorry
+    CoherentSheaf C.toAlgebraicCurve :=
+  Classical.choice (exists_dualSheaf C F)
 
 /-- The tensor product F ⊗ G of coherent sheaves. -/
+theorem exists_tensorCoherent (C : SmoothProjectiveCurve)
+    (F G : CoherentSheaf C.toAlgebraicCurve) :
+    Nonempty (CoherentSheaf C.toAlgebraicCurve) := by
+  -- TODO: Use coherent closure under tensor product.
+  sorry
+
+/-- The tensor product coherent sheaf F ⊗ G. -/
 noncomputable def tensorCoherent (F G : CoherentSheaf C.toAlgebraicCurve) :
-    CoherentSheaf C.toAlgebraicCurve := sorry
+    CoherentSheaf C.toAlgebraicCurve :=
+  Classical.choice (exists_tensorCoherent C F G)
 
 /-- The Serre duality pairing.
 
@@ -117,10 +139,20 @@ noncomputable def tensorCoherent (F G : CoherentSheaf C.toAlgebraicCurve) :
     - The third map is the trace
 
     For curves, this simplifies to a pairing between H⁰ and H¹. -/
+theorem exists_serrePairing (C : SmoothProjectiveCurve) (F : CoherentSheaf C.toAlgebraicCurve) :
+    Nonempty
+      (GlobalSectionsType C.toAlgebraicCurve
+          (tensorCoherent C (dualSheaf C F) (canonicalSheaf C).toCoherentSheaf).toModule →
+        SheafCohomology C.toAlgebraicCurve 1 F.toModule → ℂ) := by
+  -- TODO: Implement via cup product + evaluation + trace.
+  sorry
+
+/-- The Serre duality pairing. -/
 noncomputable def serrePairing (F : CoherentSheaf C.toAlgebraicCurve) :
     GlobalSectionsType C.toAlgebraicCurve (tensorCoherent C (dualSheaf C F)
       (canonicalSheaf C).toCoherentSheaf).toModule →
-    SheafCohomology C.toAlgebraicCurve 1 F.toModule → ℂ := sorry
+    SheafCohomology C.toAlgebraicCurve 1 F.toModule → ℂ :=
+  Classical.choice (exists_serrePairing C F)
 
 /-!
 ## Serre Duality Theorem

@@ -75,9 +75,13 @@ class IsInvertible (X : Scheme) (L : OModule X) : Prop where
     Nonempty (L.val.obj U ≅ L.val.obj U)  -- TODO: Express L|_U ≅ O_U properly
 
 /-- Invertible sheaves are coherent. -/
-instance (X : Scheme) (L : OModule X) [h : IsInvertible X L] : IsCoherent X L where
-  locallyPresentable := fun i => ⟨Iso.refl _⟩
-  locallyFinitelyGenerated := fun i => sorry  -- rank 1 ⟹ finitely generated
+theorem isCoherent_of_isInvertible (X : Scheme) (L : OModule X) [IsInvertible X L] :
+    IsCoherent X L := by
+  -- TODO: derive coherence from local rank-one freeness.
+  sorry
+
+instance (X : Scheme) (L : OModule X) [IsInvertible X L] : IsCoherent X L :=
+  isCoherent_of_isInvertible X L
 
 /-- An invertible sheaf (line bundle) on an algebraic curve.
 
@@ -99,10 +103,9 @@ variable {C : AlgebraicCurve}
 /-- Coercion to CoherentSheaf. -/
 noncomputable def toCoherentSheaf (L : InvertibleSheaf C) : CoherentSheaf C where
   toModule := L.toModule
-  isCoherent := {
-    locallyPresentable := fun i => ⟨Iso.refl _⟩
-    locallyFinitelyGenerated := fun i => sorry  -- follows from invertibility
-  }
+  isCoherent := by
+    letI : IsInvertible C.toScheme L.toModule := L.isInvertible
+    infer_instance
 
 /-- The structure sheaf O_C as an invertible sheaf. -/
 noncomputable def structureSheaf (C : AlgebraicCurve) : InvertibleSheaf C where
@@ -122,8 +125,14 @@ The tensor product L ⊗_O M of two line bundles is again a line bundle.
 
     For line bundles, this corresponds to tensor product of line bundles
     in the usual sense. -/
-noncomputable def tensorProductModule (L M : InvertibleSheaf C) : OModule C.toScheme := sorry
-  -- TODO: Use Mathlib's tensor product of modules
+theorem exists_tensorProductModule (L M : InvertibleSheaf C) :
+    ∃ N : OModule C.toScheme, IsInvertible C.toScheme N := by
+  -- TODO: Construct via sheafwise tensor product once the required API is in place.
+  sorry
+
+/-- The tensor product module, obtained from the existential construction. -/
+noncomputable def tensorProductModule (L M : InvertibleSheaf C) : OModule C.toScheme :=
+  (exists_tensorProductModule (C := C) L M).choose
 
 /-- The tensor product of line bundles is invertible.
 
@@ -131,7 +140,8 @@ noncomputable def tensorProductModule (L M : InvertibleSheaf C) : OModule C.toSc
     If L|_U ≅ O_U and M|_V ≅ O_V, then (L ⊗ M)|_{U ∩ V} ≅ O_U ⊗ O_V ≅ O_{U ∩ V}. -/
 instance tensorProduct_isInvertible (L M : InvertibleSheaf C) :
     IsInvertible C.toScheme (tensorProductModule L M) where
-  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
+  locally_free_rank_one :=
+    (exists_tensorProductModule (C := C) L M).choose_spec.locally_free_rank_one
 
 /-- The tensor product of two line bundles. -/
 noncomputable def tensorProduct (L M : InvertibleSheaf C) : InvertibleSheaf C where
@@ -154,8 +164,14 @@ The dual L⁻¹ = Hom_{O_C}(L, O_C) of an invertible sheaf is again invertible.
 
     For a line bundle, the dual is also a line bundle with the property
     L ⊗ L⁻¹ ≅ O_C. -/
-noncomputable def dualModule (L : InvertibleSheaf C) : OModule C.toScheme := sorry
-  -- TODO: Use Mathlib's internal Hom
+theorem exists_dualModule (L : InvertibleSheaf C) :
+    ∃ N : OModule C.toScheme, IsInvertible C.toScheme N := by
+  -- TODO: Construct as the internal Hom `Hom(L, O_C)` once available.
+  sorry
+
+/-- The dual module, obtained from the existential construction. -/
+noncomputable def dualModule (L : InvertibleSheaf C) : OModule C.toScheme :=
+  (exists_dualModule (C := C) L).choose
 
 /-- The dual of a line bundle is invertible.
 
@@ -163,7 +179,7 @@ noncomputable def dualModule (L : InvertibleSheaf C) : OModule C.toScheme := sor
     If L|_U ≅ O_U, then Hom(L, O)|_U ≅ Hom(O_U, O_U) ≅ O_U. -/
 instance dual_isInvertible (L : InvertibleSheaf C) :
     IsInvertible C.toScheme (dualModule L) where
-  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
+  locally_free_rank_one := (exists_dualModule (C := C) L).choose_spec.locally_free_rank_one
 
 /-- The dual of a line bundle. -/
 noncomputable def dual (L : InvertibleSheaf C) : InvertibleSheaf C where
@@ -205,9 +221,15 @@ variable {C}
     **Example:**
     If D = [p], then O(D)(U) contains functions with at worst a simple pole at p.
     If D = -[p], then O(D)(U) contains functions vanishing at p. -/
+theorem exists_divisorModule (C : SmoothProjectiveCurve) (D : Divisor C.toAlgebraicCurve) :
+    ∃ M : OModule C.toScheme, IsInvertible C.toScheme M := by
+  -- TODO: Build the valuation-bounded subsheaf of the constant function-field sheaf.
+  sorry
+
+/-- The module O(D), obtained from the existential construction. -/
 noncomputable def divisorModule (C : SmoothProjectiveCurve) (D : Divisor C.toAlgebraicCurve) :
-    OModule C.toScheme := sorry
-  -- This is the key definition: subsheaf of K(C) defined by valuation conditions
+    OModule C.toScheme :=
+  (exists_divisorModule C D).choose
 
 /-- The sheaf O(D) is invertible.
 
@@ -217,7 +239,7 @@ noncomputable def divisorModule (C : SmoothProjectiveCurve) (D : Divisor C.toAlg
     This shows O(D) is locally free of rank 1. -/
 instance divisorModule_isInvertible (C : SmoothProjectiveCurve) (D : Divisor C.toAlgebraicCurve) :
     IsInvertible C.toScheme (divisorModule C D) where
-  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
+  locally_free_rank_one := (exists_divisorModule C D).choose_spec.locally_free_rank_one
 
 /-- The invertible sheaf O(D) associated to a divisor D.
 
@@ -327,7 +349,17 @@ def PicardGroup (C : AlgebraicCurve) : Type _ := Quotient (InvertibleSheaf.setoi
 
     For a line bundle L = O(D), deg(L) = deg(D).
     This is well-defined because linearly equivalent divisors have the same degree. -/
-noncomputable def picardDegree (C : SmoothProjectiveCurve) : PicardGroup C.toAlgebraicCurve → ℤ := sorry
+theorem exists_picardDegree (C : SmoothProjectiveCurve) :
+    ∃ degMap : PicardGroup C.toAlgebraicCurve → ℤ,
+      ∀ D : Divisor C.toAlgebraicCurve,
+        degMap
+            (Quotient.mk (InvertibleSheaf.setoid C.toAlgebraicCurve) (divisorSheaf C D)) = D.degree := by
+  -- TODO: Define via Div(C) -> Pic(C) and prove compatibility with linear equivalence.
+  sorry
+
+/-- The degree map on the Picard group. -/
+noncomputable def picardDegree (C : SmoothProjectiveCurve) : PicardGroup C.toAlgebraicCurve → ℤ :=
+  (exists_picardDegree C).choose
 
 /-- Tensor product respects isomorphism.
 

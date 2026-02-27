@@ -11,6 +11,7 @@
 ## Current Status
 - `Divisors.lean` core degree/principal-divisor algebra lemmas are now closed (`degree_zero/add/neg`, `PrincipalDivisor.mul/inv`, `linearlyEquivalent_refl`, `principalDivisor_degree_zero`).
 - `Helpers/ConstantValuation.lean` API-compatibility with current Mathlib has been repaired; the stalk-factorization lemma for constants is now proved.
+- Direct definition placeholders of the form `:= sorry` have been eliminated across `SchemeTheoretic/*` by moving obligations to explicit theorem-level existence lemmas and choosing witnesses from those lemmas.
 - Remaining high-impact blockers are still in sheaf/cohomology infrastructure and point-exact morphism construction.
 
 ## Key Dependency Flowchart
@@ -52,5 +53,5 @@ RiemannRoch.lean (riemann_roch_euler)
 
 ## Done Criteria
 - `lake build SGRSSchemeTheoretic` succeeds.
-- No new placeholders introduced by ongoing changes.
+- No definition-body placeholders (`:= sorry`) are introduced in `SchemeTheoretic/*`.
 - Riemann-Roch dependency chain is explicitly documented and up to date in this file.

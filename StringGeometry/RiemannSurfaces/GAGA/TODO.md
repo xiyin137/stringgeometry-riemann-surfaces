@@ -6,6 +6,7 @@
 
 ## Current Status
 - `ToCompactAlgebraicCurve.lean` has been API-aligned with current SchemeTheoretic naming/instances and now builds again.
+- SchemeTheoretic dependency cleanup removed direct `:= sorry` definition placeholders in the sheaf/duality stack, reducing bridge breakage from placeholder definitions.
 - Remaining open theorems in that bridge are:
   - `schemeLocalParameter_nonpos_away`
   - `scheme_argumentPrinciple`

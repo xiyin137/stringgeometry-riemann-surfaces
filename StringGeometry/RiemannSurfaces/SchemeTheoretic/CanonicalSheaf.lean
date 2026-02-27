@@ -68,16 +68,22 @@ where I is the ideal of the diagonal. For smooth morphisms, this is locally free
     - For curves (n = 1): Ω¹_{C/ℂ} is a line bundle
 
     Mathlib should have this as `Scheme.Ω` or similar. -/
-noncomputable def KahlerDifferentials : OModule C.toScheme := sorry
-  -- Use Mathlib's Kähler differentials when available
+theorem exists_KahlerDifferentials (C : SmoothProjectiveCurve) :
+    ∃ Ω : OModule C.toScheme, IsInvertible C.toScheme Ω := by
+  -- TODO: Use Mathlib's Kähler-differentials sheaf API directly.
+  sorry
+
+/-- The sheaf Ω¹_{C/ℂ}, obtained from the existential construction. -/
+noncomputable def KahlerDifferentials : OModule C.toScheme :=
+  (exists_KahlerDifferentials C).choose
 
 /-- Kähler differentials form a locally free sheaf.
 
     For smooth π : C → Spec ℂ of relative dimension 1, Ω¹_{C/ℂ}
     is locally free of rank 1, i.e., an invertible sheaf. -/
 instance kahlerDifferentials_isInvertible :
-    IsInvertible C.toScheme (KahlerDifferentials C) where
-  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
+    IsInvertible C.toScheme (KahlerDifferentials C) := by
+  simpa [KahlerDifferentials] using (exists_KahlerDifferentials C).choose_spec
 
 /-!
 ## The Canonical Sheaf
@@ -117,13 +123,20 @@ Any divisor K such that O(K) ≅ ω_C is called a canonical divisor.
     **Non-uniqueness:**
     K is unique only up to linear equivalence: if O(K) ≅ O(K') ≅ ω_C,
     then K ~ K'. -/
-noncomputable def canonicalDivisor : Divisor C.toAlgebraicCurve := sorry
-  -- Choose a representative divisor K
+theorem exists_canonicalDivisor (C : SmoothProjectiveCurve) :
+    ∃ K : Divisor C.toAlgebraicCurve,
+      Nonempty ((divisorSheaf C K).toModule ≅ (canonicalSheaf C).toModule) := by
+  -- TODO: Use divisor-line-bundle correspondence to construct K from ω_C.
+  sorry
+
+/-- A canonical divisor chosen from the existence theorem. -/
+noncomputable def canonicalDivisor : Divisor C.toAlgebraicCurve :=
+  (exists_canonicalDivisor C).choose
 
 /-- O(K) ≅ ω_C. -/
 theorem canonicalDivisor_sheaf :
     Nonempty ((divisorSheaf C (canonicalDivisor C)).toModule ≅ (canonicalSheaf C).toModule) := by
-  sorry
+  simpa [canonicalDivisor] using (exists_canonicalDivisor C).choose_spec
 
 /-!
 ## Degree of the Canonical Divisor

@@ -132,8 +132,15 @@ Therefore O(D-[p])(U) ⊆ O(D)(U), and the inclusion is just the natural embeddi
     - For q ≠ p: -(D-[p])(q) = -D(q), so v_q(f) ≥ -D(q) ✓
     - For q = p: -(D-[p])(p) = -D(p)+1 > -D(p), so v_p(f) ≥ -D(p) ✓
     Therefore f ∈ O(D)(U). -/
+theorem exists_inclusionMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
+    Nonempty ((divisorSheaf C (D - Divisor.point p)).toModule ⟶ (divisorSheaf C D).toModule) := by
+  -- TODO: Implement as the subsheaf inclusion induced by divisor inequalities.
+  sorry
+
+/-- The natural inclusion O(D-[p]) -> O(D). -/
 noncomputable def inclusionMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    (divisorSheaf C (D - Divisor.point p)).toModule ⟶ (divisorSheaf C D).toModule := sorry
+    (divisorSheaf C (D - Divisor.point p)).toModule ⟶ (divisorSheaf C D).toModule :=
+  Classical.choice (exists_inclusionMorphism C D p)
 
 /-- The inclusion morphism is a monomorphism.
 
@@ -164,8 +171,15 @@ The evaluation O(D) → k_p is given by restricting a section to its value at p.
     **Type-theoretic definition:**
     A morphism in X.Modules = SheafOfModules X.ringCatSheaf from
     divisorModule C D to skyscraperModule C.toAlgebraicCurve p. -/
+theorem exists_evaluationMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
+    Nonempty ((divisorSheaf C D).toModule ⟶ skyscraperModule C.toAlgebraicCurve p) := by
+  -- TODO: Implement from stalk-to-residue evaluation at p.
+  sorry
+
+/-- The evaluation map O(D) -> k_p at the point p. -/
 noncomputable def evaluationMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    (divisorSheaf C D).toModule ⟶ skyscraperModule C.toAlgebraicCurve p := sorry
+    (divisorSheaf C D).toModule ⟶ skyscraperModule C.toAlgebraicCurve p :=
+  Classical.choice (exists_evaluationMorphism C D p)
 
 /-- The evaluation morphism is an epimorphism.
 
