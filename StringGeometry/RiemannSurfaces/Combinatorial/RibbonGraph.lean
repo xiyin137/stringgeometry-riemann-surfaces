@@ -354,16 +354,19 @@ def connected (Γ : RibbonGraph) : Prop :=
     2. Remove half-edges h and pair(h)
     3. Merge cyclic orderings: splice the cycles at u and v into one at w
     4. Update vertexOf for all half-edges from u or v to now point to w -/
-noncomputable def contractEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.halfEdges) :
-    RibbonGraph where
-  vertices := sorry
-  halfEdges := Γ.halfEdges.erase h |>.erase (Γ.pair h)
-  pair := sorry
-  pair_involution := sorry
-  pair_mem := sorry
-  cyclicOrderAt := sorry
-  vertexOf := sorry
-  cyclic_order_correct := sorry
+theorem exists_contractEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.halfEdges) :
+    ∃ Γ' : RibbonGraph, Γ'.halfEdges = (Γ.halfEdges.erase h |>.erase (Γ.pair h)) := by
+  -- TODO: implement the combinatorial edge-contraction construction.
+  sorry
+
+/-- Contract an edge by choosing a witness from `exists_contractEdge`. -/
+noncomputable def contractEdge (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
+    RibbonGraph :=
+  (exists_contractEdge Γ h hh).choose
+
+theorem contractEdge_halfEdges (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
+    (Γ.contractEdge h hh).halfEdges = (Γ.halfEdges.erase h |>.erase (Γ.pair h)) :=
+  (exists_contractEdge Γ h hh).choose_spec
 
 /-- Delete an edge from a ribbon graph.
 
@@ -375,16 +378,25 @@ noncomputable def contractEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.h
     1. Remove half-edges h and pair(h) from halfEdges
     2. Update cyclic orderings at both endpoints to skip the removed half-edges
     3. Vertices remain unchanged -/
-noncomputable def deleteEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.halfEdges) :
-    RibbonGraph where
-  vertices := Γ.vertices
-  halfEdges := Γ.halfEdges.erase h |>.erase (Γ.pair h)
-  pair := sorry
-  pair_involution := sorry
-  pair_mem := sorry
-  cyclicOrderAt := sorry
-  vertexOf := Γ.vertexOf
-  cyclic_order_correct := sorry
+theorem exists_deleteEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.halfEdges) :
+    ∃ Γ' : RibbonGraph,
+      Γ'.vertices = Γ.vertices ∧
+      Γ'.halfEdges = (Γ.halfEdges.erase h |>.erase (Γ.pair h)) := by
+  -- TODO: implement the combinatorial edge-deletion construction.
+  sorry
+
+/-- Delete an edge by choosing a witness from `exists_deleteEdge`. -/
+noncomputable def deleteEdge (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
+    RibbonGraph :=
+  (exists_deleteEdge Γ h hh).choose
+
+theorem deleteEdge_vertices (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
+    (Γ.deleteEdge h hh).vertices = Γ.vertices :=
+  (exists_deleteEdge Γ h hh).choose_spec.1
+
+theorem deleteEdge_halfEdges (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
+    (Γ.deleteEdge h hh).halfEdges = (Γ.halfEdges.erase h |>.erase (Γ.pair h)) :=
+  (exists_deleteEdge Γ h hh).choose_spec.2
 
 /-- The dual ribbon graph (vertices ↔ faces).
 
@@ -399,15 +411,29 @@ noncomputable def deleteEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.hal
     - (Γ*)* = Γ (duality is an involution)
     - V(Γ*) = F(Γ), F(Γ*) = V(Γ), E(Γ*) = E(Γ)
     - χ(Γ*) = χ(Γ), hence genus(Γ*) = genus(Γ) -/
-noncomputable def dual (Γ : RibbonGraph) : RibbonGraph where
-  vertices := Finset.range Γ.numFaces
-  halfEdges := Γ.halfEdges
-  pair := Γ.pair
-  pair_involution := Γ.pair_involution
-  pair_mem := Γ.pair_mem
-  cyclicOrderAt := sorry
-  vertexOf := sorry
-  cyclic_order_correct := sorry
+theorem exists_dual (Γ : RibbonGraph) :
+    ∃ Γ' : RibbonGraph,
+      Γ'.vertices = Finset.range Γ.numFaces ∧
+      Γ'.halfEdges = Γ.halfEdges ∧
+      Γ'.pair = Γ.pair := by
+  -- TODO: construct the dual combinatorial data from face cycles.
+  sorry
+
+/-- The dual ribbon graph, chosen from `exists_dual`. -/
+noncomputable def dual (Γ : RibbonGraph) : RibbonGraph :=
+  (exists_dual Γ).choose
+
+theorem dual_vertices (Γ : RibbonGraph) :
+    Γ.dual.vertices = Finset.range Γ.numFaces :=
+  (exists_dual Γ).choose_spec.1
+
+theorem dual_halfEdges (Γ : RibbonGraph) :
+    Γ.dual.halfEdges = Γ.halfEdges :=
+  (exists_dual Γ).choose_spec.2.1
+
+theorem dual_pair (Γ : RibbonGraph) :
+    Γ.dual.pair = Γ.pair :=
+  (exists_dual Γ).choose_spec.2.2
 
 /-- Genus is preserved under duality.
 
