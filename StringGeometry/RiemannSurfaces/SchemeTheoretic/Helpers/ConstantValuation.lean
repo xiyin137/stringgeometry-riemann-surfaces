@@ -87,21 +87,36 @@ noncomputable def constantGerm (x : C.PointType) (z : ℂ) : C.toScheme.presheaf
 theorem constantsEmbed_eq_algebraMap_germ (x : C.PointType) (z : ℂ) :
     C.constantsEmbed z = algebraMap (C.toScheme.presheaf.stalk x) (C.toScheme.functionField)
       (C.constantGerm x z) := by
-  -- Direct proof using the definitions
-  simp only [constantsEmbed]
   haveI : Nonempty (⊤ : C.toScheme.Opens) := C.topOpenSetNonempty
-  -- The specialization from generic point to x
-  have hspec : (genericPoint C.toScheme) ⤳ x := (genericPoint_spec C.toScheme).specializes trivial
-  have hx : x ∈ (⊤ : C.toScheme.Opens) := trivial
-  have hgen : (genericPoint C.toScheme) ∈ (⊤ : C.toScheme.Opens) :=
-    hspec.mem_open (⊤ : C.toScheme.Opens).isOpen hx
-  -- germ_stalkSpecializes: germ ⊤ x hx ≫ stalkSpecializes hspec = germ ⊤ genericPoint hgen
-  have heq := C.toScheme.presheaf.germ_stalkSpecializes (U := ⊤) hx hspec
-  -- germToFunctionField = germ ⊤ genericPoint
-  -- germ ⊤ x ≫ stalkSpecializes = germ ⊤ genericPoint (by germ_stalkSpecializes)
-  -- So: germToFunctionField s = (germ x ≫ stalkSpecializes) s = algebraMap (germ s)
-  -- After simp, germToFunctionField is unfolded; use the factorization directly
-  sorry
+  letI : Algebra Γ(C.toScheme, ⊤) C.toScheme.functionField :=
+    (C.toScheme.germToFunctionField ⊤).hom.toAlgebra
+  letI : Algebra Γ(C.toScheme, ⊤) (C.toScheme.presheaf.stalk x) :=
+    (C.toScheme.presheaf.germ ⊤ x trivial).hom.toAlgebra
+  letI : IsScalarTower Γ(C.toScheme, ⊤) (C.toScheme.presheaf.stalk x) C.toScheme.functionField := by
+    refine IsScalarTower.of_algebraMap_eq' ?_
+    ext s
+    have hspec : (genericPoint C.toScheme) ⤳ x :=
+      (genericPoint_spec C.toScheme).specializes trivial
+    have heq := C.toScheme.presheaf.germ_stalkSpecializes
+      (U := ⊤) (hy := (trivial : x ∈ (⊤ : C.toScheme.Opens))) hspec
+    have heq' := congrArg (fun f => f.hom s) heq
+    change (fun f => (CommRingCat.Hom.hom f) s)
+        (C.toScheme.presheaf.germ ⊤ (genericPoint C.toScheme)
+          (((genericPoint_spec C.toScheme).mem_open_set_iff (⊤ : C.toScheme.Opens).isOpen).mpr
+            (by simp))) =
+      (fun f => (CommRingCat.Hom.hom f) s)
+        (C.toScheme.presheaf.germ ⊤ x trivial ≫ C.toScheme.presheaf.stalkSpecializes hspec)
+    exact heq'.symm
+  let t : Γ(C.toScheme, ⊤) := C.constantGlobalSection z
+  have hmap :=
+    IsScalarTower.algebraMap_eq
+      (Γ(C.toScheme, ⊤))
+      (C.toScheme.presheaf.stalk x)
+      (C.toScheme.functionField)
+  have hmap' := congrArg (fun φ : Γ(C.toScheme, ⊤) →+* C.toScheme.functionField => φ t) hmap
+  simpa [t, constantGerm, constantGlobalSection, Scheme.germToFunctionField,
+    RiemannSurfaces.SchemeTheoretic.AlgebraicCurve.constantsEmbed,
+    RingHom.comp_apply, RingHom.algebraMap_toAlgebra] using hmap'
 
 /-- The residue of a constant germ is nonzero when z ≠ 0.
 
