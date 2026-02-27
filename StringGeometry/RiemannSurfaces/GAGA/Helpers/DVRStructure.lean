@@ -124,7 +124,7 @@ def LocalRingAt (p : C.Point) : Subring C.FunctionField where
     have h1 : C.valuation p (-1) + C.valuation p (-1) = C.valuation p 1 := by
       rw [← C.valuation_mul p (-1) (-1) hneg1_ne hneg1_ne]
       have hmul : (-1 : C.FunctionField) * (-1) = 1 := by ring
-      simpa [hmul]
+      simp [hmul]
     rw [C.valuation_one] at h1
     have hneg1_val : C.valuation p (-1) = 0 := by omega
     have : -a = -1 * a := by ring
