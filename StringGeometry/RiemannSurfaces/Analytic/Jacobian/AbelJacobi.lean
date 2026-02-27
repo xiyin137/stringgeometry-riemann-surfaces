@@ -79,7 +79,7 @@ structure HolomorphicBasis (CRS : RiemannSurfaces.CompactRiemannSurface) where
     This is the definition of genus from the Hodge-theoretic perspective:
     g = dim H⁰(Σ, Ω¹) = dim H¹(Σ, O) = h^{1,0} = h^{0,1}. -/
 theorem h0_omega_dimension (CRS : RiemannSurfaces.CompactRiemannSurface)
-    (B : HolomorphicBasis CRS) :
+    (_B : HolomorphicBasis CRS) :
     Fintype.card (Fin CRS.genus) = CRS.genus := Fintype.card_fin _
 
 /-!

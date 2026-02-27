@@ -372,10 +372,10 @@ theorem odd_theta_null_vanishes (g : ℕ) (a b : Fin g → ℚ)
   let n_neg2a : Fin g → ℤ := fun i => if a i = 0 then 0 else -1
   have hm_cast : ∀ i, (m_2b i : ℂ) = 2 * (b i : ℂ) := by
     intro i; simp only [m_2b]
-    rcases hb i with h | h <;> simp [h] <;> push_cast <;> norm_num
+    rcases hb i with h | h <;> simp [h]
   have hn_cast : ∀ i, (n_neg2a i : ℂ) = -2 * (a i : ℂ) := by
     intro i; simp only [n_neg2a]
-    rcases ha i with h | h <;> simp [h] <;> push_cast <;> norm_num
+    rcases ha i with h | h <;> simp [h]
   -- Step 1: S = θ(-(Ωa + b)) by evenness
   have h1 : S = riemannThetaVal g
       (fun i => -(Finset.univ.sum (fun j => Ω i j * ↑(a j)) + ↑(b i))) Ω :=

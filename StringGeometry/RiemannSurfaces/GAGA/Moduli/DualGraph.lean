@@ -186,7 +186,7 @@ def smoothCurveGraph (g : ℕ) : DualGraph where
 /-- A smooth curve of genus g ≥ 2 is stable -/
 theorem smooth_curve_stable (g : ℕ) (hg : g ≥ 2) : (smoothCurveGraph g).isStable := by
   intro v
-  simp only [DualGraph.vertexStable, smoothCurveGraph, SimpleGraph.bot_degree]
+  simp only [DualGraph.vertexStable, smoothCurveGraph]
   omega
 
 /-- The dual graph for a one-node curve with non-separating node:

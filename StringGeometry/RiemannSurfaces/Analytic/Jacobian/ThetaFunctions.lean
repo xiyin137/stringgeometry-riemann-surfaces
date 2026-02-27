@@ -242,12 +242,12 @@ theorem characteristicFromBits_injective (g : ℕ) :
     funext i
     have hi := congrFun ha i
     simp only at hi
-    by_cases h1 : a1 i <;> by_cases h2 : a2 i <;> simp_all <;> norm_num at hi
+    by_cases h1 : a1 i <;> by_cases h2 : a2 i <;> simp_all
   · -- b1 = b2
     funext i
     have hi := congrFun hb i
     simp only at hi
-    by_cases h1 : b1 i <;> by_cases h2 : b2 i <;> simp_all <;> norm_num at hi
+    by_cases h1 : b1 i <;> by_cases h2 : b2 i <;> simp_all
 
 /-- Number of half-integer characteristics is 2^{2g} -/
 theorem num_half_int_characteristics (g : ℕ) :
@@ -269,7 +269,7 @@ The classical theta functions θ₁, θ₂, θ₃, θ₄.
 -/
 
 /-- The nome q = exp(πiτ) for τ ∈ H -/
-noncomputable def nome (τ : ℂ) (hτ : τ.im > 0) : ℂ :=
+noncomputable def nome (τ : ℂ) (_hτ : τ.im > 0) : ℂ :=
   Complex.exp (π * I * τ)
 
 /-- Jacobi theta function θ₁(z, τ) = 2Σ_{n≥0} (-1)^n q^{(n+1/2)²} sin((2n+1)πz) -/

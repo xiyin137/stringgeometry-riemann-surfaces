@@ -49,7 +49,7 @@ def IsHarmonicConjugate' (u v : ℂ → ℝ) (U : Set ℂ) : Prop :=
 
 /-- On a ball, a harmonic function has a harmonic conjugate.
     This follows directly from `harmonic_is_realOfHolomorphic`. -/
-theorem harmonic_conjugate_exists_ball {u : ℂ → ℝ} {z₀ : ℂ} {R : ℝ} (hR : R > 0)
+theorem harmonic_conjugate_exists_ball {u : ℂ → ℝ} {z₀ : ℂ} {R : ℝ} (_hR : R > 0)
     (hu : HarmonicOnNhd u (ball z₀ R)) :
     ∃ v : ℂ → ℝ, IsHarmonicConjugate' u v (ball z₀ R) ∧ HarmonicOnNhd v (ball z₀ R) := by
   -- Use Mathlib's theorem: harmonic function is real part of holomorphic

@@ -429,7 +429,7 @@ private lemma circleMap_sub_ne_zero {c : ℂ} {R : ℝ} (hR : 0 < R)
 
 /-- The integral of (ζ(θ)-c)/(ζ(θ)-z) over the circle equals 2π.
     This follows from the Cauchy integral formula ∮ (ζ-z)⁻¹ dζ = 2πI. -/
-private lemma circle_ratio_integral {c : ℂ} {R : ℝ} (hR : 0 < R)
+private lemma circle_ratio_integral {c : ℂ} {R : ℝ} (_hR : 0 < R)
     {z : ℂ} (hz : z ∈ ball c R) :
     ∫ θ in (0 : ℝ)..2 * π,
       ((circleMap c R θ - c) / (circleMap c R θ - z) : ℂ) = 2 * ↑Real.pi := by
@@ -821,7 +821,7 @@ private theorem dist_circleMap_radii (z : ℂ) (r r' : ℝ) (θ : ℝ) :
       = ↑(r - r') * exp (↑θ * Complex.I) from by push_cast; ring]
   rw [norm_mul, Complex.norm_real, Complex.norm_exp_ofReal_mul_I, mul_one, Real.norm_eq_abs]
 
-private theorem harmonicOnNhd_mvp_closedball (f : ℂ → ℝ) (c : ℂ) (R : ℝ) (hR : 0 < R)
+private theorem harmonicOnNhd_mvp_closedball (f : ℂ → ℝ) (c : ℂ) (R : ℝ) (_hR : 0 < R)
     (hf_cont : ContinuousOn f (closedBall c R))
     (hf_harm : HarmonicOnNhd f (ball c R)) :
     ∀ z ∈ ball c R, ∀ r > 0, closedBall z r ⊆ closedBall c R →

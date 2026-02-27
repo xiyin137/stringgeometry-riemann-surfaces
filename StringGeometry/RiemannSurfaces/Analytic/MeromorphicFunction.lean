@@ -289,7 +289,7 @@ noncomputable def inv (f : AnalyticMeromorphicFunction RS) : AnalyticMeromorphic
     ext p
     simp only [Set.mem_setOf_eq, neg_ne_zero]
   order_pos_iff_zero := fun p => by
-    simp only [neg_pos]
+    simp
     constructor
     · intro h
       -- f.order p < 0, so -f.order p > 0

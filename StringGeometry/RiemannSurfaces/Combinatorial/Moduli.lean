@@ -445,7 +445,7 @@ structure ModuliForm (g n : ℕ) (degree : ℕ) where
   degreeMatch : degree ≤ 6 * g - 6 + 2 * n
 
 /-- A top form on M_{g,n} (degree = real dimension) -/
-def ModuliForm.isTop (ω : ModuliForm g n degree) : Prop :=
+def ModuliForm.isTop (_ω : ModuliForm g n degree) : Prop :=
   degree = 6 * g - 6 + 2 * n
 
 /-- The symmetry factor 1/|Aut(Γ)| for a ribbon graph.

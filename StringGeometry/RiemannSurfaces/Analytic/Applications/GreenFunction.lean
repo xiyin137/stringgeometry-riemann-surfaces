@@ -111,7 +111,7 @@ The Poisson kernel gives the solution to the Dirichlet problem.
 -/
 
 /-- The Poisson kernel for the unit disk -/
-noncomputable def poissonKernel (z : ℂ) (hz : ‖z‖ < 1) (ζ : ℂ) (hζ : ‖ζ‖ = 1) : ℝ :=
+noncomputable def poissonKernel (z : ℂ) (_hz : ‖z‖ < 1) (ζ : ℂ) (_hζ : ‖ζ‖ = 1) : ℝ :=
   -- P(z, ζ) = (1 - |z|²) / |ζ - z|²
   (1 - ‖z‖^2) / ‖ζ - z‖^2
 

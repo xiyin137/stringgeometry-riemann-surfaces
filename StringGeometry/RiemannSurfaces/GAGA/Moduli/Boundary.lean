@@ -56,7 +56,7 @@ theorem delta0_has_one_node (g : ℕ) (hg : g ≥ 1) :
 /-- Δ_0 is stable for g ≥ 2 -/
 theorem delta0_stable (g : ℕ) (hg : g ≥ 2) : (oneNodeNonsepGraph g (by omega)).isStable := by
   intro v
-  simp only [DualGraph.vertexStable, oneNodeNonsepGraph, SimpleGraph.bot_degree]
+  simp only [DualGraph.vertexStable, oneNodeNonsepGraph]
   omega
 
 /-- Δ_i graph has one node (connecting two components) -/
