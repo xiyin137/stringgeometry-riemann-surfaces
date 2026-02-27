@@ -8,6 +8,11 @@
 - Stabilize core sheaf/cohomology infrastructure so `SGRSSchemeTheoretic` builds without new regressions.
 - Close critical theorem obligations that feed Riemann-Roch.
 
+## Current Status
+- `Divisors.lean` core degree/principal-divisor algebra lemmas are now closed (`degree_zero/add/neg`, `PrincipalDivisor.mul/inv`, `linearlyEquivalent_refl`, `principalDivisor_degree_zero`).
+- `Helpers/ConstantValuation.lean` API-compatibility with current Mathlib has been repaired; the stalk-factorization lemma for constants is now proved.
+- Remaining high-impact blockers are still in sheaf/cohomology infrastructure and point-exact morphism construction.
+
 ## Key Dependency Flowchart
 ```text
 Basic hierarchy + local ring infrastructure

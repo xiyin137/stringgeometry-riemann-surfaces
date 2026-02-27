@@ -4,6 +4,15 @@
 - Keep GAGA as the transport/equivalence layer between analytic and algebraic viewpoints.
 - Avoid reintroducing theorem-bearing data structures as hidden assumptions.
 
+## Current Status
+- `ToCompactAlgebraicCurve.lean` has been API-aligned with current SchemeTheoretic naming/instances and now builds again.
+- Remaining open theorems in that bridge are:
+  - `schemeLocalParameter_nonpos_away`
+  - `scheme_argumentPrinciple`
+  - `scheme_regularIsConstant`
+  - `scheme_leadingCoefficientUniqueness`
+- These are the immediate blockers for removing bridge-level placeholders without smuggling assumptions.
+
 ## Key Dependency Flowchart
 ```text
 Bridge layer
