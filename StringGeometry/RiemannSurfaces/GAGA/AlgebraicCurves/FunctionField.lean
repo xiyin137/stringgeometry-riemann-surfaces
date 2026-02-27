@@ -268,7 +268,6 @@ This is sometimes stated as "principal divisors have degree zero".
 
     **Category 2: DVR Axioms** (capture "smooth curve over ℂ")
     - `localParameter` + `localParameter_valuation`: uniformizer exists
-    - `localParameter_nonpos_away`: uniformizer has no extra zeros
     - `leadingCoefficientUniqueness`: residue field at each point is ℂ
 
     These are **not smuggled theorems** - they form a minimal axiom set.
@@ -329,15 +328,6 @@ structure CompactAlgebraicCurve extends AlgebraicCurve where
       maximal ideals. -/
   localParameter : Point → FunctionField
   localParameter_valuation : ∀ p, toAlgebraicCurve.valuation p (localParameter p) = 1
-  /-- **Local parameters have no other zeros**: v_q(t_p) ≤ 0 for q ≠ p.
-
-      By the argument principle (Σ v_q(t_p) = 0) and v_p(t_p) = 1, the local
-      parameter t_p must have a pole somewhere. This axiom says t_p has no
-      additional ZEROS (only at p), but may have poles at other points.
-
-      Geometrically: t_p is a function with a simple zero at p and poles
-      elsewhere that balance out to total degree 0. -/
-  localParameter_nonpos_away : ∀ p q, p ≠ q → toAlgebraicCurve.valuation q (localParameter p) ≤ 0
   /-- **Leading coefficient uniqueness** (DVR property).
 
       For f, g ∈ K(C)* with v_p(f) = v_p(g) = -m < 0 (same pole order at p),

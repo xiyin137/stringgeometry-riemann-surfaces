@@ -151,9 +151,6 @@ structure CompactAlgebraicStructureOn (CRS : CompactRiemannSurface) extends
   localParameter : CRS.carrier → FunctionField
   /-- Local parameter has valuation 1 at its point -/
   localParameter_valuation : ∀ p, valuation p (localParameter p) = 1
-  /-- Local parameter has non-positive valuation elsewhere (no additional zeros).
-      By argument principle, Σ v_q(t_p) = 0 with v_p(t_p) = 1, so t_p has poles elsewhere. -/
-  localParameter_nonpos_away : ∀ p q, p ≠ q → valuation q (localParameter p) ≤ 0
   /-- Leading coefficient uniqueness (DVR property) -/
   leadingCoefficientUniqueness : ∀ (p : CRS.carrier) (f g : FunctionField),
       f ≠ 0 → g ≠ 0 →
@@ -226,7 +223,6 @@ def toCompactAlgebraicCurve : CompactAlgebraicCurve where
   regularIsConstant := CA.regularIsConstant
   localParameter := CA.localParameter
   localParameter_valuation := CA.localParameter_valuation
-  localParameter_nonpos_away := CA.localParameter_nonpos_away
   leadingCoefficientUniqueness := CA.leadingCoefficientUniqueness
 
 end CompactAlgebraicStructureOn

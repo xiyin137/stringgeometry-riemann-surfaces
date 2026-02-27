@@ -7,8 +7,8 @@
 ## Current Status
 - `ToCompactAlgebraicCurve.lean` has been API-aligned with current SchemeTheoretic naming/instances and now builds again.
 - SchemeTheoretic dependency cleanup removed direct `:= sorry` definition placeholders in the sheaf/duality stack, reducing bridge breakage from placeholder definitions.
+- Removed the over-strong `localParameter_nonpos_away` field from compact-curve structures and bridge constructors; this drops one bridge blocker that did not represent a general smooth-projective-curve property.
 - Remaining open theorems in that bridge are:
-  - `schemeLocalParameter_nonpos_away`
   - `scheme_argumentPrinciple`
   - `scheme_regularIsConstant`
   - `scheme_leadingCoefficientUniqueness`

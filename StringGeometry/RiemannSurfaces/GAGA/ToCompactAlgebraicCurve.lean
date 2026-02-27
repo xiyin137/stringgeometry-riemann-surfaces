@@ -72,10 +72,6 @@ theorem schemeLocalParameter_valuation (x : C.PointType) :
     C.valuationAt x (C.schemeLocalParameter x) = 1 :=
   (C.exists_localParameter x).choose_spec
 
-theorem schemeLocalParameter_nonpos_away (p q : C.PointType) (hpq : p ≠ q) :
-    C.valuationAt q (C.schemeLocalParameter p) ≤ 0 :=
-  sorry
-
 /-!
 ## Step 1: Construct the underlying AlgebraicCurve
 -/
@@ -157,7 +153,6 @@ noncomputable def toCompactAlgebraicCurve : Algebraic.CompactAlgebraicCurve :=
     regularIsConstant := scheme_regularIsConstant (C := C)
     localParameter := schemeLocalParameter (C := C)
     localParameter_valuation := schemeLocalParameter_valuation (C := C)
-    localParameter_nonpos_away := schemeLocalParameter_nonpos_away (C := C)
     leadingCoefficientUniqueness := scheme_leadingCoefficientUniqueness (C := C) }
 
 /-- The bridge is well-defined: for any SmoothProjectiveCurve, we can construct

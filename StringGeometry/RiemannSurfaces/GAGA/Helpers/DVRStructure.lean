@@ -59,7 +59,6 @@ These are independent consequences of properness.
 
 **Category 2: DVR Axioms** (capture "smooth curve over ℂ")
 - `localParameter` + `localParameter_valuation`: uniformizer exists
-- `localParameter_nonpos_away`: uniformizer has no extra zeros
 - `leadingCoefficientUniqueness`: residue field = ℂ
 
 These follow from "smooth + algebraically closed base field".
@@ -124,7 +123,8 @@ def LocalRingAt (p : C.Point) : Subring C.FunctionField where
     have hneg1_ne : (-1 : C.FunctionField) ≠ 0 := neg_ne_zero.mpr one_ne_zero
     have h1 : C.valuation p (-1) + C.valuation p (-1) = C.valuation p 1 := by
       rw [← C.valuation_mul p (-1) (-1) hneg1_ne hneg1_ne]
-      ring_nf
+      have hmul : (-1 : C.FunctionField) * (-1) = 1 := by ring
+      simpa [hmul]
     rw [C.valuation_one] at h1
     have hneg1_val : C.valuation p (-1) = 0 := by omega
     have : -a = -1 * a := by ring
