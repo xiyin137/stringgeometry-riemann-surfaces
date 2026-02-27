@@ -42,6 +42,21 @@ namespace SmoothProjectiveCurve
 
 variable (C : SmoothProjectiveCurve)
 
+local instance : IrreducibleSpace C.toScheme := C.irreducible
+
+noncomputable local instance stalkFunctionFieldAlgebraConst (x : C.PointType) :
+    Algebra (C.toScheme.presheaf.stalk x) C.toScheme.functionField :=
+  AlgebraicGeometry.stalkFunctionFieldAlgebra (X := C.toScheme) (x := (x : C.toScheme))
+
+local instance stalkFunctionFieldIsFractionRingConst (x : C.PointType) :
+    IsFractionRing (C.toScheme.presheaf.stalk x) C.toScheme.functionField := by
+  simpa using (inferInstance :
+    IsFractionRing (C.toScheme.presheaf.stalk (x : C.toScheme)) C.toScheme.functionField)
+
+local instance stalkIsDVRConst (x : C.PointType) :
+    IsDiscreteValuationRing (C.toScheme.presheaf.stalk x) :=
+  C.stalkIsDVR x
+
 /-!
 ## Helper Definitions and Lemmas
 
@@ -73,7 +88,7 @@ theorem constantsEmbed_eq_algebraMap_germ (x : C.PointType) (z : ℂ) :
     C.constantsEmbed z = algebraMap (C.toScheme.presheaf.stalk x) (C.toScheme.functionField)
       (C.constantGerm x z) := by
   -- Direct proof using the definitions
-  simp only [constantsEmbed, constantGlobalSection, constantGerm]
+  simp only [constantsEmbed]
   haveI : Nonempty (⊤ : C.toScheme.Opens) := C.topOpenSetNonempty
   -- The specialization from generic point to x
   have hspec : (genericPoint C.toScheme) ⤳ x := (genericPoint_spec C.toScheme).specializes trivial
@@ -135,7 +150,11 @@ theorem constantGerm_residue_ne_zero (x : C.PointType) (z : ℂ) (hz : z ≠ 0) 
   have h' : toResidueField z = 0 := by
     rw [← heval]
     exact h
-  have hφz : φ z = φ 0 := by simp only [φ, RingHom.comp_apply, h', map_zero]
+  have hφz : φ z = φ 0 := by
+    change (CommRingCat.Hom.hom iso.hom) (toResidueField z) =
+      (CommRingCat.Hom.hom iso.hom) (toResidueField 0)
+    rw [h', map_zero]
+    simp
   exact hz (hφ_inj hφz)
 
 /-- A stalk element with nonzero residue is a unit. -/
@@ -210,10 +229,11 @@ theorem valuationAt_constant' (x : C.PointType) (z : ℂ) (hz : z ≠ 0) :
   rw [← hu]
   -- Apply extendedVal_unit
   unfold valuationAt
-  exact @DVRValuation.extendedVal_unit
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _ u
+  simpa using
+    (DVRValuation.extendedVal_unit
+      (R := C.toScheme.presheaf.stalk x)
+      (K := C.toScheme.functionField)
+      u)
 
 end SmoothProjectiveCurve
 

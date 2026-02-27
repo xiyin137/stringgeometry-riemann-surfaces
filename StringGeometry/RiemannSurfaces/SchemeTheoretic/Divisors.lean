@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: ModularPhysics Contributors
 -/
 import StringGeometry.RiemannSurfaces.SchemeTheoretic.LocalRings
+import StringGeometry.RiemannSurfaces.GAGA.ToCompactAlgebraicCurve
 import Mathlib.Data.Finsupp.BigOperators
 
 /-!
@@ -89,13 +90,31 @@ noncomputable def degree (D : Divisor C) : ℤ := Finsupp.sum D (fun _ n => n)
 
 /-- Degree is a group homomorphism. -/
 theorem degree_zero : degree (0 : Divisor C) = 0 := by
-  sorry
+  unfold degree
+  exact Finsupp.sum_zero_index
 
 theorem degree_add (D E : Divisor C) : degree (D + E) = degree D + degree E := by
-  sorry
+  classical
+  unfold degree
+  simpa using
+    (Finsupp.sum_add_index
+      (f := D) (g := E) (h := fun (_ : C.PointType) (n : ℤ) => n)
+      (by intro a ha; rfl)
+      (by intro a ha b₁ b₂; rfl))
 
 theorem degree_neg (D : Divisor C) : degree (-D) = -degree D := by
-  sorry
+  unfold degree
+  calc
+    (-D).sum (fun (_ : C.PointType) (n : ℤ) => n)
+        = D.sum (fun (_ : C.PointType) (n : ℤ) => -n) := by
+      exact
+        (Finsupp.sum_neg_index
+          (g := D) (h := fun (_ : C.PointType) (n : ℤ) => n)
+          (by intro a; rfl))
+    _ = -D.sum (fun (_ : C.PointType) (n : ℤ) => n) := by
+      exact
+        (Finsupp.sum_neg
+          (f := D) (h := fun (_ : C.PointType) (n : ℤ) => n))
 
 /-- Degree of a single point divisor is 1. -/
 theorem degree_point (p : C.PointType) : degree (point p) = 1 := by
@@ -173,14 +192,18 @@ theorem coeff_eq_valuation (f : C.FunctionFieldType) (hf : f ≠ 0) (p : C.Point
 theorem mul (f g : C.FunctionFieldType) (hf : f ≠ 0) (hg : g ≠ 0) (hfg : f * g ≠ 0) :
     principalDivisor C (f * g) hfg =
     principalDivisor C f hf + principalDivisor C g hg := by
-  sorry
+  ext p
+  simp only [principalDivisor, Finsupp.ofSupportFinite_coe]
+  exact C.valuationAt_mul p f g hf hg
 
 /-- div(f⁻¹) = -div(f).
 
     **Proof:** Follows from v_p(f⁻¹) = -v_p(f). -/
 theorem inv (f : C.FunctionFieldType) (hf : f ≠ 0) :
     principalDivisor C f⁻¹ (inv_ne_zero hf) = -principalDivisor C f hf := by
-  sorry
+  ext p
+  simp only [principalDivisor, Finsupp.ofSupportFinite_coe]
+  exact C.valuationAt_inv p f hf
 
 end PrincipalDivisor
 
@@ -206,8 +229,12 @@ of the "argument principle" from complex analysis.
     the global regular functions are constants (Liouville). -/
 theorem principalDivisor_degree_zero (C : SmoothProjectiveCurve) (f : C.FunctionFieldType) (hf : f ≠ 0) :
     (principalDivisor C f hf).degree = 0 := by
-  -- This is a deep theorem requiring properness
-  sorry
+  simpa [principalDivisor, Divisor.degree,
+    RiemannSurfaces.Algebraic.AlgebraicCurve.orderSum,
+    RiemannSurfaces.Algebraic.AlgebraicCurve.divisorOf,
+    RiemannSurfaces.Algebraic.AlgebraicCurve.Divisor.degree,
+    SmoothProjectiveCurve.toGagaAlgebraicCurve] using
+    (SmoothProjectiveCurve.scheme_argumentPrinciple (C := C) (f := f) hf)
 
 /-!
 ## Linear Equivalence
@@ -222,7 +249,12 @@ def linearlyEquivalent (C : SmoothProjectiveCurve) (D E : Divisor C.toAlgebraicC
 /-- Linear equivalence is an equivalence relation. -/
 theorem linearlyEquivalent_refl (C : SmoothProjectiveCurve) (D : Divisor C.toAlgebraicCurve) :
     linearlyEquivalent C D D := by
-  sorry
+  letI : NeZero (1 : C.FunctionFieldType) := NeZero.one
+  refine ⟨(1 : C.FunctionFieldType), one_ne_zero, ?_⟩
+  ext p
+  simp only [sub_self, principalDivisor, Finsupp.ofSupportFinite_coe]
+  symm
+  exact C.valuationAt_one p
 
 /-- Linearly equivalent divisors have the same degree. -/
 theorem degree_eq_of_linearlyEquivalent (C : SmoothProjectiveCurve)

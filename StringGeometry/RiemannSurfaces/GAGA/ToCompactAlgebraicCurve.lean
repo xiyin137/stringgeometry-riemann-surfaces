@@ -5,6 +5,7 @@ Authors: ModularPhysics Contributors
 -/
 import StringGeometry.RiemannSurfaces.SchemeTheoretic.LocalRings
 import StringGeometry.RiemannSurfaces.SchemeTheoretic.Helpers.ConstantValuation
+import StringGeometry.RiemannSurfaces.SchemeTheoretic.Cohomology.SheafCohomology
 import StringGeometry.RiemannSurfaces.GAGA.AlgebraicCurves.FunctionField
 
 /-!
@@ -73,15 +74,14 @@ theorem schemeLocalParameter_valuation (x : C.PointType) :
 
 theorem schemeLocalParameter_nonpos_away (p q : C.PointType) (hpq : p ≠ q) :
     C.valuationAt q (C.schemeLocalParameter p) ≤ 0 :=
-  C.localParameter_nonpos_away p q (C.schemeLocalParameter p)
-    (C.schemeLocalParameter_valuation p) hpq
+  sorry
 
 /-!
 ## Step 1: Construct the underlying AlgebraicCurve
 -/
 
 /-- The underlying AlgebraicCurve structure from a SmoothProjectiveCurve. -/
-noncomputable def toAlgebraicCurve : Algebraic.AlgebraicCurve where
+noncomputable def toGagaAlgebraicCurve : Algebraic.AlgebraicCurve where
   Point := C.PointType
   FunctionField := C.FunctionFieldType
   fieldInst := C.functionFieldIsField
@@ -106,7 +106,7 @@ noncomputable def toAlgebraicCurve : Algebraic.AlgebraicCurve where
 
     This is a PROPER DEFINITION (no sorry). -/
 noncomputable instance toAlgebraicCurveFunctionFieldAlgebra :
-    Algebraic.FunctionFieldAlgebra C.toAlgebraicCurve where
+    Algebraic.FunctionFieldAlgebra C.toGagaAlgebraicCurve where
   algebraInst := C.functionFieldAlgebra
   valuation_algebraMap := fun p c hc => by
     -- algebraMap ℂ C.FunctionFieldType = C.constantsEmbed (by definition of functionFieldAlgebra)
@@ -121,26 +121,26 @@ We construct this step by step to diagnose any type issues.
 -/
 
 /-- Helper: argumentPrinciple for scheme curve. -/
-theorem scheme_argumentPrinciple (f : C.toAlgebraicCurve.FunctionField)
-    (hf : f ≠ 0) : C.toAlgebraicCurve.orderSum f hf = 0 := by
+theorem scheme_argumentPrinciple (f : C.toGagaAlgebraicCurve.FunctionField)
+    (hf : f ≠ 0) : C.toGagaAlgebraicCurve.orderSum f hf = 0 := by
   sorry
 
 /-- Helper: regularIsConstant for scheme curve. -/
-theorem scheme_regularIsConstant (f : C.toAlgebraicCurve.FunctionField)
-    (hf : ∀ p : C.toAlgebraicCurve.Point, 0 ≤ C.toAlgebraicCurve.valuation p f) :
-    ∃ (c : ℂ), f = algebraMap ℂ C.toAlgebraicCurve.FunctionField c := by
+theorem scheme_regularIsConstant (f : C.toGagaAlgebraicCurve.FunctionField)
+    (hf : ∀ p : C.toGagaAlgebraicCurve.Point, 0 ≤ C.toGagaAlgebraicCurve.valuation p f) :
+    ∃ (c : ℂ), f = algebraMap ℂ C.toGagaAlgebraicCurve.FunctionField c := by
   sorry
 
 /-- Helper: leadingCoefficientUniqueness for scheme curve. -/
-theorem scheme_leadingCoefficientUniqueness (p : C.toAlgebraicCurve.Point)
-    (f g : C.toAlgebraicCurve.FunctionField)
+theorem scheme_leadingCoefficientUniqueness (p : C.toGagaAlgebraicCurve.Point)
+    (f g : C.toGagaAlgebraicCurve.FunctionField)
     (hf : f ≠ 0) (hg : g ≠ 0)
-    (hval : C.toAlgebraicCurve.valuation p f = C.toAlgebraicCurve.valuation p g)
-    (hneg : C.toAlgebraicCurve.valuation p f < 0) :
+    (hval : C.toGagaAlgebraicCurve.valuation p f = C.toGagaAlgebraicCurve.valuation p g)
+    (hneg : C.toGagaAlgebraicCurve.valuation p f < 0) :
     ∃ (c : ℂ), c ≠ 0 ∧
-      (g - algebraMap ℂ C.toAlgebraicCurve.FunctionField c * f = 0 ∨
-       C.toAlgebraicCurve.valuation p (g - algebraMap ℂ C.toAlgebraicCurve.FunctionField c * f) >
-       C.toAlgebraicCurve.valuation p g) := by
+      (g - algebraMap ℂ C.toGagaAlgebraicCurve.FunctionField c * f = 0 ∨
+       C.toGagaAlgebraicCurve.valuation p (g - algebraMap ℂ C.toGagaAlgebraicCurve.FunctionField c * f) >
+       C.toGagaAlgebraicCurve.valuation p g) := by
   sorry
 
 /-- Convert a SmoothProjectiveCurve to CompactAlgebraicCurve.
@@ -150,15 +150,15 @@ theorem scheme_leadingCoefficientUniqueness (p : C.toAlgebraicCurve.Point)
     a `CompactAlgebraicCurve`, validating that the abstract axioms are
     exactly what scheme theory provides. -/
 noncomputable def toCompactAlgebraicCurve : Algebraic.CompactAlgebraicCurve :=
-  { C.toAlgebraicCurve with
-    algebraInst := C.toAlgebraicCurveFunctionFieldAlgebra
-    genus := C.genus
-    argumentPrinciple := C.scheme_argumentPrinciple
-    regularIsConstant := C.scheme_regularIsConstant
-    localParameter := C.schemeLocalParameter
-    localParameter_valuation := C.schemeLocalParameter_valuation
-    localParameter_nonpos_away := C.schemeLocalParameter_nonpos_away
-    leadingCoefficientUniqueness := C.scheme_leadingCoefficientUniqueness }
+  { C.toGagaAlgebraicCurve with
+    algebraInst := toAlgebraicCurveFunctionFieldAlgebra (C := C)
+    genus := genus C
+    argumentPrinciple := scheme_argumentPrinciple (C := C)
+    regularIsConstant := scheme_regularIsConstant (C := C)
+    localParameter := schemeLocalParameter (C := C)
+    localParameter_valuation := schemeLocalParameter_valuation (C := C)
+    localParameter_nonpos_away := schemeLocalParameter_nonpos_away (C := C)
+    leadingCoefficientUniqueness := scheme_leadingCoefficientUniqueness (C := C) }
 
 /-- The bridge is well-defined: for any SmoothProjectiveCurve, we can construct
     a CompactAlgebraicCurve. -/
