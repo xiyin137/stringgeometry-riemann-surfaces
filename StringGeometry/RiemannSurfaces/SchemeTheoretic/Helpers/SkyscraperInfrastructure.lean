@@ -165,7 +165,7 @@ noncomputable def residueFieldLinearEquiv (p : C.PointType) :
         exact ringEquiv.map_mul _ _
       _ = c * ringEquiv x := by
         have hrc : ringEquiv (iso.inv.hom c) = c := by
-          simpa [ringEquiv] using right_inv_eq c
+          exact right_inv_eq c
         rw [hrc]
   · -- Show bijective
     exact ringEquiv.bijective

@@ -77,7 +77,7 @@ noncomputable def KahlerDifferentials : OModule C.toScheme := sorry
     is locally free of rank 1, i.e., an invertible sheaf. -/
 instance kahlerDifferentials_isInvertible :
     IsInvertible C.toScheme (KahlerDifferentials C) where
-  locally_free_rank_one := fun i => ⟨Iso.refl _⟩
+  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
 
 /-!
 ## The Canonical Sheaf
