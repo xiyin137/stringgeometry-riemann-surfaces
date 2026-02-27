@@ -58,7 +58,13 @@ on each ring of sections O_C(U).
     5. Compose to get ℂ → O_C(U) -/
 noncomputable instance algebraOnSections (U : TopologicalSpace.Opens C.toScheme.carrier) :
     Algebra ℂ (C.toScheme.presheaf.obj (Opposite.op U)) := by
-  sorry
+  let hUtop : U ≤ (⊤ : TopologicalSpace.Opens C.toScheme.carrier) := by
+    intro x hx
+    trivial
+  refine RingHom.toAlgebra ?_
+  exact
+    ((C.toScheme.presheaf.map (homOfLE hUtop).op).hom).comp
+      (C.structureMorphism.appTop.hom.comp (Scheme.ΓSpecIso (CommRingCat.of ℂ)).inv.hom)
 
 /-- The algebraMap from ℂ to O_C(U) commutes with restriction maps.
 
@@ -71,7 +77,34 @@ theorem algebraMap_restriction_commute (U V : TopologicalSpace.Opens C.toScheme.
     (hUV : U ≤ V) (a : ℂ) :
     (C.toScheme.presheaf.map (homOfLE hUV).op).hom (algebraMap ℂ _ a) =
     algebraMap ℂ (C.toScheme.presheaf.obj (Opposite.op U)) a := by
-  sorry
+  let hUtop : U ≤ (⊤ : TopologicalSpace.Opens C.toScheme.carrier) := by
+    intro x hx
+    trivial
+  let hVtop : V ≤ (⊤ : TopologicalSpace.Opens C.toScheme.carrier) := by
+    intro x hx
+    trivial
+  let base : ℂ →+* C.toScheme.presheaf.obj (Opposite.op (⊤ : TopologicalSpace.Opens C.toScheme.carrier)) :=
+    C.structureMorphism.appTop.hom.comp (Scheme.ΓSpecIso (CommRingCat.of ℂ)).inv.hom
+  change
+    (C.toScheme.presheaf.map (homOfLE hUV).op).hom
+      ((C.toScheme.presheaf.map (homOfLE hVtop).op).hom
+        (base a))
+      =
+    (C.toScheme.presheaf.map (homOfLE hUtop).op).hom
+      (base a)
+  have hop : (homOfLE hVtop).op ≫ (homOfLE hUV).op = (homOfLE hUtop).op := by
+    exact Subsingleton.elim _ _
+  have hmap :
+      C.toScheme.presheaf.map (homOfLE hVtop).op ≫ C.toScheme.presheaf.map (homOfLE hUV).op =
+        C.toScheme.presheaf.map (homOfLE hUtop).op := by
+    calc
+      C.toScheme.presheaf.map (homOfLE hVtop).op ≫ C.toScheme.presheaf.map (homOfLE hUV).op
+          = C.toScheme.presheaf.map ((homOfLE hVtop).op ≫ (homOfLE hUV).op) := by
+              symm
+              exact C.toScheme.presheaf.map_comp (homOfLE hVtop).op (homOfLE hUV).op
+      _ = C.toScheme.presheaf.map (homOfLE hUtop).op := by
+            rw [hop]
+  exact congrArg (fun f => f.hom (base a)) hmap
 
 /-!
 ## Module Structure on Sheaf Values
