@@ -276,7 +276,19 @@ theorem OModule.glue_sections_top {X : Scheme} (F : OModule X)
       F.val.map (homOfLE (inf_le_right : V i ⊓ V j ≤ V j)).op (sf j)) :
     ∃ s : F.val.obj (Opposite.op (⊤ : Opens X.carrier)),
       ∀ i : ι, F.val.map (homOfLE (hTop i)).op s = sf i := by
-  sorry
+  rcases OModule.glue_sections F V sf compat with ⟨s, hs⟩
+  have hSupTop : (⊤ : Opens X.carrier) ≤ iSup V := by
+    simp [hV]
+  refine ⟨F.val.map (homOfLE hSupTop).op s, ?_⟩
+  intro i
+  have hcomp :
+      F.val.map (homOfLE (hTop i)).op (F.val.map (homOfLE hSupTop).op s) =
+        F.val.map (homOfLE (le_iSup V i)).op s := by
+    exact OModule.presheaf_comp_eq F
+      (homOfLE hSupTop).op
+      (homOfLE (hTop i)).op
+      (homOfLE (le_iSup V i)).op s
+  exact hcomp.trans (hs i)
 
 /-!
 ### Clean Restriction Maps

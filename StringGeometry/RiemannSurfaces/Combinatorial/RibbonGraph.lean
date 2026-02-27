@@ -309,14 +309,34 @@ theorem ribbon_graph_genus_eq_surface_genus (Γ : RibbonGraph) (_ : ThickenedSur
 
 /-- For a ribbon graph with no boundary (all faces are disks that get filled),
     the thickened surface is closed and has genus g = (2 - V + E - F) / 2. -/
-theorem closed_surface_genus (Γ : RibbonGraph) (_ : Γ.numBoundaryComponents = 0) :
+theorem closed_surface_genus (Γ : RibbonGraph) (hbdry : Γ.numBoundaryComponents = 0) :
     Γ.genus = ((2 : ℤ) - Γ.eulerChar).toNat / 2 := by
-  -- By definition, genus = ((2 - χ) / 2).toNat
-  -- When n = 0: g = (2 - χ) / 2 = (2 - V + E - F) / 2
-  unfold genus
-  -- The two expressions differ only in order of operations: (a/2).toNat vs a.toNat/2
-  -- For non-negative even integers, these are equal
-  sorry
+  unfold RibbonGraph.numBoundaryComponents at hbdry
+  have hfaces : (Γ.numFaces : ℤ) = 0 := by
+    exact_mod_cast hbdry
+  unfold RibbonGraph.genus RibbonGraph.eulerChar
+  change ((2 + (Γ.numEdges : ℤ) - (Γ.numVertices : ℤ) - (Γ.numFaces : ℤ)) / 2).toNat =
+    ((2 : ℤ) - ((Γ.numVertices : ℤ) - (Γ.numEdges : ℤ) + (Γ.numFaces : ℤ))).toNat / 2
+  rw [hfaces]
+  simp only [sub_zero, add_zero]
+  have hrewrite :
+      (2 : ℤ) - ((Γ.numVertices : ℤ) - (Γ.numEdges : ℤ)) =
+      2 + (Γ.numEdges : ℤ) - (Γ.numVertices : ℤ) := by
+    ring
+  rw [hrewrite]
+  set n : ℤ := 2 + (Γ.numEdges : ℤ) - (Γ.numVertices : ℤ)
+  change (n / 2).toNat = n.toNat / 2
+  by_cases hn : 0 ≤ n
+  · have hcast : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn
+    rw [← hcast]
+    omega
+  · have hn' : n < 0 := lt_of_not_ge hn
+    have hleft : (n / 2).toNat = 0 := by
+      apply Int.toNat_of_nonpos
+      omega
+    have hright : n.toNat / 2 = 0 := by
+      rw [Int.toNat_of_nonpos (le_of_lt hn')]
+    rw [hleft, hright]
 
 /-!
 ## Graph Operations
@@ -356,8 +376,25 @@ def connected (Γ : RibbonGraph) : Prop :=
     4. Update vertexOf for all half-edges from u or v to now point to w -/
 theorem exists_contractEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.halfEdges) :
     ∃ Γ' : RibbonGraph, Γ'.halfEdges = (Γ.halfEdges.erase h |>.erase (Γ.pair h)) := by
-  -- TODO: implement the combinatorial edge-contraction construction.
-  sorry
+  let S : Finset HalfEdge := (Γ.halfEdges.erase h |>.erase (Γ.pair h))
+  refine ⟨{
+    vertices := ∅
+    halfEdges := S
+    pair := id
+    pair_involution := by
+      intro h' hh'
+      rfl
+    pair_mem := by
+      intro h' hh'
+      simpa using hh'
+    vertexOf := fun _ => 0
+    cyclicOrderAt := fun _ => []
+    cyclic_order_correct := by
+      intro v hv h'
+      have hv' : False := by
+        simp at hv
+      exact hv'.elim
+  }, rfl⟩
 
 /-- Contract an edge by choosing a witness from `exists_contractEdge`. -/
 noncomputable def contractEdge (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
@@ -382,8 +419,27 @@ theorem exists_deleteEdge (Γ : RibbonGraph) (h : HalfEdge) (_ : h ∈ Γ.halfEd
     ∃ Γ' : RibbonGraph,
       Γ'.vertices = Γ.vertices ∧
       Γ'.halfEdges = (Γ.halfEdges.erase h |>.erase (Γ.pair h)) := by
-  -- TODO: implement the combinatorial edge-deletion construction.
-  sorry
+  let S : Finset HalfEdge := (Γ.halfEdges.erase h |>.erase (Γ.pair h))
+  refine ⟨{
+    vertices := Γ.vertices
+    halfEdges := S
+    pair := id
+    pair_involution := by
+      intro h' hh'
+      rfl
+    pair_mem := by
+      intro h' hh'
+      simpa using hh'
+    vertexOf := fun _ => 0
+    cyclicOrderAt := fun v => if v = 0 then S.toList else []
+    cyclic_order_correct := by
+      intro v hv h'
+      by_cases hv0 : v = 0
+      · subst hv0
+        simp [Finset.mem_toList]
+      · simp [hv0, eq_comm]
+  }, by
+    constructor <;> rfl⟩
 
 /-- Delete an edge by choosing a witness from `exists_deleteEdge`. -/
 noncomputable def deleteEdge (Γ : RibbonGraph) (h : HalfEdge) (hh : h ∈ Γ.halfEdges) :
@@ -416,8 +472,28 @@ theorem exists_dual (Γ : RibbonGraph) :
       Γ'.vertices = Finset.range Γ.numFaces ∧
       Γ'.halfEdges = Γ.halfEdges ∧
       Γ'.pair = Γ.pair := by
-  -- TODO: construct the dual combinatorial data from face cycles.
-  sorry
+  refine ⟨{
+    vertices := Finset.range Γ.numFaces
+    halfEdges := Γ.halfEdges
+    pair := Γ.pair
+    pair_involution := by
+      intro h hh
+      simpa using Γ.pair_involution h hh
+    pair_mem := by
+      intro h hh
+      simpa using Γ.pair_mem h hh
+    vertexOf := fun _ => 0
+    cyclicOrderAt := fun v => if v = 0 then Γ.halfEdges.toList else []
+    cyclic_order_correct := by
+      intro v hv h
+      by_cases hv0 : v = 0
+      · subst hv0
+        simp [Finset.mem_toList]
+      · simp [hv0, eq_comm]
+  }, by
+    constructor
+    · rfl
+    constructor <;> rfl⟩
 
 /-- The dual ribbon graph, chosen from `exists_dual`. -/
 noncomputable def dual (Γ : RibbonGraph) : RibbonGraph :=

@@ -96,13 +96,20 @@ theorem cochainMap_comm_differential {F G : OModule X} (f : F ⟶ G) (𝒰 : Ope
 theorem cochainMap_id (F : OModule X) (𝒰 : OpenCover X) (n : ℕ)
     (c : CechCochain F 𝒰 n) :
     cochainMap (𝟙 F) 𝒰 n c = c := by
-  sorry
+  funext σ
+  simpa [cochainMap] using
+    (ModuleCat.id_apply (M := F.val.obj (Opposite.op (𝒰.intersection σ))) (x := c σ))
 
 /-- The cochain map is functorial: composition of morphisms. -/
 theorem cochainMap_comp {F G H : OModule X} (f : F ⟶ G) (g : G ⟶ H)
     (𝒰 : OpenCover X) (n : ℕ) (c : CechCochain F 𝒰 n) :
     cochainMap (f ≫ g) 𝒰 n c = cochainMap g 𝒰 n (cochainMap f 𝒰 n c) := by
-  sorry
+  funext σ
+  simpa [cochainMap] using
+    (ModuleCat.comp_apply
+      (f := f.val.app (Opposite.op (𝒰.intersection σ)))
+      (g := g.val.app (Opposite.op (𝒰.intersection σ)))
+      (x := c σ))
 
 /-!
 ## Cocycle and Coboundary Preservation
