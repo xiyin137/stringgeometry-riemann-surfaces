@@ -281,21 +281,19 @@ private theorem cohomologySuccAddEquiv_mk (n : ℕ) (z : CechCocycles F 𝒰 (n 
   rfl
 
 /-- The Hⁿ⁺¹ equivalence is ℂ-linear, using the explicit smul_mk' reduction. -/
-theorem cohomologySuccAddEquiv_smul (n : ℕ) (a : ℂ) (x : CechCohomologySucc F 𝒰 n) :
-    haveI := CechCohomologySucc.module C F 𝒰 n
-    haveI := CechCohomologySucc.module C G 𝒰 n
+theorem cohomologySuccAddEquiv_smul (n : ℕ) (a : ℂ) (x : CechCohomologySucc F 𝒰 n)
+    [Module ℂ (CechCohomologySucc F 𝒰 n)] [Module ℂ (CechCohomologySucc G 𝒰 n)] :
     cohomologySuccAddEquiv C iso 𝒰 n (a • x) = a • cohomologySuccAddEquiv C iso 𝒰 n x := by
   sorry
 
 /-- The Hⁿ⁺¹ equivalence as a ℂ-linear equivalence. -/
-noncomputable def cohomologySuccLinearEquiv (n : ℕ) :
-    letI := CechCohomologySucc.module C F 𝒰 n
-    letI := CechCohomologySucc.module C G 𝒰 n
+noncomputable def cohomologySuccLinearEquiv (n : ℕ)
+    [Module ℂ (CechCohomologySucc F 𝒰 n)] [Module ℂ (CechCohomologySucc G 𝒰 n)] :
     CechCohomologySucc F 𝒰 n ≃ₗ[ℂ] CechCohomologySucc G 𝒰 n :=
-  letI := CechCohomologySucc.module C F 𝒰 n
-  letI := CechCohomologySucc.module C G 𝒰 n
   { cohomologySuccAddEquiv C iso 𝒰 n with
-    map_smul' := cohomologySuccAddEquiv_smul C iso 𝒰 n }
+    map_smul' := by
+      intro m x
+      simpa using cohomologySuccAddEquiv_smul C iso 𝒰 n m x }
 
 end IsoEquiv
 

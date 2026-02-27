@@ -367,7 +367,99 @@ theorem cocycle_condition_inf {X : Scheme} (F : OModule X) (𝒰 : OpenCover X)
       le_inf (inf_le_left.trans inf_le_left) inf_le_right) (cocycleAtInf F 𝒰 c i₀ i₂) +
     F.res (show T ≤ 𝒰.U i₀ ⊓ 𝒰.U i₁ from inf_le_left) (cocycleAtInf F 𝒰 c i₀ i₁) = 0 := by
   intro T
-  sorry
+  let σ : Fin 3 → 𝒰.I := ![i₀, i₁, i₂]
+  have hσ : 𝒰.intersection σ = T := by
+    unfold OpenCover.intersection
+    simp only [show (3 : ℕ) ≠ 0 from by omega, ↓reduceDIte]
+    apply le_antisymm
+    · refine le_inf (le_inf ?_ ?_) ?_
+      · simpa [σ] using (iInf_le (fun j : Fin 3 => 𝒰.U (σ j)) (0 : Fin 3))
+      · simpa [σ] using (iInf_le (fun j : Fin 3 => 𝒰.U (σ j)) (1 : Fin 3))
+      · simpa [σ] using (iInf_le (fun j : Fin 3 => 𝒰.U (σ j)) (2 : Fin 3))
+    · refine le_iInf ?_
+      intro j
+      fin_cases j
+      · exact inf_le_left.trans inf_le_left
+      · exact inf_le_left.trans inf_le_right
+      · exact inf_le_right
+  have hTσ : T ≤ 𝒰.intersection σ := le_of_eq hσ.symm
+  have hfm0 : faceMap (0 : Fin 3) σ = ![i₁, i₂] := by
+    funext k; fin_cases k <;> simp [σ, faceMap]
+  have hfm1 : faceMap (1 : Fin 3) σ = ![i₀, i₂] := by
+    funext k; fin_cases k <;> simp [σ, faceMap]
+  have hfm2 : faceMap (2 : Fin 3) σ = ![i₀, i₁] := by
+    funext k; fin_cases k <;> simp [σ, faceMap]
+  have hcoc : (cechDifferential F 𝒰 1 c.val) σ = 0 := cocycle_at_simplex F 𝒰 c σ
+  simp only [cechDifferential] at hcoc
+  rw [Fin.sum_univ_three] at hcoc
+  have hcoc' :
+      restrictionToFace F 𝒰 σ 0 (c.val (faceMap 0 σ)) -
+      restrictionToFace F 𝒰 σ 1 (c.val (faceMap 1 σ)) +
+      restrictionToFace F 𝒰 σ 2 (c.val (faceMap 2 σ)) = 0 := by
+    simpa [sub_eq_add_neg, add_assoc] using hcoc
+  have hres0 :
+      F.res hTσ (restrictionToFace F 𝒰 σ 0 (c.val (faceMap 0 σ))) -
+      F.res hTσ (restrictionToFace F 𝒰 σ 1 (c.val (faceMap 1 σ))) +
+      F.res hTσ (restrictionToFace F 𝒰 σ 2 (c.val (faceMap 2 σ))) =
+      F.res hTσ (0 : F.val.obj (Opposite.op (𝒰.intersection σ))) := by
+    simpa [OModule.res_sub, OModule.res_add] using congrArg (F.res hTσ) hcoc'
+  have hres :
+      F.res hTσ (restrictionToFace F 𝒰 σ 0 (c.val (faceMap 0 σ))) -
+      F.res hTσ (restrictionToFace F 𝒰 σ 1 (c.val (faceMap 1 σ))) +
+      F.res hTσ (restrictionToFace F 𝒰 σ 2 (c.val (faceMap 2 σ))) = 0 := by
+    have hzero :
+        F.res hTσ (0 : F.val.obj (Opposite.op (𝒰.intersection σ))) = 0 := by
+      change (F.val.presheaf.map (homOfLE hTσ).op).hom
+          (0 : F.val.obj (Opposite.op (𝒰.intersection σ))) = 0
+      exact map_zero _
+    exact hres0.trans hzero
+  have c_res_eq :
+      ∀ (a b : Fin 2 → 𝒰.I) (hab : a = b)
+        (h₁ : T ≤ 𝒰.intersection a) (h₂ : T ≤ 𝒰.intersection b),
+        F.res h₁ (c.val a) = F.res h₂ (c.val b) := by
+    intro a b hab h₁ h₂
+    subst hab
+    exact OModule.res_irrel F _ _ _
+  have term0 :
+      F.res hTσ (restrictionToFace F 𝒰 σ 0 (c.val (faceMap 0 σ))) =
+      F.res (show T ≤ 𝒰.U i₁ ⊓ 𝒰.U i₂ from
+        le_inf (inf_le_left.trans inf_le_right) inf_le_right) (cocycleAtInf F 𝒰 c i₁ i₂) := by
+    rw [show restrictionToFace F 𝒰 σ 0 (c.val (faceMap 0 σ)) =
+          F.res (intersection_face_le 𝒰 σ 0) (c.val (faceMap 0 σ)) from
+        (OModule.res_eq_map F (intersection_face_le 𝒰 σ 0) _).symm]
+    rw [OModule.res_comp]
+    rw [show cocycleAtInf F 𝒰 c i₁ i₂ =
+          F.res (le_of_eq (intersection_pair 𝒰 i₁ i₂).symm) (c.val ![i₁, i₂]) from
+        (OModule.res_eq_map F (le_of_eq (intersection_pair 𝒰 i₁ i₂).symm) _).symm]
+    rw [OModule.res_comp]
+    exact c_res_eq _ _ hfm0 _ _
+  have term1 :
+      F.res hTσ (restrictionToFace F 𝒰 σ 1 (c.val (faceMap 1 σ))) =
+      F.res (show T ≤ 𝒰.U i₀ ⊓ 𝒰.U i₂ from
+        le_inf (inf_le_left.trans inf_le_left) inf_le_right) (cocycleAtInf F 𝒰 c i₀ i₂) := by
+    rw [show restrictionToFace F 𝒰 σ 1 (c.val (faceMap 1 σ)) =
+          F.res (intersection_face_le 𝒰 σ 1) (c.val (faceMap 1 σ)) from
+        (OModule.res_eq_map F (intersection_face_le 𝒰 σ 1) _).symm]
+    rw [OModule.res_comp]
+    rw [show cocycleAtInf F 𝒰 c i₀ i₂ =
+          F.res (le_of_eq (intersection_pair 𝒰 i₀ i₂).symm) (c.val ![i₀, i₂]) from
+        (OModule.res_eq_map F (le_of_eq (intersection_pair 𝒰 i₀ i₂).symm) _).symm]
+    rw [OModule.res_comp]
+    exact c_res_eq _ _ hfm1 _ _
+  have term2 :
+      F.res hTσ (restrictionToFace F 𝒰 σ 2 (c.val (faceMap 2 σ))) =
+      F.res (show T ≤ 𝒰.U i₀ ⊓ 𝒰.U i₁ from inf_le_left) (cocycleAtInf F 𝒰 c i₀ i₁) := by
+    rw [show restrictionToFace F 𝒰 σ 2 (c.val (faceMap 2 σ)) =
+          F.res (intersection_face_le 𝒰 σ 2) (c.val (faceMap 2 σ)) from
+        (OModule.res_eq_map F (intersection_face_le 𝒰 σ 2) _).symm]
+    rw [OModule.res_comp]
+    rw [show cocycleAtInf F 𝒰 c i₀ i₁ =
+          F.res (le_of_eq (intersection_pair 𝒰 i₀ i₁).symm) (c.val ![i₀, i₁]) from
+        (OModule.res_eq_map F (le_of_eq (intersection_pair 𝒰 i₀ i₁).symm) _).symm]
+    rw [OModule.res_comp]
+    exact c_res_eq _ _ hfm2 _ _
+  rw [term0, term1, term2] at hres
+  exact hres
 
 /-- The cocycle condition restricted to any open W ≤ all pairwise intersections.
     This packages `cocycle_condition_inf` for use on arbitrary subsets. -/
