@@ -56,11 +56,11 @@ For curves: dim(C) = 1, so cd(C) ≤ 1.
 
     **Mathematical content:**
     The dimension of an algebraic curve is 1 by definition.
-    This is encoded in our use of `IsSmoothOfRelativeDimension 1`.
+    This is encoded in our use of `SmoothOfRelativeDimension 1`.
 
     **Type:** The relative dimension 1 property is an instance. -/
 theorem curve_dimension_one (C : SmoothProjectiveCurve) :
-    IsSmoothOfRelativeDimension 1 C.structureMorphism :=
+    SmoothOfRelativeDimension 1 C.structureMorphism :=
   C.smooth
 
 /-- **Grothendieck Vanishing Theorem for Curves:**

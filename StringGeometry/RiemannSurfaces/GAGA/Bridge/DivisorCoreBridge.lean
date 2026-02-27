@@ -21,8 +21,7 @@ theorem analytic_to_algebraic_degree
         (Point := RS.carrier)
         (Divisor := RiemannSurfaces.Analytic.Divisor RS)
         D := by
-  simpa using
-    (analyticAlgebraicDivisorTransport RS).map_degree D
+  exact (analyticAlgebraicDivisorTransport RS).map_degree D
 
 /-- Coefficients are preserved pointwise under the canonical transport. -/
 theorem analytic_to_algebraic_coeff
@@ -37,8 +36,7 @@ theorem analytic_to_algebraic_coeff
         (Point := RS.carrier)
         (Divisor := RiemannSurfaces.Analytic.Divisor RS)
         D p := by
-  simpa using
-    (analyticAlgebraicDivisorTransport RS).map_coeff D p
+  exact (analyticAlgebraicDivisorTransport RS).map_coeff D p
 
 /-- If principal divisors are transported by a `PrincipalDivisorTransport`,
 then linear equivalence is transported as well. -/

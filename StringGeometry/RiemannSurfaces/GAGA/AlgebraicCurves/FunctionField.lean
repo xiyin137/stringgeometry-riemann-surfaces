@@ -168,6 +168,7 @@ class FunctionFieldAlgebra (C : AlgebraicCurve) where
   valuation_algebraMap : ∀ (p : C.Point) (c : ℂ), c ≠ 0 →
     C.valuation p (algebraMap ℂ C.FunctionField c) = 0
 
+attribute [reducible] FunctionFieldAlgebra.algebraInst
 attribute [instance] FunctionFieldAlgebra.algebraInst
 
 namespace AlgebraicCurve
