@@ -54,6 +54,9 @@ local instance stalkFunctionFieldIsFractionRing' (x : C.PointType) :
     IsFractionRing (C.toScheme.presheaf.stalk x) C.toScheme.functionField := by
   simpa using (inferInstance :
     IsFractionRing (C.toScheme.presheaf.stalk (x : C.toScheme)) C.toScheme.functionField)
+local instance stalkIsDVR' (x : C.PointType) :
+    IsDiscreteValuationRing (C.toScheme.presheaf.stalk x) :=
+  C.stalkIsDVR x
 
 /-!
 ## Valuation from DVR Structure
@@ -103,18 +106,9 @@ noncomputable instance stalkFractionFieldField (x : C.PointType) : Field (C.stal
 noncomputable def valuationAt (x : C.PointType) : C.FunctionFieldType → ℤ :=
   -- Use the DVR valuation extension from ValuationExtension.lean
   -- The stalk is a DVR (from stalkIsDVR), and the function field is its fraction ring
-  --
-  -- Note: We use the underlying Mathlib types directly rather than our type aliases
-  -- to ensure instance resolution works correctly.
-  @DVRValuation.extendedVal
-    (C.toScheme.presheaf.stalk x)  -- R = stalk
-    (C.toScheme.functionField)      -- K = function field
-    _  -- CommRing R
-    _  -- IsDomain R
-    (C.stalkIsDVR x)               -- IsDiscreteValuationRing R
-    _  -- Field K
-    _  -- Algebra R K
-    _  -- IsFractionRing R K
+  DVRValuation.extendedVal
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
 
 /-- Convention: v_p(0) = 0.
 
@@ -123,10 +117,9 @@ noncomputable def valuationAt (x : C.PointType) : C.FunctionFieldType → ℤ :=
     to nonzero elements. -/
 theorem valuationAt_zero (x : C.PointType) : C.valuationAt x 0 = 0 := by
   unfold valuationAt
-  exact @DVRValuation.extendedVal_zero
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _
+  exact DVRValuation.extendedVal_zero
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
 
 /-- v_p(fg) = v_p(f) + v_p(g) for f, g ≠ 0.
 
@@ -137,10 +130,10 @@ theorem valuationAt_mul (x : C.PointType) (f g : C.FunctionFieldType)
     (hf : f ≠ 0) (hg : g ≠ 0) :
     C.valuationAt x (f * g) = C.valuationAt x f + C.valuationAt x g := by
   unfold valuationAt
-  exact @DVRValuation.extendedVal_mul
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _ f g hf hg
+  exact DVRValuation.extendedVal_mul
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
+    f g hf hg
 
 /-- v_p(f + g) ≥ min(v_p(f), v_p(g)) when f + g ≠ 0 (ultrametric inequality).
 
@@ -152,10 +145,10 @@ theorem valuationAt_add_min (x : C.PointType) (f g : C.FunctionFieldType)
     (hfg : f + g ≠ 0) :
     C.valuationAt x (f + g) ≥ min (C.valuationAt x f) (C.valuationAt x g) := by
   unfold valuationAt
-  exact @DVRValuation.extendedVal_add_min
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _ f g hfg
+  exact DVRValuation.extendedVal_add_min
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
+    f g hfg
 
 /-- For f ≠ 0, only finitely many points have v_p(f) ≠ 0.
 
@@ -180,10 +173,9 @@ These follow from the basic valuation axioms.
 /-- v_p(1) = 0 (derived from valuationAt_mul). -/
 theorem valuationAt_one (x : C.PointType) : C.valuationAt x 1 = 0 := by
   unfold valuationAt
-  exact @DVRValuation.extendedVal_one
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _
+  exact DVRValuation.extendedVal_one
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
 
 /-- v_p(f⁻¹) = -v_p(f) for f ≠ 0 (derived from valuationAt_mul).
 
@@ -192,10 +184,10 @@ theorem valuationAt_one (x : C.PointType) : C.valuationAt x 1 = 0 := by
 theorem valuationAt_inv (x : C.PointType) (f : C.FunctionFieldType) (hf : f ≠ 0) :
     C.valuationAt x f⁻¹ = -C.valuationAt x f := by
   unfold valuationAt
-  exact @DVRValuation.extendedVal_inv
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _ f hf
+  exact DVRValuation.extendedVal_inv
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
+    f hf
 
 /-!
 ### Constants Have Valuation Zero
@@ -236,17 +228,17 @@ theorem exists_localParameter (x : C.PointType) :
   -- Therefore extendedVal = 1
   unfold valuationAt
   have hπ_ne : π ≠ 0 := hπ.ne_zero
-  rw [@DVRValuation.extendedVal_algebraMap
-    (C.toScheme.presheaf.stalk x)
-    (C.toScheme.functionField)
-    _ _ (C.stalkIsDVR x) _ _ _ π hπ_ne]
+  rw [DVRValuation.extendedVal_algebraMap
+    (R := C.toScheme.presheaf.stalk x)
+    (K := C.toScheme.functionField)
+    π hπ_ne]
   -- addValNat π = toNat(1) = 1
   simp only [DVRValuation.addValNat, hval, ENat.toNat_one, Nat.cast_one]
 
 /-- A uniformizer at p, viewed in K(C), has finite support.
 
     Follows from `valuationAt_finiteSupport`. -/
-theorem localParameter_finiteSupport (x : C.PointType) (t : C.FunctionFieldType)
+theorem localParameter_finiteSupport (_x : C.PointType) (t : C.FunctionFieldType)
     (ht_ne : t ≠ 0) :
     Set.Finite { y : C.PointType | C.valuationAt y t ≠ 0 } :=
   C.valuationAt_finiteSupport t ht_ne

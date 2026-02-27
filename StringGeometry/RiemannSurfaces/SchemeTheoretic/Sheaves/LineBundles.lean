@@ -107,7 +107,7 @@ noncomputable def toCoherentSheaf (L : InvertibleSheaf C) : CoherentSheaf C wher
 /-- The structure sheaf O_C as an invertible sheaf. -/
 noncomputable def structureSheaf (C : AlgebraicCurve) : InvertibleSheaf C where
   toModule := CoherentSheaf.structureSheafModule C
-  isInvertible := ⟨fun i => ⟨Iso.refl _⟩⟩
+  isInvertible := ⟨fun _ => ⟨Iso.refl _⟩⟩
 
 /-!
 ## Tensor Product of Line Bundles
@@ -131,7 +131,7 @@ noncomputable def tensorProductModule (L M : InvertibleSheaf C) : OModule C.toSc
     If L|_U ≅ O_U and M|_V ≅ O_V, then (L ⊗ M)|_{U ∩ V} ≅ O_U ⊗ O_V ≅ O_{U ∩ V}. -/
 instance tensorProduct_isInvertible (L M : InvertibleSheaf C) :
     IsInvertible C.toScheme (tensorProductModule L M) where
-  locally_free_rank_one := fun i => ⟨Iso.refl _⟩
+  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
 
 /-- The tensor product of two line bundles. -/
 noncomputable def tensorProduct (L M : InvertibleSheaf C) : InvertibleSheaf C where
@@ -163,7 +163,7 @@ noncomputable def dualModule (L : InvertibleSheaf C) : OModule C.toScheme := sor
     If L|_U ≅ O_U, then Hom(L, O)|_U ≅ Hom(O_U, O_U) ≅ O_U. -/
 instance dual_isInvertible (L : InvertibleSheaf C) :
     IsInvertible C.toScheme (dualModule L) where
-  locally_free_rank_one := fun i => ⟨Iso.refl _⟩
+  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
 
 /-- The dual of a line bundle. -/
 noncomputable def dual (L : InvertibleSheaf C) : InvertibleSheaf C where
@@ -217,7 +217,7 @@ noncomputable def divisorModule (C : SmoothProjectiveCurve) (D : Divisor C.toAlg
     This shows O(D) is locally free of rank 1. -/
 instance divisorModule_isInvertible (C : SmoothProjectiveCurve) (D : Divisor C.toAlgebraicCurve) :
     IsInvertible C.toScheme (divisorModule C D) where
-  locally_free_rank_one := fun i => ⟨Iso.refl _⟩
+  locally_free_rank_one := fun _ => ⟨Iso.refl _⟩
 
 /-- The invertible sheaf O(D) associated to a divisor D.
 

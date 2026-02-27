@@ -186,7 +186,7 @@ theorem cocycle_compat_on_intersection (F : OModule X) (𝒰 : OpenCover X)
     F.val.map (homOfLE (intersection_face_le 𝒰 σ 1)).op (c (faceMap 1 σ)) =
     F.val.map (homOfLE (intersection_face_le 𝒰 σ 0)).op (c (faceMap 0 σ)) := by
   have hcoc := congrFun hc σ
-  simp only [cechDifferential, Pi.zero_apply] at hcoc
+  simp only [cechDifferential] at hcoc
   rw [Fin.sum_univ_two] at hcoc
   simp only [Fin.val_zero, pow_zero, one_smul, Fin.val_one, pow_one, neg_one_smul,
     restrictionToFace] at hcoc

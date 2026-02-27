@@ -35,14 +35,12 @@ open scoped Classical
 
 namespace DVRValuation
 
-variable {R K : Type*} [CommRing R] [IsDomain R] [IsDiscreteValuationRing R]
-  [Field K] [Algebra R K] [IsFractionRing R K]
+variable {R K : Type*} [CommRing R] [Field K] [Algebra R K] [IsFractionRing R K]
 
 /-!
 ## Fraction Field Helpers
 
-Note: Some of these helpers only use IsFractionRing, not IsDomain/IsDiscreteValuationRing.
-The linter warnings about unused section variables are expected.
+These helpers only use the fraction field structure.
 -/
 
 /-- The numerator part of the fraction representation. -/
@@ -59,7 +57,7 @@ theorem fracDenom_mem_nonZeroDivisors (f : K) :
   (Classical.choose_spec (Classical.choose_spec (IsFractionRing.div_surjective (A := R) f))).1
 
 /-- The denominator is nonzero. -/
-theorem fracDenom_ne_zero (f : K) : (fracDenom f : R) ≠ 0 :=
+theorem fracDenom_ne_zero [Nontrivial R] (f : K) : (fracDenom f : R) ≠ 0 :=
   nonZeroDivisors.ne_zero (fracDenom_mem_nonZeroDivisors f)
 
 /-- The fraction representation is correct. -/
@@ -77,6 +75,8 @@ theorem fracNum_ne_zero_of_ne_zero {f : K} (hf : f ≠ 0) : (fracNum f : R) ≠ 
 /-!
 ## DVR Valuation Helpers
 -/
+
+variable [IsDomain R] [IsDiscreteValuationRing R]
 
 /-- For nonzero elements of a DVR, addVal is finite. -/
 theorem addVal_ne_top_of_ne_zero {r : R} (hr : r ≠ 0) :
