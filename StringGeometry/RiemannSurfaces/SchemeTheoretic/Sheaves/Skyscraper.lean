@@ -149,7 +149,7 @@ instance skyscraperModule_isCoherent (p : C.PointType) :
         -- evalAtPoint_⊤(globalSec) = canonicalToResidueField(c) = v
         exact hc
       calc
-        (evalAtPoint p U.unop hp r) * 1 = v * 1 := by simpa [hEval]
+        (evalAtPoint p U.unop hp r) * 1 = v * 1 := by simp [hEval]
         _ = v := mul_one v
     · -- p ∉ U: sections are PUnit, module is subsingleton hence finitely generated
       haveI : Subsingleton ↑(SkyscraperConstruction.skyscraperObj (X := C.toScheme) p U) :=

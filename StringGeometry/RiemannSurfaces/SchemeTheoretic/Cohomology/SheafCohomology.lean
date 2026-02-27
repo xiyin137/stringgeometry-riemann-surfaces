@@ -189,7 +189,7 @@ private theorem h0_surj_aux {X : Scheme} (F : OModule X) (𝒰 : OpenCover X)
     ∃ s : F.val.obj (Opposite.op ⊤), ∀ σ : Fin 1 → 𝒰.I,
       F.val.map (homOfLE
         (show 𝒰.intersection σ ≤ (⊤ : Opens X.carrier) from by
-          intro x hx
+          intro x _
           trivial)).op s = c σ := by
   let V : 𝒰.I → Opens X.carrier := fun i => 𝒰.intersection (fun (_ : Fin 1) => i)
   let sf : ∀ i : 𝒰.I, F.val.obj (Opposite.op (V i)) := fun i => c (fun _ => i)
@@ -203,9 +203,9 @@ private theorem h0_surj_aux {X : Scheme} (F : OModule X) (𝒰 : OpenCover X)
   have hmap :
       F.val.map (homOfLE
         (show 𝒰.intersection (fun _ : Fin 1 => σ 0) ≤ (⊤ : Opens X.carrier) from by
-          intro x hx
+          intro x _
           trivial)).op s_top
-      = F.val.map (homOfLE (hTop (σ 0))).op s_top := by
+    = F.val.map (homOfLE (hTop (σ 0))).op s_top := by
     exact OModule.map_eq F _ _ s_top
   exact hmap.trans (hs (σ 0))
 
