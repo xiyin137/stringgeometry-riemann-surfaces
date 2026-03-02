@@ -118,6 +118,19 @@ theorem correctedValue_eq_of_analyticAt_agree {f g : ℂ → ℂ} {x : ℂ}
     (hg.continuousAt.tendsto.mono_left nhdsWithin_le_nhds).congr' hagree.symm
   exact tendsto_nhds_unique htend htend_g
 
+/-- If a non-polar meromorphic germ is continuous at the center, its corrected value
+    agrees with the point-value. -/
+theorem correctedValue_eq_of_continuousAt {f : ℂ → ℂ} {x : ℂ}
+    (hf : MeromorphicAt f x) (hord : (0 : WithTop ℤ) ≤ meromorphicOrderAt f x)
+    (hcont : ContinuousAt f x) :
+    correctedValue hf hord = f x := by
+  haveI : Filter.NeBot (nhdsWithin x ({x}ᶜ : Set ℂ)) :=
+    ConnectedSpace.neBot_nhdsWithin_compl_of_nontrivial_of_t1space x
+  have htend := correctedValue_tendsto hf hord
+  have htend_f : Tendsto f (nhdsWithin x {x}ᶜ) (nhds (f x)) :=
+    hcont.tendsto.mono_left nhdsWithin_le_nhds
+  exact tendsto_nhds_unique htend htend_f
+
 /-!
 ## Part 2: Corrected Function on Riemann Surface
 

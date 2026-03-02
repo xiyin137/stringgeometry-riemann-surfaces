@@ -44,6 +44,11 @@
     `fiberMultiplicity_constant_of_chartOrderSum_bridge`:
     once a bridge identifies `fiberMultiplicity` with shifted `chartOrderSum`,
     constancy follows from the shifted argument principle.
+- `Helpers/AnalyticExtension.lean`:
+  - added
+    `correctedValue_eq_of_continuousAt`:
+    for non-polar meromorphic germs that are continuous at the center,
+    corrected value equals point value (new bridge ingredient for fiber-multiplicity work).
 - Compile frontier check:
   - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ArgumentPrinciple.lean`
   - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
