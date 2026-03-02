@@ -651,6 +651,31 @@ theorem fiberMultiplicity_constant_of_regular_value_compat
       totalPoleOrder_sub_const_eq_of_chartMeromorphic CRS f hf c₁ c₂
     _ = fiberMultiplicity CRS f c₂ hfib₂ := hfib₂_eq.symm
 
+/-- MDifferentiability-based constancy via the corrected-value compatibility bridge. -/
+theorem fiberMultiplicity_constant_of_mdifferentiable_regular_via_compat
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hmd_reg : ∀ p, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p →
+      @MDifferentiableAt ℂ _ ℂ _ _ ℂ _ 𝓘(ℂ, ℂ)
+        CRS.toRiemannSurface.carrier CRS.toRiemannSurface.topology CRS.toRiemannSurface.chartedSpace
+        ℂ _ _ ℂ _ 𝓘(ℂ, ℂ) ℂ _ _ f p)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q) :
+    ∀ (c₁ c₂ : ℂ)
+      (hfib₁ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₁ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite)
+      (hfib₂ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₂ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
+      fiberMultiplicity CRS f c₁ hfib₁ = fiberMultiplicity CRS f c₂ hfib₂ := by
+  have hcompat :
+      ∀ p (hp : (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p),
+        f p = correctedValue (hf p) hp :=
+    regularValue_compat_of_mdifferentiable_regular (RS := CRS.toRiemannSurface) hf hmd_reg
+  intro c₁ c₂ hfib₁ hfib₂
+  exact fiberMultiplicity_constant_of_regular_value_compat CRS f hf hcompat hnc
+    c₁ c₂ hfib₁ hfib₂
+
 /-- Continuity-based constancy via the corrected-value compatibility bridge. -/
 theorem fiberMultiplicity_constant_of_continuous_regular_via_compat
     (CRS : CompactRiemannSurface)

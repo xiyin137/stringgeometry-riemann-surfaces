@@ -43,6 +43,18 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - added canonical proved `fiberMultiplicity_constant` in
      `Helpers/ArgumentPrinciple/FiberMultiplicity.lean` with explicit
      regular-value compatibility hypothesis.
+6. Added MDifferentiable regular-point compatibility bridge in
+   `Helpers/ArgumentPrinciple/Foundation.lean`:
+   `regularValue_compat_of_mdifferentiable_regular`.
+7. Added MDifferentiable-based constancy entrypoint in
+   `Helpers/ArgumentPrinciple/FiberMultiplicity.lean`:
+   `fiberMultiplicity_constant_of_mdifferentiable_regular_via_compat`.
+8. Compile frontier re-checked after the bridge extension:
+   - `Helpers/ArgumentPrinciple/Foundation`
+   - `Helpers/ArgumentPrinciple/FiberMultiplicity`
+   - `Helpers/ArgumentPrinciple`
+   - `RiemannRoch`
+   (all pass with warnings only).
 
 ## Current blocker clusters
 

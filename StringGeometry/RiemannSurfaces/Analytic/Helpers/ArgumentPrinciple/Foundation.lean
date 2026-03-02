@@ -980,6 +980,20 @@ theorem regularValue_compat_of_continuous_regular {RS : RiemannSurface}
     correctedValue_eq_of_continuousAt (hf p) hp (hcont_reg p hp)
   simpa [chartRep_apply_chartPt] using hcv_chart.symm
 
+/-- Regular-point MDifferentiability gives point-value/corrected-value compatibility. -/
+theorem regularValue_compat_of_mdifferentiable_regular {RS : RiemannSurface}
+    {f : RS.carrier → ℂ}
+    (hf : IsChartMeromorphic (RS := RS) f)
+    (hmd_reg : ∀ p, (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) f p →
+      @MDifferentiableAt ℂ _ ℂ _ _ ℂ _ 𝓘(ℂ, ℂ)
+        RS.carrier RS.topology RS.chartedSpace ℂ _ _ ℂ _ 𝓘(ℂ, ℂ) ℂ _ _ f p) :
+    ∀ p (hp : (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) f p),
+      f p = correctedValue (hf p) hp := by
+  intro p hp
+  exact regularValue_compat_of_continuous_regular (RS := RS) hf
+    (fun q hq =>
+      continuousAt_chartRep_of_mdifferentiableAt (RS := RS) f q (hmd_reg q hq)) p hp
+
 /-!
 ## Local Pole Preimage Lemma
 

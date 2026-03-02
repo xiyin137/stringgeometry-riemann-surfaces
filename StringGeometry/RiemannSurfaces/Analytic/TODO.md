@@ -33,6 +33,34 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: MDifferentiable regular-point bridge into fiber multiplicity constancy)
+- `Analytic/Helpers/ArgumentPrinciple/Foundation.lean`:
+  - added
+    `regularValue_compat_of_mdifferentiable_regular`:
+    regular-point `MDifferentiableAt` now implies the corrected-value compatibility
+    predicate
+    `f p = correctedValue (hf p) hp`.
+  - implementation is type-stable and reuses:
+    - `continuousAt_chartRep_of_mdifferentiableAt`,
+    - existing continuity bridge
+      `regularValue_compat_of_continuous_regular`.
+- `Analytic/Helpers/ArgumentPrinciple/FiberMultiplicity.lean`:
+  - added
+    `fiberMultiplicity_constant_of_mdifferentiable_regular_via_compat`:
+    constancy now has an MDifferentiable-regular-locus entrypoint through the
+    compatibility pipeline, without introducing wrapper assumptions.
+- Why this matters:
+  - closes a concrete ergonomic gap in the RR-critical Argument Principle chain by
+    exposing a stronger natural hypothesis profile than raw compatibility fields.
+  - keeps the core theorem statements unchanged while improving reusable bridge
+    infrastructure.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.Foundation`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.FiberMultiplicity`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: close `Foundation.fiberMultiplicity_constant` gap via canonical interface)
 - `Analytic/Helpers/ArgumentPrinciple/Foundation.lean`:
   - removed the stale unresolved declaration
