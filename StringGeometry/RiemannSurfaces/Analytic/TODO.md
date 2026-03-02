@@ -58,6 +58,10 @@
   - added helper
     `exists_regular_ne_value_of_nonconstant_regularLocus`
     to extract regular witnesses for nonconstancy.
+  - added corrected-value algebra for constant shifts:
+    - `correctedValue_sub_const_eq`
+    - `correctedValue_eq_const_of_sub_pos`
+    (supports future no-continuity bridge attempts).
 - `Helpers/AnalyticExtension.lean`:
   - added
     `correctedValue_eq_of_continuousAt`:

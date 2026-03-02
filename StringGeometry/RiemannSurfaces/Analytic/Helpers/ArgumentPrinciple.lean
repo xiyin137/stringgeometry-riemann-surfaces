@@ -878,6 +878,48 @@ noncomputable def correctedValueAt {RS : RiemannSurface}
     (p : RS.carrier) (hord : chartOrderAt (RS := RS) f p = 0) : ℂ :=
   correctedValue (hf p) (le_of_eq hord.symm)
 
+/-- Corrected values respect subtraction by constants at non-pole points. -/
+private theorem correctedValue_sub_const_eq {g : ℂ → ℂ} {x c : ℂ}
+    (hg : MeromorphicAt g x)
+    (hord_g : (0 : WithTop ℤ) ≤ meromorphicOrderAt g x)
+    (hord_sub : (0 : WithTop ℤ) ≤ meromorphicOrderAt (fun z => g z - c) x) :
+    correctedValue (hg.sub (MeromorphicAt.const c _)) hord_sub = correctedValue hg hord_g - c := by
+  haveI : Filter.NeBot (nhdsWithin x ({x}ᶜ : Set ℂ)) :=
+    ConnectedSpace.neBot_nhdsWithin_compl_of_nontrivial_of_t1space x
+  have htend_g :
+      Tendsto g (nhdsWithin x {x}ᶜ) (nhds (correctedValue hg hord_g)) :=
+    correctedValue_tendsto hg hord_g
+  have htend_sub₁ :
+      Tendsto (fun z => g z - c) (nhdsWithin x {x}ᶜ) (nhds (correctedValue hg hord_g - c)) :=
+    htend_g.sub tendsto_const_nhds
+  have htend_sub₂ :
+      Tendsto (fun z => g z - c) (nhdsWithin x {x}ᶜ)
+        (nhds (correctedValue (hg.sub (MeromorphicAt.const c _)) hord_sub)) :=
+    correctedValue_tendsto (hg.sub (MeromorphicAt.const c _)) hord_sub
+  exact tendsto_nhds_unique htend_sub₂ htend_sub₁
+
+/-- Positive order of `g - c` forces the corrected value of `g` to be `c`
+    (at non-pole points). -/
+private theorem correctedValue_eq_const_of_sub_pos {g : ℂ → ℂ} {x c : ℂ}
+    (hg : MeromorphicAt g x)
+    (hord_g : (0 : WithTop ℤ) ≤ meromorphicOrderAt g x)
+    (hpos_sub : (0 : WithTop ℤ) < meromorphicOrderAt (fun z => g z - c) x) :
+    correctedValue hg hord_g = c := by
+  have hord_sub : (0 : WithTop ℤ) ≤ meromorphicOrderAt (fun z => g z - c) x := le_of_lt hpos_sub
+  have hcv_sub_zero :
+      correctedValue (hg.sub (MeromorphicAt.const c _)) hord_sub = 0 :=
+    correctedValue_eq_zero_of_pos (hg.sub (MeromorphicAt.const c _)) hpos_sub
+  have hcv_sub :
+      correctedValue (hg.sub (MeromorphicAt.const c _)) hord_sub =
+        correctedValue hg hord_g - c :=
+    correctedValue_sub_const_eq hg hord_g hord_sub
+  have hsub_zero : correctedValue hg hord_g - c = 0 := by
+    calc
+      correctedValue hg hord_g - c =
+          correctedValue (hg.sub (MeromorphicAt.const c _)) hord_sub := hcv_sub.symm
+      _ = 0 := hcv_sub_zero
+  exact sub_eq_zero.mp hsub_zero
+
 /-- Under chart-level continuity, positive order of `f - c` at `p` forces `f p = c`. -/
 private theorem eq_const_of_shift_pos_of_continuousAt {RS : RiemannSurface}
     {f : RS.carrier → ℂ} {p : RS.carrier} {c : ℂ}

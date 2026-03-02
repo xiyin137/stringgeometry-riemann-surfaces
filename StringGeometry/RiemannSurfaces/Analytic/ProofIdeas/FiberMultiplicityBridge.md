@@ -54,7 +54,10 @@ under explicit regularity assumptions.
    - `totalPoleOrder_sub_const_eq_of_chartMeromorphic`
    - `fiberMultiplicity_eq_totalPoleOrder_sub_const_of_continuous_regular`
    - `fiberMultiplicity_constant_of_continuous_regular`
-4. Remaining high-priority gap:
+4. Added corrected-value shift algebra (toward removing continuity hypothesis):
+   - `correctedValue_sub_const_eq`
+   - `correctedValue_eq_const_of_sub_pos`
+5. Remaining high-priority gap:
    upgrade from continuity-based variant to the original
    `fiberMultiplicity_constant` statement (currently no continuity/regularity assumption),
    or refactor statement/definition to a germ-compatible formulation.
