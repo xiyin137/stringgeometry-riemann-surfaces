@@ -33,6 +33,28 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: regular-value compatibility chain repair)
+- `Helpers/ArgumentPrinciple.lean`:
+  - repaired the new regular-value compatibility chain so it compiles:
+    - replaced fragile binder terms of the form
+      `correctedValue (hf p) (by assumption)` with explicit dependent binders
+      `∀ p (hp : 0 ≤ chartOrderAt ...), f p = correctedValue (hf p) hp`.
+    - fixed `correctedValue_eq_zero_of_top` to avoid an invalid eventual-equality
+      projection and proved it via `correctedValue_eq_zero_of_pos`.
+    - repaired the zero-order rewrite mismatch in
+      `shift_ne_zero_of_eq_const_of_regular_value_compat` by aligning the
+      `meromorphicOrderAt` expression with the exact subtraction function form
+      expected by `correctedValue_ne_zero_of_eq_zero`.
+  - result: the new theorems around
+    `fiberSet_eq_zeroSet_sub_const_of_regular_value_compat`,
+    `fiberMultiplicity_eq_totalPoleOrder_sub_const_of_regular_value_compat`,
+    and `fiberMultiplicity_constant_of_regular_value_compat` now elaborate
+    cleanly.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ArgumentPrinciple.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass)
 - `Helpers/ArgumentPrinciple.lean`:
   - strengthened `exists_distinct_values_on_regularLocus` to an explicit
