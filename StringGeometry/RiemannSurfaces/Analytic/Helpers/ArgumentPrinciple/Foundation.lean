@@ -994,6 +994,20 @@ theorem regularValue_compat_of_mdifferentiable_regular {RS : RiemannSurface}
     (fun q hq =>
       continuousAt_chartRep_of_mdifferentiableAt (RS := RS) f q (hmd_reg q hq)) p hp
 
+/-- Global MDifferentiability gives point-value/corrected-value compatibility
+at every non-polar point. -/
+theorem regularValue_compat_of_mdifferentiable {RS : RiemannSurface}
+    {f : RS.carrier → ℂ}
+    (hf : IsChartMeromorphic (RS := RS) f)
+    (hmd : @MDifferentiable ℂ _ ℂ _ _ ℂ _ 𝓘(ℂ, ℂ)
+      RS.carrier RS.topology RS.chartedSpace
+      ℂ _ _ ℂ _ 𝓘(ℂ, ℂ) ℂ _ _ f) :
+    ∀ p (hp : (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) f p),
+      f p = correctedValue (hf p) hp := by
+  intro p hp
+  exact regularValue_compat_of_mdifferentiable_regular (RS := RS) hf
+    (fun q _hq => hmd q) p hp
+
 /-!
 ## Local Pole Preimage Lemma
 

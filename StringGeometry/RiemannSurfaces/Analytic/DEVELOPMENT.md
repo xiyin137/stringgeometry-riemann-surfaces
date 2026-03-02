@@ -55,6 +55,14 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `Helpers/ArgumentPrinciple`
    - `RiemannRoch`
    (all pass with warnings only).
+9. Added global MDifferentiable compatibility bridge:
+   `regularValue_compat_of_mdifferentiable` in
+   `Helpers/ArgumentPrinciple/Foundation.lean`.
+10. Added global MDifferentiable constancy entrypoint:
+    `fiberMultiplicity_constant_of_mdifferentiable_via_compat` in
+    `Helpers/ArgumentPrinciple/FiberMultiplicity.lean`.
+11. Re-checked the same compile frontier after this extension; all touched
+    modules build successfully (warnings only).
 
 ## Current blocker clusters
 

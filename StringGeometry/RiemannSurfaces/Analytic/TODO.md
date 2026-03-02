@@ -33,6 +33,26 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: global-MDifferentiable compatibility/constancy bridge)
+- `Analytic/Helpers/ArgumentPrinciple/Foundation.lean`:
+  - added
+    `regularValue_compat_of_mdifferentiable`:
+    global `MDifferentiable` now directly implies corrected-value compatibility
+    on all non-polar points.
+  - this extends the previous regular-point `MDifferentiableAt` bridge to a
+    top-level reusable theorem for downstream consumers.
+- `Analytic/Helpers/ArgumentPrinciple/FiberMultiplicity.lean`:
+  - added
+    `fiberMultiplicity_constant_of_mdifferentiable_via_compat`:
+    a global-MDifferentiable constancy entrypoint through the established
+    corrected-value compatibility pipeline.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.Foundation`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.FiberMultiplicity`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: MDifferentiable regular-point bridge into fiber multiplicity constancy)
 - `Analytic/Helpers/ArgumentPrinciple/Foundation.lean`:
   - added
