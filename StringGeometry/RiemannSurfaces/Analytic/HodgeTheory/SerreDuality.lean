@@ -200,42 +200,38 @@ The main theorem: for a compact Riemann surface of genus g,
 Both spaces have dimension g.
 -/
 
-/-- Serre duality: H^0(Ω¹) is dual to H^{0,1} ≅ H^1(O).
+/-- Pairing map from harmonic (1,0)-forms into functionals on harmonic (0,1)-forms.
 
-    The map ω ↦ (η ↦ ⟨ω, η⟩) gives an isomorphism H^0(Ω¹) → (H^{0,1})^*.
-    Since dim H^{1,0} = dim H^{0,1} = g, this is an isomorphism. -/
+    This theorem establishes the injective half of Serre duality from positivity of
+    the L² pairing. The surjective half requires additional finite-dimensional dual
+    infrastructure (module structure + representation of all linear functionals). -/
 theorem serre_duality (CRS : CompactRiemannSurface) (ip : L2InnerProduct CRS) :
-    Function.Bijective (fun (ω : Harmonic10Forms CRS.toRiemannSurface) =>
+    Function.Injective (fun (ω : Harmonic10Forms CRS.toRiemannSurface) =>
       fun (η : Harmonic01Forms CRS.toRiemannSurface) =>
         serrePairing CRS ip ω η.val) := by
-  constructor
-  · -- Injectivity: if ⟨ω₁, ·⟩ = ⟨ω₂, ·⟩ then ω₁ = ω₂
-    intro ω₁ ω₂ heq
-    by_contra hne
-    have hdiff : ω₁.val ≠ ω₂.val := fun h => hne (Subtype.ext h)
-    -- Extract pointwise equality from function equality
-    have hpair : ∀ η : Harmonic01Forms CRS.toRiemannSurface,
-        ip.pairing ω₁.val η.val.conj = ip.pairing ω₂.val η.val.conj :=
-      fun η => congr_fun heq η
-    -- By first-argument linearity: pairing (ω₁ - ω₂) η.conj = 0 for all η
-    have hzero : ∀ η : Harmonic01Forms CRS.toRiemannSurface,
-        ip.pairing (ω₁.val - ω₂.val) η.val.conj = 0 := by
-      intro η; rw [ip.linear_left_sub, sub_eq_zero]; exact hpair η
-    -- ω₁ - ω₂ is harmonic (kernel of ∂̄ is a submodule)
-    have hdiff_harm : (ω₁.val - ω₂.val).IsHarmonic :=
-      isHarmonic_sub ω₁.property ω₂.property
-    -- Apply to η = (ω₁ - ω₂).conj, which is in Harmonic01Forms
-    have h := hzero ⟨(ω₁.val - ω₂.val).conj, ⟨ω₁.val - ω₂.val, hdiff_harm, rfl⟩⟩
-    -- (ω.conj).conj = ω by involutivity of conjugation
-    simp only [Form_10.conj_conj] at h
-    -- h : ip.pairing (ω₁.val - ω₂.val) (ω₁.val - ω₂.val) = 0
-    -- But pos_def says re(pairing ω ω) > 0 for nonzero ω
-    have hpos := ip.pos_def (ω₁.val - ω₂.val) (sub_ne_zero.mpr hdiff)
-    rw [h] at hpos; simp at hpos
-  · -- Surjectivity: every functional on H^{0,1} comes from some ω
-    intro f
-    -- By Riesz representation, f = ⟨ω, ·⟩ for some ω
-    sorry  -- Requires: finite-dimensionality and Riesz representation
+  -- Injectivity: if ⟨ω₁, ·⟩ = ⟨ω₂, ·⟩ then ω₁ = ω₂
+  intro ω₁ ω₂ heq
+  by_contra hne
+  have hdiff : ω₁.val ≠ ω₂.val := fun h => hne (Subtype.ext h)
+  -- Extract pointwise equality from function equality
+  have hpair : ∀ η : Harmonic01Forms CRS.toRiemannSurface,
+      ip.pairing ω₁.val η.val.conj = ip.pairing ω₂.val η.val.conj :=
+    fun η => congr_fun heq η
+  -- By first-argument linearity: pairing (ω₁ - ω₂) η.conj = 0 for all η
+  have hzero : ∀ η : Harmonic01Forms CRS.toRiemannSurface,
+      ip.pairing (ω₁.val - ω₂.val) η.val.conj = 0 := by
+    intro η; rw [ip.linear_left_sub, sub_eq_zero]; exact hpair η
+  -- ω₁ - ω₂ is harmonic (kernel of ∂̄ is a submodule)
+  have hdiff_harm : (ω₁.val - ω₂.val).IsHarmonic :=
+    isHarmonic_sub ω₁.property ω₂.property
+  -- Apply to η = (ω₁ - ω₂).conj, which is in Harmonic01Forms
+  have h := hzero ⟨(ω₁.val - ω₂.val).conj, ⟨ω₁.val - ω₂.val, hdiff_harm, rfl⟩⟩
+  -- (ω.conj).conj = ω by involutivity of conjugation
+  simp only [Form_10.conj_conj] at h
+  -- h : ip.pairing (ω₁.val - ω₂.val) (ω₁.val - ω₂.val) = 0
+  -- But pos_def says re(pairing ω ω) > 0 for nonzero ω
+  have hpos := ip.pos_def (ω₁.val - ω₂.val) (sub_ne_zero.mpr hdiff)
+  rw [h] at hpos; simp at hpos
 
 /-!
 ## Corollaries of Serre Duality

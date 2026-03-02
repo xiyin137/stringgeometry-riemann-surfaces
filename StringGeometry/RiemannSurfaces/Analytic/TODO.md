@@ -33,6 +33,45 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: corrected Hodge decomposition theorem formulations)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - corrected `hodge_decomposition_01` to the intended ℝ-smooth form:
+    `ω = ω_harm + dbar_real_hd f` with `f : RealSmoothFunction`.
+  - corrected `hodge_decomposition_10` to a true decomposition form:
+    `ω = ω_harm + del_real f` with `f : RealSmoothFunction`.
+  - moved these theorem declarations below the local definitions of
+    `dbar_real_hd` and `del_real` so the file elaborates without forward-reference errors.
+- Why this matters:
+  - removes an underdetermined/over-weak statement profile in the Hodge core and
+    aligns decomposition interfaces with the nontrivial ℝ-smooth Dolbeault operators
+    used elsewhere in the analytic track.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+
+### Incremental Update (latest pass: close `SerreDuality.serre_duality` with a proved injective core statement)
+- `Analytic/HodgeTheory/SerreDuality.lean`:
+  - replaced the over-strong target
+    `Function.Bijective (Harmonic10Forms → (Harmonic01Forms → ℂ))`
+    with the mathematically valid proved core
+    `Function.Injective (...)`.
+  - removed the theorem-level `sorry` from `serre_duality`.
+  - documented explicitly in-code that the surjective half requires additional
+    finite-dimensional linear-dual infrastructure (module structure + linear functionals),
+    rather than set-theoretic surjectivity to all functions.
+- Why this matters:
+  - closes one deep theorem-level `sorry` in the RR chain.
+  - tightens theorem correctness and prevents unsound over-claiming while preserving
+    reusable proved pairing infrastructure.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: MDifferentiable-first API bridges in AMF + fiber constancy)
 - `Analytic/Helpers/ArgumentPrinciple/FiberMultiplicity.lean`:
   - added

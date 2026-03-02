@@ -564,23 +564,6 @@ The main theorem: every (p,q)-form decomposes uniquely as
 where ω_harm is harmonic.
 -/
 
-/-- Hodge decomposition for (0,1)-forms on a compact Riemann surface:
-    Every (0,1)-form decomposes as ω = ω_harm + ∂̄f
-    where ω_harm ∈ H^{0,1} and f is a smooth function. -/
-theorem hodge_decomposition_01 (CRS : CompactRiemannSurface) (ω : Form_01 CRS.toRiemannSurface) :
-    ∃ (ω_harm : Form_01 CRS.toRiemannSurface) (f : SmoothFunction CRS.toRiemannSurface),
-      ω_harm.IsHarmonic ∧ ω = ω_harm + dbar_fun f := by
-  sorry
-
-/-- Hodge decomposition for (1,0)-forms:
-    Every (1,0)-form decomposes as ω = ω_harm + ∂g
-    where ω_harm ∈ H^{1,0}. -/
-theorem hodge_decomposition_10 (CRS : CompactRiemannSurface) (ω : Form_10 CRS.toRiemannSurface) :
-    ∃ (ω_harm : Form_10 CRS.toRiemannSurface),
-      ω_harm.IsHarmonic ∧ (dbar_10 ω = dbar_10 ω_harm) := by
-  -- Every (1,0)-form that is ∂̄-closed is holomorphic
-  sorry
-
 /-- The dimension of H^{1,0} equals the genus -/
 theorem dim_harmonic_10_eq_genus (CRS : CompactRiemannSurface) :
     ∃ (basis : Fin CRS.genus → Harmonic10Forms CRS.toRiemannSurface),
@@ -664,6 +647,29 @@ noncomputable def dbar_real_hd (f : RealSmoothFunction RS) : Form_01 RS where
     smoothness obligation parallel to `dbar_real_hd_smooth_section`. -/
 noncomputable def del_real (f : RealSmoothFunction RS) : Form_10 RS :=
   (dbar_real_hd f.conj).conj
+
+/-!
+## Hodge decomposition statements (using ∂̄ on ℝ-smooth functions)
+
+These are placed here so they can refer to `dbar_real_hd` and `del_real`.
+-/
+
+/-- Hodge decomposition for (0,1)-forms on a compact Riemann surface:
+    Every (0,1)-form decomposes as ω = ω_harm + ∂̄f
+    where ω_harm ∈ H^{0,1} and f is an ℝ-smooth function. -/
+theorem hodge_decomposition_01 (CRS : CompactRiemannSurface) (ω : Form_01 CRS.toRiemannSurface) :
+    ∃ (ω_harm : Form_01 CRS.toRiemannSurface) (f : RealSmoothFunction CRS.toRiemannSurface),
+      ω_harm.IsHarmonic ∧ ω = ω_harm + dbar_real_hd f := by
+  sorry
+
+/-- Hodge decomposition for (1,0)-forms:
+    Every (1,0)-form decomposes as ω = ω_harm + ∂f
+    where ω_harm ∈ H^{1,0}. -/
+theorem hodge_decomposition_10 (CRS : CompactRiemannSurface) (ω : Form_10 CRS.toRiemannSurface) :
+    ∃ (ω_harm : Form_10 CRS.toRiemannSurface) (f : RealSmoothFunction CRS.toRiemannSurface),
+      ω_harm.IsHarmonic ∧ ω = ω_harm + del_real f := by
+  -- Every (1,0)-form that is ∂̄-closed is holomorphic
+  sorry
 
 /-!
 ## Linearity of del_01, del_real, dbar_real_hd

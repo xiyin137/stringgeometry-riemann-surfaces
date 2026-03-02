@@ -75,6 +75,34 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `Helpers/ArgumentPrinciple/FiberMultiplicity`
     - `RiemannRoch`
     (pass with warnings only).
+15. `HodgeTheory/SerreDuality.lean`:
+    corrected `serre_duality` to its proved core statement
+    (injectivity of the pairing-induced map) and removed the theorem-level `sorry`
+    that previously sat in the surjectivity branch.
+16. Rationale for this correction:
+    the previous codomain (`Harmonic01Forms → ℂ` as all functions) made
+    bijectivity too strong without finite-dimensional linear-dual infrastructure.
+    The current theorem now states exactly what is proved and mathematically sound.
+17. Compile frontier re-checked after this correction:
+    - `HodgeTheory/SerreDuality`
+    - `RiemannRoch`
+    - `Analytic/Analytic`
+    (pass with warnings only).
+18. `HodgeTheory/HodgeDecomposition.lean`:
+    corrected theorem interfaces for the two main decomposition statements to use
+    the intended nontrivial ℝ-smooth operators:
+    - `hodge_decomposition_01`: `ω = ω_harm + dbar_real_hd f`,
+    - `hodge_decomposition_10`: `ω = ω_harm + del_real f`,
+    with `f : RealSmoothFunction`.
+19. Structural fix:
+    moved those theorem declarations below the local definitions of
+    `dbar_real_hd` and `del_real` to avoid forward-reference elaboration errors.
+20. Compile frontier re-checked after this Hodge interface correction:
+    - `HodgeTheory/HodgeDecomposition`
+    - `HodgeTheory/SerreDuality`
+    - `RiemannRoch`
+    - `Analytic/Analytic`
+    (pass with warnings only).
 
 ## Current blocker clusters
 
@@ -99,10 +127,13 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 3. Hodge/duality infrastructure theorem gaps in:
    - `HodgeTheory/DolbeaultCohomology.lean`
    - `HodgeTheory/HodgeDecomposition.lean`
-   - `HodgeTheory/SerreDuality.lean`
+   - `HodgeTheory/SerreDuality.lean` (remaining gap now centered on
+     residue/global duality infrastructure, not the pairing injectivity core)
    - note: `HodgeDecomposition.l2_inner_product_10_exists` and
      `del_real_smooth_section` are now closed; the primary remaining low-level
      Hodge infrastructure blocker is `dbar_real_hd_smooth_section`.
+   - decomposition theorem statements are now corrected to ℝ-smooth `dbar_real_hd`/`del_real`
+     forms; the remaining work is proof closure, not statement repair.
 4. RR endpoint theorem gaps in `RiemannRoch.lean`.
 
 ## Working method
