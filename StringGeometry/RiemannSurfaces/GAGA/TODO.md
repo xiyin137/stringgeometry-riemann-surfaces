@@ -13,6 +13,10 @@
   - `scheme_regularIsConstant`
   - `scheme_leadingCoefficientUniqueness`
 - These are the immediate blockers for removing bridge-level placeholders without smuggling assumptions.
+- File-size policy check (`scripts/check_lean_file_length.sh 2000`) currently reports one GAGA offender:
+  - `AlgebraicCurves/Cohomology/PointExactSequence.lean` (2180 lines).
+  - Planned split target: `PointExactSequence/{Core,Constraint}.lean` with a thin
+    compatibility import file at the legacy path.
 
 ## Key Dependency Flowchart
 ```text
@@ -42,6 +46,8 @@ Top-level transfer
 2. Ensure point-exact recursion and Euler-characteristic formulas remain theorem-driven (not bundled assumptions).
 3. Keep bridge theorems thin and compositional so SchemeTheoretic/Analytic changes do not fork logic.
 4. Maintain one-way architecture: GAGA consumes results; it does not own core model definitions.
+5. Enforce the 2000-line Lean file policy in GAGA; split `PointExactSequence.lean`
+   once the local `AlgebraicCech` compile frontier is stabilized under current APIs.
 
 ## Done Criteria
 - GAGA RR transfer theorems build with explicit dependency data.

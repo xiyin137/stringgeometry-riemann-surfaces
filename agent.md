@@ -82,6 +82,12 @@ This file is the working guidance for Codex in this repository.
    - build the nearest umbrella module importing it,
    - update local TODO/status when frontier or blockers change.
 8. Commit gate: only commit when the changed compile frontier builds; include checked modules in the commit message.
+9. Lean file size policy:
+   - keep `.lean` files under 2000 lines,
+   - when a file approaches the limit, split into a subfolder with thematic modules and keep a thin compatibility import at the old path.
+10. Before structural/refactor commits, run:
+   - `scripts/check_lean_file_length.sh 2000`
+   - and include any exceptions/blockers in the local TODO if immediate split is not feasible.
 
 ## Practical proof tactics
 
