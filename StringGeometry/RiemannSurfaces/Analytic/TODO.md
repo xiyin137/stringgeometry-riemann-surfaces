@@ -33,6 +33,29 @@
 ## Development Snapshot (2026-03-02)
 
 ### Incremental Update (latest pass)
+- `Helpers/ArgumentPrinciple.lean`:
+  - strengthened `exists_distinct_values_on_regularLocus` to an explicit
+    `push_neg` extraction (cleaner logical bridge for nonconstancy on regular locus).
+  - removed the unused `hsupp` parameter from
+    `chartOrderSum_sub_const_eq_zero_of_nonconstant_regularLocus`
+    (the theorem only needs chart-meromorphy + regular-locus nonconstancy).
+  - added reduction lemma
+    `fiberMultiplicity_constant_of_chartOrderSum_bridge`:
+    once a bridge identifies `fiberMultiplicity` with shifted `chartOrderSum`,
+    constancy follows from the shifted argument principle.
+- Compile frontier check:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ArgumentPrinciple.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+- Blocker clarification added for the top RR-chain gap:
+  - `fiberMultiplicity_constant` now has a precise bridge target:
+    identify the current point-value fiber definition
+    `{p | f p = c ∧ 0 ≤ ord_p(f)}`
+    with the zero-multiplicity contribution of `f - c`.
+    This currently lacks a germ-level compatibility lemma (or a corrected-value
+    fiber definition) and is the next deep infrastructure target.
+
+- Existing latest-pass items preserved:
 - Added reusable helper in
   `HodgeTheory/HodgeDecomposition.lean`:
   `dbar_fun_eq_zero (f : SmoothFunction RS) : dbar_fun f = 0`.

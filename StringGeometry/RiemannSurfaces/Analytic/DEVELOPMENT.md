@@ -27,17 +27,16 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 
 ## Current blocker clusters
 
-1. Local counting at poles/zeros in `Helpers/ArgumentPrinciple.lean`
-   - `meromorphic_pole_local_sum_zero`
-   - `pole_local_chart_sum_constant`
-   - `zero_local_chart_sum_constant`
-   - `chartOrderSum_locally_constant`
-   - `chartOrderSum_zero_large_c`
+1. Fiber-multiplicity bridge in `Helpers/ArgumentPrinciple.lean`
+   - `fiberMultiplicity_constant`
+   - missing bridge target: connect point-value fibers
+     `{p | f p = c ∧ 0 ≤ ord_p(f)}`
+     to the germ-level zero multiplicity of `f - c` (likely via corrected-value infrastructure).
 2. Hodge/duality infrastructure theorem gaps in:
    - `HodgeTheory/DolbeaultCohomology.lean`
    - `HodgeTheory/HodgeDecomposition.lean`
    - `HodgeTheory/SerreDuality.lean`
-3. RR endpoint gaps in `RiemannRoch.lean`.
+3. RR endpoint theorem gaps in `RiemannRoch.lean`.
 
 ## Working method
 

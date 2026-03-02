@@ -267,6 +267,29 @@ This follows from:
 def regularLocus (f : RS.carrier → ℂ) : Set RS.carrier :=
   { p | (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) f p }
 
+/-- Nonconstancy on the regular locus provides two regular points with distinct values. -/
+private theorem exists_distinct_values_on_regularLocus {RS : RiemannSurface}
+    (f : RS.carrier → ℂ)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := RS) f →
+      q ∈ regularLocus (RS := RS) f → f p = f q) :
+    ∃ p q, p ∈ regularLocus (RS := RS) f ∧ q ∈ regularLocus (RS := RS) f ∧ f p ≠ f q := by
+  push_neg at hnc
+  exact hnc
+
+/-- If `f` is nonconstant on its regular locus, then for every `c` there is a point with `f p ≠ c`. -/
+private theorem exists_ne_value_of_nonconstant_regularLocus {RS : RiemannSurface}
+    (f : RS.carrier → ℂ)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := RS) f →
+      q ∈ regularLocus (RS := RS) f → f p = f q)
+    (c : ℂ) :
+    ∃ p : RS.carrier, f p ≠ c := by
+  obtain ⟨p, q, _hp, _hq, hpq⟩ := exists_distinct_values_on_regularLocus (RS := RS) f hnc
+  by_cases hpc : f p = c
+  · refine ⟨q, ?_⟩
+    intro hqc
+    exact hpq (hpc.trans hqc.symm)
+  · exact ⟨p, hpc⟩
+
 /-- **Fiber multiplicity**: the sum of chart orders of f - c over all preimages
     of c in the regular locus. -/
 noncomputable def fiberMultiplicity (CRS : CompactRiemannSurface)
@@ -3281,5 +3304,71 @@ theorem chartMeromorphic_argument_principle (CRS : CompactRiemannSurface)
     (hne : ∃ p, f p ≠ 0) :
     chartOrderSum CRS f hf hsupp = 0 :=
   chartOrderSum_eq_zero CRS f hf hsupp hne
+
+/-- For a chart-meromorphic `f` nonconstant on its regular locus, every shift `f - c`
+    has vanishing chart-order sum. This packages the argument-principle theorem in the
+    shifted form needed in fiber-multiplicity/degree arguments. -/
+theorem chartOrderSum_sub_const_eq_zero_of_nonconstant_regularLocus
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q) :
+    ∀ c : ℂ,
+      chartOrderSum CRS (fun x => f x - c)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+        (chartOrderSupport_sub_const_finite CRS f c hf) = 0 := by
+  intro c
+  obtain ⟨p, hpne⟩ := exists_ne_value_of_nonconstant_regularLocus
+    (RS := CRS.toRiemannSurface) f hnc c
+  have hne_shift : ∃ q, (fun x => f x - c) q ≠ 0 := ⟨p, by simpa [sub_eq_zero] using hpne⟩
+  exact chartOrderSum_eq_zero CRS (fun x => f x - c)
+    (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+    (chartOrderSupport_sub_const_finite CRS f c hf) hne_shift
+
+/-- Reduction principle for `fiberMultiplicity_constant`.
+    Once fiber multiplicity is identified with the shifted chart-order sum,
+    constancy follows immediately from the shifted argument principle. -/
+theorem fiberMultiplicity_constant_of_chartOrderSum_bridge
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q)
+    (hbridge :
+      ∀ (c : ℂ)
+        (hfib : {p : CRS.toRiemannSurface.carrier |
+          f p = c ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
+        fiberMultiplicity CRS f c hfib =
+          chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf)) :
+    ∀ (c₁ c₂ : ℂ)
+      (hfib₁ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₁ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite)
+      (hfib₂ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₂ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
+      fiberMultiplicity CRS f c₁ hfib₁ = fiberMultiplicity CRS f c₂ hfib₂ := by
+  intro c₁ c₂ hfib₁ hfib₂
+  have hsum₁ :
+      chartOrderSum CRS (fun x => f x - c₁)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₁ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₁ hf) = 0 :=
+    chartOrderSum_sub_const_eq_zero_of_nonconstant_regularLocus CRS f hf hnc c₁
+  have hsum₂ :
+      chartOrderSum CRS (fun x => f x - c₂)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₂ hf) = 0 :=
+    chartOrderSum_sub_const_eq_zero_of_nonconstant_regularLocus CRS f hf hnc c₂
+  calc
+    fiberMultiplicity CRS f c₁ hfib₁
+        = chartOrderSum CRS (fun x => f x - c₁)
+            (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₁ hf)
+            (chartOrderSupport_sub_const_finite CRS f c₁ hf) := hbridge c₁ hfib₁
+    _ = 0 := hsum₁
+    _ = chartOrderSum CRS (fun x => f x - c₂)
+          (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
+          (chartOrderSupport_sub_const_finite CRS f c₂ hf) := hsum₂.symm
+    _ = fiberMultiplicity CRS f c₂ hfib₂ := (hbridge c₂ hfib₂).symm
 
 end RiemannSurfaces.Analytic
