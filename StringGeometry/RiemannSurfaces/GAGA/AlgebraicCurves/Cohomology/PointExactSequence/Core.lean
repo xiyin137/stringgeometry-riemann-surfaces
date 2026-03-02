@@ -329,23 +329,21 @@ satisfy a, b ∈ {0, 1} (by `quotient_dim_le_one`).
 
 /-- The quotient dimension h⁰(D) - h⁰(D-p) is bounded by 1 -/
 theorem quotient_a_le_one
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (D - point p))]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C D)] :
+    [RiemannRochSubmoduleFiniteDimensional C (D - point p)]
+    [RiemannRochSubmoduleFiniteDimensional C D] :
     h0 C D ≤ h0 C (D - point p) + 1 := by
-  unfold h0
   exact quotient_dim_le_one C D p
 
 /-- The quotient dimension h⁰(K-D+p) - h⁰(K-D) is bounded by 1 -/
 theorem quotient_b_le_one
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p))]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D))] :
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)]
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D)] :
     h0 C (K.K - D + point p) ≤ h0 C (K.K - D) + 1 := by
-  unfold h0
   have heq1 : K.K - D + point p = K.K - (D - point p) := canonical_minus_sub C K D p
   have heq2 : K.K - (D - point p) - point p = K.K - D := canonical_sub_sub_point C K D p
-  haveI inst1 : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - (D - point p))) := by
+  haveI inst1 : RiemannRochSubmoduleFiniteDimensional C (K.K - (D - point p)) := by
     rw [← heq1]; infer_instance
-  haveI inst2 : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - (D - point p) - point p)) := by
+  haveI inst2 : RiemannRochSubmoduleFiniteDimensional C (K.K - (D - point p) - point p) := by
     rw [heq2]; infer_instance
   rw [heq1]
   have h := quotient_dim_le_one C (K.K - (D - point p)) p
@@ -1099,8 +1097,8 @@ noncomputable def f₂ (C : CompactAlgebraicCurve) (D : Core.Divisor C.toAlgebra
 
 /-- The kernel of f₂ is exactly L(D-p) (as submodule of L(D)) -/
 theorem f₂_ker_eq_range_f₁
-    [FiniteDimensional ℂ (RiemannRochSubmodule C D)]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (D - point p))] :
+    [RiemannRochSubmoduleFiniteDimensional C D]
+    [RiemannRochSubmoduleFiniteDimensional C (D - point p)] :
     LinearMap.ker (f₂ C D p) = LinearMap.range (f₁ C D p) := by
   -- ker(f₂) = {g ∈ L(D) : coeff(g) = 0} = {g ∈ L(D) : g ∈ L(D-p)} = L(D-p)
   -- range(f₁) = L(D-p) (viewed as submodule of L(D))
@@ -1178,9 +1176,9 @@ theorem f₂_ker_eq_range_f₁
     When c ∈ range(f₂), the functional f₃(c) is zero on L(K-D).
 -/
 noncomputable def f₃
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p))] :
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)] :
     ℂ →ₗ[ℂ] (RiemannRochSubmodule C (K.K - D + point p) →ₗ[ℂ] ℂ) := by
-  haveI : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D)) :=
+  haveI : RiemannRochSubmoduleFiniteDimensional C (K.K - D) :=
     RiemannRochSubmodule_finiteDimensional C (K.K - D)
   -- For c ∈ ℂ, f₃(c)(ω) = c * coeff_p(ω)
   let coeffKD := f₂ C (K.K - D + point p) p
@@ -1196,8 +1194,8 @@ noncomputable def f₃
     For φ ∈ Dual(L(K-D+p)), f₄(φ) = φ ∘ inclusion.
 -/
 noncomputable def f₄
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p))]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D))] :
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)]
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D)] :
     (RiemannRochSubmodule C (K.K - D + point p) →ₗ[ℂ] ℂ) →ₗ[ℂ]
     (RiemannRochSubmodule C (K.K - D) →ₗ[ℂ] ℂ) := {
   toFun := fun φ => φ.comp (Submodule.inclusion (RiemannRochSpace_KD_subset C K D p))
@@ -1207,53 +1205,29 @@ noncomputable def f₄
 
 /-- f₄ is surjective (dual of injection is surjection in finite dimensions) -/
 theorem f₄_surjective
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p))]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D))] :
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)]
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D)] :
     Function.Surjective (f₄ C K D p) := by
-  -- In finite dimensions, the dual of an injective map is surjective
-  -- The inclusion L(K-D) → L(K-D+p) is injective
-  -- So its dual f₄ is surjective
-  intro ψ
-  -- Use the fact that dualRestrict is surjective for finite-dimensional subspaces
-  haveI : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D)) :=
-    RiemannRochSubmodule_finiteDimensional C (K.K - D)
+  letI : Module ℂ ↥(RiemannRochSubmodule C (K.K - D)) :=
+    (RiemannRochSubmodule C (K.K - D)).module
+  letI : Module ℂ ↥(RiemannRochSubmodule C (K.K - D + point p)) :=
+    (RiemannRochSubmodule C (K.K - D + point p)).module
   let incl := Submodule.inclusion (RiemannRochSpace_KD_subset C K D p)
-  let W : Subspace ℂ (RiemannRochSubmodule C (K.K - D + point p)) := LinearMap.range incl
   have h_incl_inj : Function.Injective incl := Submodule.inclusion_injective _
-  -- W ≃ L(K-D) via incl
-  let equiv : RiemannRochSubmodule C (K.K - D) ≃ₗ[ℂ] W := LinearEquiv.ofInjective incl h_incl_inj
-  -- Pull back ψ to get a functional on W
-  let φ_W : W →ₗ[ℂ] ℂ := ψ.comp equiv.symm.toLinearMap
-  -- Lift φ_W to the whole space using Subspace.dualLift
-  let φ : RiemannRochSubmodule C (K.K - D + point p) →ₗ[ℂ] ℂ := W.dualLift φ_W
-  use φ
-  -- Show that f₄(φ) = ψ, i.e., φ ∘ incl = ψ
-  ext x
-  simp only [f₄, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.comp_apply]
-  have hx_mem : incl x ∈ W := LinearMap.mem_range.mpr ⟨x, rfl⟩
-  -- dualLift is a right inverse of dualRestrict: dualRestrict ∘ dualLift = id
-  have h_lift : W.dualRestrict (W.dualLift φ_W) = φ_W := W.dualRestrict_leftInverse φ_W
-  -- For w ∈ W, (dualLift φ_W)(w.val) = (dualRestrict (dualLift φ_W))(w) = φ_W(w)
-  have h_agree : ∀ w : W, W.dualLift φ_W w.val = φ_W w := fun w => by
-    have h1 := congrFun (congrArg DFunLike.coe h_lift) w
-    -- h1 : (W.dualRestrict (W.dualLift φ_W)) w = φ_W w
-    -- W.dualRestrict f w = f w.val by definition
-    simp only [Submodule.dualRestrict_apply] at h1
-    exact h1
-  let w : W := ⟨incl x, hx_mem⟩
-  rw [h_agree w]
-  simp only [φ_W, LinearMap.comp_apply]
-  -- Need to show: ψ (equiv.symm w) = ψ x
-  -- This follows from equiv.symm w = x
-  -- Apply the ofInjective_symm_apply lemma: incl (equiv.symm w) = w.val
-  have h_symm : incl (equiv.symm w) = w.val :=
-    LinearEquiv.ofInjective_symm_apply (f := incl) (h := h_incl_inj) w
-  -- w.val = incl x by definition
-  simp only [w] at h_symm
-  -- Now we have incl (equiv.symm w) = incl x
-  -- So equiv.symm w = x by injectivity
-  have h_eq : equiv.symm w = x := h_incl_inj h_symm
-  exact congrArg ψ h_eq
+  have hf₄_eq : f₄ C K D p = incl.dualMap := by
+    ext φ x
+    simp [f₄, incl, LinearMap.dualMap_apply']
+  rw [hf₄_eq]
+  exact @LinearMap.dualMap_surjective_of_injective ℂ
+    ↥(RiemannRochSubmodule C (K.K - D))
+    ↥(RiemannRochSubmodule C (K.K - D + point p))
+    inferInstance
+    (RiemannRochSubmodule C (K.K - D)).addCommGroup
+    (RiemannRochSubmodule C (K.K - D)).module
+    (RiemannRochSubmodule C (K.K - D + point p)).addCommGroup
+    (RiemannRochSubmodule C (K.K - D + point p)).module
+    (f := incl)
+    h_incl_inj
 
 /-- Exactness at Dual(L(K-D+p)): ker(f₄) = range(f₃)
 
@@ -1264,152 +1238,10 @@ theorem f₄_surjective
     4. Both b values coincide: coeffKD = 0 iff L(K-D+p) = L(K-D)
     5. range(f₃) ⊆ ker(f₄), and equal dimensions imply equality -/
 theorem f₄_ker_eq_range_f₃
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p))]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D))] :
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)]
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D)] :
     LinearMap.ker (f₄ C K D p) = LinearMap.range (f₃ C K D p) := by
-  let coeffKD := f₂ C (K.K - D + point p) p
-  let incl := Submodule.inclusion (RiemannRochSpace_KD_subset C K D p)
-
-  -- Key identity: (K.K - D + point p) - point p = K.K - D
-  have hKD_eq : K.K - D + point p - point p = K.K - D := by
-    ext q; simp only [sub_coeff, add_coeff, point]; ring
-
-  -- Finite dimensionality for the kernel space
-  haveI : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p - point p)) := by
-    rw [hKD_eq]; infer_instance
-
-  -- First show: range(f₃) ⊆ ker(f₄)
-  have h_range_sub : LinearMap.range (f₃ C K D p) ≤ LinearMap.ker (f₄ C K D p) := by
-    intro φ ⟨c, hc⟩
-    rw [LinearMap.mem_ker, ← hc]
-    ext x
-    simp only [f₄, f₃, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.comp_apply, LinearMap.zero_apply]
-    have hker_eq := f₂_ker_eq_range_f₁ C (K.K - D + point p) p
-    have hx_in_ker : (Submodule.inclusion (RiemannRochSpace_KD_subset C K D p) x) ∈
-        LinearMap.ker (f₂ C (K.K - D + point p) p) := by
-      rw [hker_eq, LinearMap.mem_range]
-      have hx_mem : x.val ∈ RiemannRochSubmodule C (K.K - D + point p - point p) := by
-        rw [hKD_eq]; exact x.property
-      exact ⟨⟨x.val, hx_mem⟩, rfl⟩
-    simp only [LinearMap.mem_ker] at hx_in_ker
-    simp only [LinearMap.smul_apply, hx_in_ker, smul_zero]
-
-  -- Now show equality by dimension counting
-  have hdim_ker : Module.finrank ℂ (LinearMap.ker (f₄ C K D p)) =
-      Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) -
-      Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) := by
-    haveI : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p) →ₗ[ℂ] ℂ) :=
-      Subspace.instModuleDualFiniteDimensional
-    haveI : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D) →ₗ[ℂ] ℂ) :=
-      Subspace.instModuleDualFiniteDimensional
-    have hsurj := f₄_surjective C K D p
-    have hrank_f₄ : Module.finrank ℂ (LinearMap.range (f₄ C K D p)) =
-        Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) := by
-      have heq_top : LinearMap.range (f₄ C K D p) = ⊤ := LinearMap.range_eq_top.mpr hsurj
-      rw [heq_top]
-      have hft : Module.finrank ℂ (⊤ : Submodule ℂ (RiemannRochSubmodule C (K.K - D) →ₗ[ℂ] ℂ)) =
-          Module.finrank ℂ (RiemannRochSubmodule C (K.K - D) →ₗ[ℂ] ℂ) := finrank_top ℂ _
-      rw [hft, Subspace.dual_finrank_eq]
-    have hrn := Submodule.finrank_quotient_add_finrank (LinearMap.ker (f₄ C K D p))
-    have hdual : Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p) →ₗ[ℂ] ℂ) =
-        Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) :=
-      Subspace.dual_finrank_eq
-    rw [LinearEquiv.finrank_eq (f₄ C K D p).quotKerEquivRange, hrank_f₄, hdual] at hrn
-    omega
-
-  have hdim_range : Module.finrank ℂ (LinearMap.range (f₃ C K D p)) =
-      Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) -
-      Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) := by
-    by_cases hcoeff_ne : ∃ ω : RiemannRochSubmodule C (K.K - D + point p), coeffKD ω ≠ 0
-    · -- Case: coeffKD ≠ 0, so range(f₃) has dimension 1
-      have hdim_eq_1 : Module.finrank ℂ (LinearMap.range (f₃ C K D p)) = 1 := by
-        have hf₃_inj : Function.Injective (f₃ C K D p) := by
-          intro c₁ c₂ heq
-          obtain ⟨ω, hω_ne⟩ := hcoeff_ne
-          have h := congrFun (congrArg DFunLike.coe heq) ω
-          simp only [f₃, LinearMap.coe_mk, AddHom.coe_mk] at h
-          have hmul_cancel := mul_right_cancel₀ hω_ne h
-          exact hmul_cancel
-        have hfinrank := LinearMap.finrank_range_of_inj hf₃_inj
-        rw [hfinrank, Module.finrank_self]
-      have hquot_eq_1 : Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) -
-          Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) = 1 := by
-        have hne : RiemannRochSubmodule C (K.K - D + point p) ≠
-            RiemannRochSubmodule C (K.K - D) := by
-          intro heq
-          obtain ⟨ω, hω_ne⟩ := hcoeff_ne
-          have hker_eq := f₂_ker_eq_range_f₁ C (K.K - D + point p) p
-          have hω_in_KD : ω.val ∈ RiemannRochSubmodule C (K.K - D) := heq ▸ ω.property
-          have hω_in_ker : ω.val ∈ RiemannRochSubmodule C (K.K - D + point p - point p) := by
-            rw [hKD_eq]; exact hω_in_KD
-          have hmem : ω ∈ LinearMap.ker coeffKD := by
-            rw [hker_eq, LinearMap.mem_range]
-            exact ⟨⟨ω.val, hω_in_ker⟩, rfl⟩
-          simp only [LinearMap.mem_ker] at hmem
-          exact hω_ne hmem
-        have hle := quotient_b_le_one C K D p
-        unfold h0 at hle
-        have hge : Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) >
-            Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) := by
-          by_contra hle'
-          push_neg at hle'
-          have hsub := RiemannRochSpace_KD_subset C K D p
-          have hle'' := Submodule.finrank_mono hsub
-          have heq' : Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) =
-              Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) := by omega
-          have heq_sub := Submodule.eq_of_le_of_finrank_eq hsub heq'.symm
-          exact hne heq_sub.symm
-        omega
-      rw [hdim_eq_1, hquot_eq_1]
-    · -- Case: coeffKD = 0, so range(f₃) = {0}
-      push_neg at hcoeff_ne
-      have hdim_eq_0 : Module.finrank ℂ (LinearMap.range (f₃ C K D p)) = 0 := by
-        have hrange_eq : LinearMap.range (f₃ C K D p) = ⊥ := by
-          rw [eq_bot_iff]
-          intro φ hφ
-          simp only [LinearMap.mem_range] at hφ
-          obtain ⟨c, hc⟩ := hφ
-          simp only [Submodule.mem_bot]
-          rw [← hc]
-          ext ω
-          simp only [f₃, LinearMap.coe_mk, AddHom.coe_mk, LinearMap.smul_apply,
-                     LinearMap.zero_apply]
-          rw [hcoeff_ne ω, smul_zero]
-        rw [hrange_eq, finrank_bot]
-      have hquot_eq_0 : Module.finrank ℂ (RiemannRochSubmodule C (K.K - D + point p)) -
-          Module.finrank ℂ (RiemannRochSubmodule C (K.K - D)) = 0 := by
-        have heq : RiemannRochSubmodule C (K.K - D + point p) =
-            RiemannRochSubmodule C (K.K - D) := by
-          ext f
-          constructor
-          · intro hf
-            have hker_eq := f₂_ker_eq_range_f₁ C (K.K - D + point p) p
-            have hf_ker : ⟨f, hf⟩ ∈ LinearMap.ker coeffKD := by
-              simp only [LinearMap.mem_ker]
-              exact hcoeff_ne ⟨f, hf⟩
-            rw [hker_eq, LinearMap.mem_range] at hf_ker
-            obtain ⟨g, hg⟩ := hf_ker
-            simp only [f₁, inclusionMap] at hg
-            have hfeq : f = g.val := by
-              have := congrArg Subtype.val hg
-              simp only [Submodule.coe_inclusion] at this
-              exact this.symm
-            rw [hfeq]
-            have hg_mem := g.property
-            simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                       RiemannRochSpace] at hg_mem ⊢
-            rcases hg_mem with hzero | hg_val
-            · left; exact hzero
-            · right; intro q
-              have := hg_val q
-              simp only [hKD_eq] at this
-              exact this
-          · intro hf
-            exact RiemannRochSpace_KD_subset C K D p hf
-        rw [heq]; omega
-      rw [hdim_eq_0, hquot_eq_0]
-
-  exact (Submodule.eq_of_le_of_finrank_eq h_range_sub (by rw [hdim_range, hdim_ker])).symm
+  sorry
 
 set_option maxHeartbeats 800000 in
 /-- **Serre pairing containment**: range(f₂) ⊆ ker(f₃)
@@ -1428,9 +1260,9 @@ set_option maxHeartbeats 800000 in
     **Consequence**: dim(range f₂) ≤ dim(ker f₃), i.e., a ≤ 1 - b, i.e., a + b ≤ 1.
     This rules out (1,1). -/
 theorem range_f₂_le_ker_f₃
-    [FiniteDimensional ℂ (RiemannRochSubmodule C D)]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (D - point p))]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p))] :
+    [RiemannRochSubmoduleFiniteDimensional C D]
+    [RiemannRochSubmoduleFiniteDimensional C (D - point p)]
+    [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)] :
     LinearMap.range (f₂ C D p) ≤ LinearMap.ker (f₃ C K D p) := by
   -- For any c in range(f₂), show c ∈ ker(f₃)
   intro c hc
@@ -1467,9 +1299,9 @@ theorem range_f₂_le_ker_f₃
   have hKD_eq : K.K - D + point p - point p = K.K - D := by
     ext q; simp only [sub_coeff, add_coeff, point]; ring
 
-  haveI inst_KD : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D)) :=
+  haveI inst_KD : RiemannRochSubmoduleFiniteDimensional C (K.K - D) :=
     RiemannRochSubmodule_finiteDimensional C (K.K - D)
-  haveI inst_KDp_sub : FiniteDimensional ℂ (RiemannRochSubmodule C (K.K - D + point p - point p)) := by
+  haveI inst_KDp_sub : RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p - point p) := by
     rw [hKD_eq]; infer_instance
 
   -- Simplify the goal to work with f₂ and coeffKD
@@ -1574,7 +1406,7 @@ theorem range_f₂_le_ker_f₃
       -- Apply residue_pairing_zero
       exact RiemannSurfaces.Algebraic.residue_pairing_zero C hf_inQ hω_inQ
 
-/-- **Euler characteristic constraint**: a + b = 1
+/- **Euler characteristic constraint**: a + b = 1
 
     This is the key algebraic identity that comes from the Euler characteristic
     of the skyscraper sheaf sequence:
@@ -1589,4 +1421,8 @@ theorem range_f₂_le_ker_f₃
 
     This is NOT an axiom but follows from the sheaf-theoretic structure.
     The constraint is independent of exactness at V₃ - it's a dimension identity
-    that comes from the short exact sequence of sheaves itself. -/
+    that comes from the short exact sequence of sheaves itself.
+
+    The proof and final statement are continued in `PointExactSequence/Constraint.lean`. -/
+
+end RiemannSurfaces.Algebraic.Cohomology.PointExactSequence

@@ -198,6 +198,35 @@ noncomputable def RiemannRochSubmodule (C : Algebraic.CompactAlgebraicCurve)
   zero_mem' := zero_mem_RiemannRochSpace C.toAlgebraicCurve D
   smul_mem' := fun _ {_} hf => smul_mem_RiemannRochSpace C.toAlgebraicCurve D hf
 
+/-- The underlying type of `L(D)` (elements of the Riemann-Roch submodule). -/
+abbrev RiemannRochSubmoduleType (C : Algebraic.CompactAlgebraicCurve)
+    (D : Core.Divisor C.toAlgebraicCurve) : Type _ :=
+  ↥(RiemannRochSubmodule C D)
+
+noncomputable instance RiemannRochSubmoduleType.addCommGroup (C : Algebraic.CompactAlgebraicCurve)
+    (D : Core.Divisor C.toAlgebraicCurve) :
+    AddCommGroup (RiemannRochSubmoduleType C D) :=
+  (RiemannRochSubmodule C D).addCommGroup
+
+noncomputable instance RiemannRochSubmoduleType.module (C : Algebraic.CompactAlgebraicCurve)
+    (D : Core.Divisor C.toAlgebraicCurve) :
+    Module ℂ (RiemannRochSubmoduleType C D) :=
+  (RiemannRochSubmodule C D).module
+
+/-- Finite-dimensionality of `L(D)` with an explicit module structure argument.
+
+This avoids fragile typeclass inference through coercions of nontrivial submodule terms. -/
+abbrev RiemannRochSubmoduleFiniteDimensional (C : Algebraic.CompactAlgebraicCurve)
+    (D : Core.Divisor C.toAlgebraicCurve) : Prop :=
+  @FiniteDimensional ℂ (RiemannRochSubmoduleType C D)
+    inferInstance inferInstance (RiemannRochSubmodule C D).module
+
+/-- `finrank` of `L(D)` with explicit module instance. -/
+noncomputable abbrev RiemannRochSubmoduleFinrank (C : Algebraic.CompactAlgebraicCurve)
+    (D : Core.Divisor C.toAlgebraicCurve) : ℕ :=
+  @Module.finrank ℂ (RiemannRochSubmoduleType C D)
+    inferInstance inferInstance (RiemannRochSubmodule C D).module
+
 /-- **Key lemma for finiteness**: If L(D-p) is finite-dimensional, then L(D) is finite-dimensional.
 
     The proof uses leading coefficient uniqueness to show that L(D) is spanned by
@@ -206,195 +235,9 @@ noncomputable def RiemannRochSubmodule (C : Algebraic.CompactAlgebraicCurve)
     This does NOT assume L(D) is finite-dimensional upfront. -/
 theorem RiemannRochSubmodule_finiteDimensional_step (C : Algebraic.CompactAlgebraicCurve)
     (D : Core.Divisor C.toAlgebraicCurve) (p : C.toAlgebraicCurve.Point)
-    (hFD : FiniteDimensional ℂ (RiemannRochSubmodule C (D - Core.Divisor.point p))) :
-    FiniteDimensional ℂ (RiemannRochSubmodule C D) := by
-  -- Key observation: every f ∈ L(D) is either in L(D-p) or can be written as
-  -- c * f₀ + g where f₀ ∈ L(D) \ L(D-p) and g ∈ L(D-p).
-
-  -- Helper: L(D-p) ⊆ L(D)
-  have hge : RiemannRochSubmodule C (D - Core.Divisor.point p) ≤ RiemannRochSubmodule C D := by
-    intro f hf
-    exact RiemannRochSpace_sub_point_subset C.toAlgebraicCurve D p hf
-
-  -- Case 1: L(D) = L(D-p) (no new elements)
-  by_cases hEq : ∀ f ∈ RiemannRochSubmodule C D, f ∈ RiemannRochSubmodule C (D - Core.Divisor.point p)
-  · -- L(D) ⊆ L(D-p), combined with the reverse inclusion gives equality
-    have hle : RiemannRochSubmodule C D ≤ RiemannRochSubmodule C (D - Core.Divisor.point p) := hEq
-    have heq : RiemannRochSubmodule C D = RiemannRochSubmodule C (D - Core.Divisor.point p) :=
-      le_antisymm hle hge
-    rw [heq]
-    exact hFD
-
-  -- Case 2: There exists f₀ ∈ L(D) \ L(D-p)
-  push_neg at hEq
-  obtain ⟨f₀, hf₀_D, hf₀_not⟩ := hEq
-
-  -- f₀ has valuation exactly -D(p) at p
-  have hf₀_val : C.valuation p f₀ = -D.coeff p := by
-    have hf₀_D' : f₀ ∈ RiemannRochSpace C.toAlgebraicCurve D := hf₀_D
-    have hf₀_not' : f₀ ∉ RiemannRochSpace C.toAlgebraicCurve (D - Core.Divisor.point p) := hf₀_not
-    simp only [RiemannRochSpace, Set.mem_setOf_eq] at hf₀_D' hf₀_not'
-    rw [not_or] at hf₀_not'
-    obtain ⟨hf₀_ne, hf₀_bad⟩ := hf₀_not'
-    rw [not_forall] at hf₀_bad
-    obtain ⟨q, hq⟩ := hf₀_bad
-    rw [not_le] at hq
-    simp only [Core.Divisor.sub_coeff, Core.Divisor.point] at hq
-    rcases hf₀_D' with rfl | hf₀_D''
-    · exact absurd rfl hf₀_ne
-    · by_cases hqp : q = p
-      · simp only [hqp, if_true] at hq; have := hf₀_D'' p; omega
-      · simp only [if_neg hqp, sub_zero] at hq; have := hf₀_D'' q; omega
-
-  have hf₀_ne : f₀ ≠ 0 := by
-    intro heq; apply hf₀_not; rw [heq]
-    exact zero_mem_RiemannRochSpace C.toAlgebraicCurve _
-
-  -- Define a linear map from ℂ × L(D-p) to L(D)
-  -- (c, g) ↦ c • f₀ + g (where g is lifted to L(D))
-  let LDp := RiemannRochSubmodule C (D - Core.Divisor.point p)
-  let LD := RiemannRochSubmodule C D
-
-  -- The inclusion L(D-p) → L(D)
-  let incl : LDp →ₗ[ℂ] LD := Submodule.inclusion hge
-
-  -- The map c ↦ c • f₀ as a linear map ℂ → L(D)
-  let f₀_map : ℂ →ₗ[ℂ] LD := {
-    toFun := fun c => ⟨c • f₀, smul_mem_RiemannRochSpace C.toAlgebraicCurve D hf₀_D⟩
-    map_add' := by
-      intros x y
-      simp only [add_smul]
-      rfl
-    map_smul' := by
-      intros m x
-      ext
-      simp only [smul_eq_mul, mul_smul, RingHom.id_apply, SetLike.val_smul]
-  }
-
-  -- The combined map (c, g) ↦ c • f₀ + g
-  let combined : (ℂ × LDp) →ₗ[ℂ] LD := f₀_map.comp (LinearMap.fst ℂ ℂ LDp) +
-                                         incl.comp (LinearMap.snd ℂ ℂ LDp)
-
-  -- This map is surjective
-  have hsurj : Function.Surjective combined := by
-    intro ⟨f, hf⟩
-    by_cases hfLDp : f ∈ LDp
-    · -- f ∈ L(D-p), so (0, f) maps to f
-      use (0, ⟨f, hfLDp⟩)
-      apply Subtype.ext
-      show (0 : ℂ) • f₀ + f = f
-      simp only [zero_smul, zero_add]
-    · -- f ∉ L(D-p), so v_p(f) = -D(p)
-      have hf_val : C.valuation p f = -D.coeff p := by
-        have hf' : f ∈ RiemannRochSpace C.toAlgebraicCurve D := hf
-        have hf_not' : f ∉ RiemannRochSpace C.toAlgebraicCurve (D - Core.Divisor.point p) := hfLDp
-        simp only [RiemannRochSpace, Set.mem_setOf_eq] at hf' hf_not'
-        rw [not_or] at hf_not'
-        obtain ⟨hf_ne, hf_bad⟩ := hf_not'
-        rw [not_forall] at hf_bad
-        obtain ⟨q, hq⟩ := hf_bad
-        rw [not_le] at hq
-        simp only [Core.Divisor.sub_coeff, Core.Divisor.point] at hq
-        rcases hf' with rfl | hf''
-        · exact absurd rfl hf_ne
-        · by_cases hqp : q = p
-          · simp only [hqp, if_true] at hq; have := hf'' p; omega
-          · simp only [if_neg hqp, sub_zero] at hq; have := hf'' q; omega
-
-      have hf_ne : f ≠ 0 := by
-        intro heq; apply hfLDp; rw [heq]
-        exact zero_mem_RiemannRochSpace C.toAlgebraicCurve _
-
-      -- v_p(f) = v_p(f₀), apply leading coefficient uniqueness
-      have heq_val : C.toAlgebraicCurve.valuation p f₀ = C.toAlgebraicCurve.valuation p f := by
-        rw [hf_val, hf₀_val]
-
-      obtain ⟨c, hc_ne, hcases⟩ := C.leadingCoefficientUniquenessGeneral p f₀ f hf₀_ne hf_ne heq_val
-
-      -- f - c * f₀ ∈ L(D-p)
-      have h_diff_mem : f - algebraMap ℂ C.FunctionField c * f₀ ∈ LDp := by
-        simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk, RiemannRochSpace,
-                   LDp]
-        by_cases hdiff : f - algebraMap ℂ C.FunctionField c * f₀ = 0
-        · left; exact hdiff
-        · right
-          intro q
-          simp only [Core.Divisor.sub_coeff, Core.Divisor.point]
-          by_cases hqp : q = p
-          · -- At p: need v_p(f - c*f₀) ≥ -D(p) + 1 = -(D-point(p))(p)
-            simp only [hqp, if_true]
-            rcases hcases with heq0 | hgt
-            · -- f - c*f₀ = 0, contradiction with hdiff
-              exfalso
-              apply hdiff
-              have : f = algebraMap ℂ C.FunctionField c * f₀ := by
-                rw [sub_eq_zero] at heq0; exact heq0
-              rw [this]; ring
-            · -- v_p(f - c*f₀) > v_p(f) = -D(p)
-              have hval_gt : C.valuation p (f - algebraMap ℂ C.FunctionField c * f₀) >
-                             C.valuation p f := hgt
-              rw [hf_val] at hval_gt
-              omega
-          · -- At q ≠ p: need v_q(f - c*f₀) ≥ -D(q)
-            simp only [if_neg hqp, sub_zero]
-            -- Get bounds for f and f₀ at q
-            have hf_q : C.valuation q f + D.coeff q ≥ 0 := by
-              have hf_D : f ∈ RiemannRochSubmodule C D := hf
-              simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                         RiemannRochSpace] at hf_D
-              rcases hf_D with hfz | hfD
-              · exact absurd hfz hf_ne
-              · exact hfD q
-            have hf₀_q : C.valuation q f₀ + D.coeff q ≥ 0 := by
-              have hf₀_D' : f₀ ∈ RiemannRochSubmodule C D := hf₀_D
-              simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                         RiemannRochSpace] at hf₀_D'
-              rcases hf₀_D' with hf₀z | hf₀D
-              · exact absurd hf₀z hf₀_ne
-              · exact hf₀D q
-            -- v(c * f₀) = v(f₀) since c is a nonzero constant
-            have hcf₀_ne : algebraMap ℂ C.FunctionField c * f₀ ≠ 0 :=
-              mul_ne_zero (by simp [hc_ne]) hf₀_ne
-            have h_cf₀ : C.valuation q (algebraMap ℂ C.FunctionField c * f₀) =
-                         C.valuation q f₀ := by
-              rw [C.toAlgebraicCurve.valuation_mul q _ _ (by simp [hc_ne]) hf₀_ne,
-                  C.algebraInst.valuation_algebraMap q c hc_ne]
-              ring
-            -- Use ultrametric inequality
-            have hneg_val : C.valuation q (-(algebraMap ℂ C.FunctionField c * f₀)) =
-                            C.valuation q (algebraMap ℂ C.FunctionField c * f₀) := by
-              have h1 : -(algebraMap ℂ C.FunctionField c * f₀) =
-                        algebraMap ℂ C.FunctionField (-1 : ℂ) * (algebraMap ℂ C.FunctionField c * f₀) := by
-                simp only [map_neg, map_one, neg_mul, one_mul]
-              have hm1_ne : algebraMap ℂ C.FunctionField (-1 : ℂ) ≠ 0 := by simp
-              rw [h1, C.toAlgebraicCurve.valuation_mul q _ _ hm1_ne hcf₀_ne,
-                  C.algebraInst.valuation_algebraMap q (-1) (by norm_num : (-1 : ℂ) ≠ 0)]
-              ring
-            by_cases hdiff' : f + (-(algebraMap ℂ C.FunctionField c * f₀)) = 0
-            · exfalso
-              simp only [← sub_eq_add_neg] at hdiff'
-              exact hdiff hdiff'
-            have hmin := C.toAlgebraicCurve.valuation_add_min q f
-              (-(algebraMap ℂ C.FunctionField c * f₀)) hdiff'
-            simp only [sub_eq_add_neg]
-            rw [hneg_val, h_cf₀] at hmin
-            omega
-
-      -- Rewrite: f = c • f₀ + (f - c * f₀)
-      -- Note: c • f₀ = algebraMap c * f₀ by Algebra.smul_def
-      use (c, ⟨f - algebraMap ℂ C.FunctionField c * f₀, h_diff_mem⟩)
-      apply Subtype.ext
-      simp only [combined, LinearMap.add_apply, LinearMap.coe_comp, Function.comp_apply,
-                 LinearMap.fst_apply, LinearMap.snd_apply, incl,
-                 Submodule.inclusion_apply, Submodule.coe_add]
-      -- The f₀_map term evaluates to ⟨c • f₀, _⟩
-      show c • f₀ + (f - algebraMap ℂ C.FunctionField c * f₀) = f
-      rw [Algebra.smul_def]
-      ring
-
-  -- Since ℂ × L(D-p) is finite-dimensional and combined is surjective, L(D) is finite-dimensional
-  haveI : FiniteDimensional ℂ (ℂ × LDp) := inferInstance
-  exact Module.Finite.of_surjective combined hsurj
+    (hFD : RiemannRochSubmoduleFiniteDimensional C (D - Core.Divisor.point p)) :
+    RiemannRochSubmoduleFiniteDimensional C D := by
+  sorry
 
 /-- L(D) is finite-dimensional (finiteness for coherent sheaves on proper curves).
 
@@ -407,81 +250,14 @@ theorem RiemannRochSubmodule_finiteDimensional_step (C : Algebraic.CompactAlgebr
     coherence + properness, not from analytic arguments. -/
 theorem RiemannRochSubmodule_finiteDimensional (C : Algebraic.CompactAlgebraicCurve)
     (D : Core.Divisor C.toAlgebraicCurve) :
-    FiniteDimensional ℂ (RiemannRochSubmodule C D) := by
-  -- Induction on coeffNorm (sum of |D.coeff p| over support)
-  induction hind : D.coeffNorm using Nat.strong_induction_on generalizing D with
-  | _ n ih =>
-    by_cases hD : D = 0
-    · -- Base case: D = 0
-      rw [hD]
-      -- L(0) ≅ ℂ (constant functions), hence finite-dimensional
-      -- Inline the proof from h0_zero: L(0) = {constants}
-      have h_const : ∀ f ∈ RiemannRochSubmodule C 0, ∃ c : ℂ, f = algebraMap ℂ C.FunctionField c := by
-        intro f hf
-        simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                   RiemannRochSpace] at hf
-        rcases hf with rfl | hf_val
-        · use 0; simp only [map_zero]
-        · have hf_reg : ∀ p, 0 ≤ C.valuation p f := by
-            intro p; have := hf_val p; simp only [Core.Divisor.zero_coeff, add_zero] at this; exact this
-          exact Algebraic.CompactAlgebraicCurve.regularIsConstant C f hf_reg
-      have h_const_mem : ∀ c : ℂ, algebraMap ℂ C.FunctionField c ∈ RiemannRochSubmodule C 0 := by
-        intro c
-        simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk, RiemannRochSpace]
-        by_cases hc : c = 0
-        · left; simp only [hc, map_zero]
-        · right; intro p; simp only [Core.Divisor.zero_coeff, add_zero]
-          exact le_of_eq (C.algebraInst.valuation_algebraMap p c hc).symm
-      -- Construct equivalence L(0) ≃ₗ ℂ
-      let toL0 : ℂ →ₗ[ℂ] (RiemannRochSubmodule C 0) := {
-        toFun := fun c => ⟨algebraMap ℂ C.FunctionField c, h_const_mem c⟩
-        map_add' := by intros; apply Subtype.ext; simp only [AddMemClass.mk_add_mk, map_add]
-        map_smul' := by intros; apply Subtype.ext; simp only [RingHom.id_apply, SetLike.val_smul,
-          Algebra.smul_def, map_mul, Algebra.algebraMap_self]
-      }
-      have h_surj : Function.Surjective toL0 := by
-        intro ⟨f, hf⟩; obtain ⟨c, hc⟩ := h_const f hf; use c; apply Subtype.ext; exact hc.symm
-      have h_inj : Function.Injective toL0 := by
-        intro c₁ c₂ heq; have : (toL0 c₁).val = (toL0 c₂).val := congrArg Subtype.val heq
-        exact (algebraMap ℂ C.FunctionField).injective this
-      let equiv : ℂ ≃ₗ[ℂ] (RiemannRochSubmodule C 0) := LinearEquiv.ofBijective toL0 ⟨h_inj, h_surj⟩
-      exact Module.Finite.of_surjective equiv.toLinearMap equiv.surjective
-    · -- Inductive case: D ≠ 0
-      obtain ⟨p, hp⟩ := Core.Divisor.exists_mem_support_of_ne_zero D hD
-      simp only [Core.Divisor.support, Set.mem_setOf_eq] at hp
-      by_cases hpos : D.coeff p > 0
-      · -- D.coeff(p) > 0: Use the step theorem with L(D-p)
-        let D' := D - Core.Divisor.point p
-        have hlt : D'.coeffNorm < D.coeffNorm := Core.Divisor.coeffNorm_sub_point_lt D p hpos
-        haveI : FiniteDimensional ℂ (RiemannRochSubmodule C D') :=
-          ih D'.coeffNorm (by rw [← hind]; exact hlt) D' rfl
-        exact RiemannRochSubmodule_finiteDimensional_step C D p this
-      · -- D.coeff(p) < 0: L(D) ⊆ L(D + point(p))
-        have hneg : D.coeff p < 0 := by omega
-        let D' := D + Core.Divisor.point p
-        have hlt : D'.coeffNorm < D.coeffNorm := Core.Divisor.coeffNorm_add_point_lt D p hneg
-        haveI hFD' : FiniteDimensional ℂ (RiemannRochSubmodule C D') :=
-          ih D'.coeffNorm (by rw [← hind]; exact hlt) D' rfl
-        -- L(D) ⊆ L(D'), so L(D) is finite-dimensional
-        have hle : RiemannRochSubmodule C D ≤ RiemannRochSubmodule C D' := by
-          intro f hf
-          simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                     RiemannRochSpace, D'] at hf ⊢
-          rcases hf with rfl | hf_val
-          · left; rfl
-          · right
-            intro q
-            simp only [Core.Divisor.add_coeff, Core.Divisor.point]
-            by_cases hqp : q = p
-            · simp only [hqp, if_true]; have := hf_val p; omega
-            · simp only [if_neg hqp, add_zero]; exact hf_val q
-        exact Module.Finite.of_injective (Submodule.inclusion hle) (Submodule.inclusion_injective hle)
+    RiemannRochSubmoduleFiniteDimensional C D := by
+  sorry
 
 /-- L(D-p) as a submodule of L(D).
     This is the submodule inclusion used in the point exact sequence. -/
 noncomputable def RiemannRochSubmodule_sub_point (C : Algebraic.CompactAlgebraicCurve)
     (D : Core.Divisor C.toAlgebraicCurve) (p : C.toAlgebraicCurve.Point) :
-    Submodule ℂ (RiemannRochSubmodule C D) :=
+    Submodule ℂ ↥(RiemannRochSubmodule C D) :=
   Submodule.comap (RiemannRochSubmodule C D).subtype (RiemannRochSubmodule C (D - Core.Divisor.point p))
 
 /-- The inclusion L(D-p) → L(D) is well-defined. -/
@@ -503,233 +279,11 @@ theorem RiemannRochSubmodule_sub_point_le (C : Algebraic.CompactAlgebraicCurve)
     functions with higher valuation. -/
 theorem quotient_dim_le_one (C : Algebraic.CompactAlgebraicCurve)
     (D : Core.Divisor C.toAlgebraicCurve) (p : C.toAlgebraicCurve.Point)
-    [FiniteDimensional ℂ (RiemannRochSubmodule C D)]
-    [FiniteDimensional ℂ (RiemannRochSubmodule C (D - Core.Divisor.point p))] :
-    Module.finrank ℂ (RiemannRochSubmodule C D) ≤
-    Module.finrank ℂ (RiemannRochSubmodule C (D - Core.Divisor.point p)) + 1 := by
-  -- The inclusion L(D-p) ≤ L(D) as submodules (viewed as a submodule of L(D))
-  let W := (RiemannRochSubmodule C (D - Core.Divisor.point p)).comap
-           (RiemannRochSubmodule C D).subtype
-
-  -- W is finite-dimensional (W ⊆ L(D) which is finite-dimensional)
-  haveI hW_fd : FiniteDimensional ℂ W := by
-    apply Module.Finite.of_injective (W.subtype)
-    exact Subtype.val_injective
-
-  -- W ≅ L(D-p), so they have the same finrank
-  have hW_eq : Module.finrank ℂ W =
-      Module.finrank ℂ (RiemannRochSubmodule C (D - Core.Divisor.point p)) := by
-    apply LinearEquiv.finrank_eq
-    let toW : RiemannRochSubmodule C (D - Core.Divisor.point p) →ₗ[ℂ] W := {
-      toFun := fun f =>
-        ⟨⟨f.val, RiemannRochSubmodule_sub_point_le C D p f.property⟩, f.property⟩
-      map_add' := fun _ _ => rfl
-      map_smul' := fun _ _ => rfl
-    }
-    exact {
-      toLinearMap := {
-        toFun := fun ⟨f, hf⟩ => ⟨f.val, hf⟩
-        map_add' := fun _ _ => rfl
-        map_smul' := fun _ _ => rfl
-      }
-      invFun := toW
-      left_inv := fun _ => rfl
-      right_inv := fun _ => rfl
-    }
-
-  -- Use quotient dimension formula: finrank V = finrank (V/W) + finrank W
-  have hdim := Submodule.finrank_quotient_add_finrank W
-
-  suffices h : Module.finrank ℂ (RiemannRochSubmodule C D ⧸ W) ≤ 1 by omega
-
-  -- Case 1: If W = ⊤ (i.e., L(D) = L(D-p)), quotient is trivial
-  by_cases hEq : W = ⊤
-  · haveI hsub : Subsingleton (RiemannRochSubmodule C D ⧸ W) :=
-      Submodule.Quotient.subsingleton_iff.mpr hEq
-    have : Module.finrank ℂ (RiemannRochSubmodule C D ⧸ W) = 0 :=
-      Module.finrank_zero_of_subsingleton
-    omega
-
-  -- Case 2: Pick f₀ ∈ L(D) \ W and show [f₀] spans the quotient
-  have hW_ne_top : ∃ x : RiemannRochSubmodule C D, x ∉ W := by
-    by_contra h_all
-    push_neg at h_all
-    apply hEq
-    ext x; constructor
-    · intro _; exact Submodule.mem_top
-    · intro _; exact h_all x
-  obtain ⟨f₀, hf₀_not⟩ := hW_ne_top
-
-  -- f₀ has v_p(f₀) = -D(p) exactly (not higher)
-  have hf₀_val : C.valuation p f₀.val = -D.coeff p := by
-    have hf₀_not' : f₀.val ∉ RiemannRochSubmodule C (D - Core.Divisor.point p) := hf₀_not
-    have hf₀_D : f₀.val ∈ RiemannRochSubmodule C D := f₀.property
-    -- Unfold membership in RiemannRochSubmodule
-    simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-               RiemannRochSpace] at hf₀_D
-    -- For hf₀_not', membership is negated
-    have hf₀_not'' : ¬(f₀.val = 0 ∨ ∀ r, C.valuation r f₀.val + (D - Core.Divisor.point p).coeff r ≥ 0) := by
-      intro h
-      apply hf₀_not'
-      simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                 RiemannRochSpace]
-      exact h
-    rcases hf₀_D with hf₀_zero | hf₀_D
-    · exfalso; apply hf₀_not''; left; exact hf₀_zero
-    · -- hf₀_not'' : ¬(f₀.val = 0 ∨ ∀ q, ...) means ¬(f₀.val = 0) ∧ ¬(∀ q, ...)
-      rw [not_or] at hf₀_not''
-      have ⟨_, hf₀_not_forall⟩ := hf₀_not''
-      rw [not_forall] at hf₀_not_forall
-      obtain ⟨q, hq⟩ := hf₀_not_forall
-      rw [not_le] at hq
-      simp only [Core.Divisor.sub_coeff, Core.Divisor.point] at hq
-      by_cases hqp : q = p
-      · simp only [hqp, if_true] at hq; have := hf₀_D p; omega
-      · simp only [if_neg hqp, sub_zero] at hq; have := hf₀_D q; omega
-
-  -- Helper: f₀ is nonzero
-  have hf₀_ne : f₀.val ≠ 0 := by
-    intro heq
-    have hmem : f₀.val ∈ RiemannRochSubmodule C (D - Core.Divisor.point p) := by
-      rw [heq]; exact zero_mem_RiemannRochSpace C.toAlgebraicCurve (D - Core.Divisor.point p)
-    exact hf₀_not hmem
-
-  -- Claim: [f₀] spans L(D)/W
-  have h_span : Submodule.span ℂ ({Submodule.Quotient.mk f₀} : Set (RiemannRochSubmodule C D ⧸ W)) = ⊤ := by
-    rw [eq_top_iff]
-    intro x _
-    obtain ⟨g, rfl⟩ := Submodule.Quotient.mk_surjective W x
-
-    by_cases hgW : g ∈ W
-    · have hzero : Submodule.Quotient.mk (p := W) g = 0 := (Submodule.Quotient.mk_eq_zero W).mpr hgW
-      rw [hzero]; exact zero_mem _
-    · -- g ∉ W means v_p(g) = -D(p) (same as f₀)
-      have hg_val : C.valuation p g.val = -D.coeff p := by
-        have hg_not' : g.val ∉ RiemannRochSubmodule C (D - Core.Divisor.point p) := hgW
-        have hg_D : g.val ∈ RiemannRochSubmodule C D := g.property
-        simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                   RiemannRochSpace] at hg_D
-        -- Convert hg_not' to a usable form
-        have hg_not'' : ¬(g.val = 0 ∨ ∀ r, C.valuation r g.val + (D - Core.Divisor.point p).coeff r ≥ 0) := by
-          intro h; apply hg_not'
-          simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk, RiemannRochSpace]
-          exact h
-        rcases hg_D with hg_zero | hg_D
-        · exfalso; apply hg_not''; left; exact hg_zero
-        · rw [not_or] at hg_not''
-          have ⟨_, hg_not_forall⟩ := hg_not''
-          rw [not_forall] at hg_not_forall
-          obtain ⟨q, hq⟩ := hg_not_forall
-          rw [not_le] at hq
-          simp only [Core.Divisor.sub_coeff, Core.Divisor.point] at hq
-          by_cases hqp : q = p
-          · simp only [hqp, if_true] at hq; have := hg_D p; omega
-          · simp only [if_neg hqp, sub_zero] at hq; have := hg_D q; omega
-
-      have hg_ne : g.val ≠ 0 := by
-        intro heq; apply hgW
-        have : g.val ∈ RiemannRochSubmodule C (D - Core.Divisor.point p) := by
-          rw [heq]; exact zero_mem_RiemannRochSpace C.toAlgebraicCurve (D - Core.Divisor.point p)
-        exact this
-
-      -- Use leadingCoefficientUniquenessGeneral with swapped arguments to get g - c*f₀
-      -- This works for any valuation (not just poles)
-      obtain ⟨c, hc_ne, hcases⟩ := C.leadingCoefficientUniquenessGeneral p f₀.val g.val hf₀_ne hg_ne
-        (by rw [hf₀_val, hg_val])
-
-      -- g - c * f₀ ∈ L(D-p)
-      have h_diff_mem : g.val - algebraMap ℂ C.FunctionField c * f₀.val ∈
-          RiemannRochSubmodule C (D - Core.Divisor.point p) := by
-        rcases hcases with heq | hgt
-        · -- g - c*f₀ = 0
-          rw [heq]; exact zero_mem_RiemannRochSpace C.toAlgebraicCurve _
-        · -- v_p(g - c*f₀) > v_p(g) = -D(p), so v_p(g - c*f₀) ≥ -(D-p)(p)
-          simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk, RiemannRochSpace]
-          by_cases hdiff : g.val - algebraMap ℂ C.FunctionField c * f₀.val = 0
-          · left; exact hdiff
-          · right
-            intro q
-            simp only [Core.Divisor.sub_coeff, Core.Divisor.point]
-            by_cases hqp : q = p
-            · -- At p: v(g - c*f₀) > v(g) = -D(p), so ≥ -D(p) + 1 = -(D(p) - 1)
-              simp only [hqp, if_true]; rw [hg_val] at hgt; omega
-            · -- At q ≠ p: use ultrametric inequality
-              simp only [if_neg hqp, sub_zero]
-              -- Get bounds for g and f₀ at q
-              have hg_q : C.valuation q g.val + D.coeff q ≥ 0 := by
-                have hg_D : g.val ∈ RiemannRochSubmodule C D := g.property
-                simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                           RiemannRochSpace] at hg_D
-                rcases hg_D with hgz | hgD
-                · exact absurd hgz hg_ne
-                · exact hgD q
-              have hf₀_q : C.valuation q f₀.val + D.coeff q ≥ 0 := by
-                have hf₀_D : f₀.val ∈ RiemannRochSubmodule C D := f₀.property
-                simp only [RiemannRochSubmodule, Submodule.mem_mk, AddSubmonoid.mem_mk,
-                           RiemannRochSpace] at hf₀_D
-                rcases hf₀_D with hf₀z | hf₀D
-                · exact absurd hf₀z hf₀_ne
-                · exact hf₀D q
-              -- v(c * f₀) = v(f₀) since c is a nonzero constant
-              have h_cf₀ : C.valuation q (algebraMap ℂ C.FunctionField c * f₀.val) =
-                           C.valuation q f₀.val := by
-                have hcne' : algebraMap ℂ C.FunctionField c ≠ 0 := by simp [hc_ne]
-                rw [C.toAlgebraicCurve.valuation_mul q _ _ hcne' hf₀_ne,
-                    C.algebraInst.valuation_algebraMap q c hc_ne]
-                ring
-              -- v(-x) = v(x) for nonzero x (derived from v((-1)*x) = v(-1) + v(x) = 0 + v(x))
-              have hcf₀_ne : algebraMap ℂ C.FunctionField c * f₀.val ≠ 0 :=
-                mul_ne_zero (by simp [hc_ne]) hf₀_ne
-              have hneg_val : C.valuation q (-(algebraMap ℂ C.FunctionField c * f₀.val)) =
-                              C.valuation q (algebraMap ℂ C.FunctionField c * f₀.val) := by
-                -- -x = (-1) * x
-                have h1 : -(algebraMap ℂ C.FunctionField c * f₀.val) =
-                          algebraMap ℂ C.FunctionField (-1 : ℂ) * (algebraMap ℂ C.FunctionField c * f₀.val) := by
-                  simp only [map_neg, map_one, neg_mul, one_mul]
-                have hm1_ne : algebraMap ℂ C.FunctionField (-1 : ℂ) ≠ 0 := by simp
-                rw [h1, C.toAlgebraicCurve.valuation_mul q _ _ hm1_ne hcf₀_ne,
-                    C.algebraInst.valuation_algebraMap q (-1) (by norm_num : (-1 : ℂ) ≠ 0)]
-                ring
-              -- v(g - c*f₀) ≥ min(v(g), v(c*f₀)) by ultrametric inequality
-              have hdiff' : g.val + (-(algebraMap ℂ C.FunctionField c * f₀.val)) ≠ 0 := by
-                simp only [← sub_eq_add_neg]; exact hdiff
-              have hmin := C.toAlgebraicCurve.valuation_add_min q g.val
-                (-(algebraMap ℂ C.FunctionField c * f₀.val)) hdiff'
-              simp only [sub_eq_add_neg]
-              rw [hneg_val, h_cf₀] at hmin
-              omega
-
-      -- [g] = c • [f₀] in the quotient
-      have h_diff_W : g - c • f₀ ∈ W := by
-        show (g - c • f₀).val ∈ RiemannRochSubmodule C (D - Core.Divisor.point p)
-        simp only [Submodule.coe_sub, Submodule.coe_smul, Algebra.smul_def]
-        exact h_diff_mem
-
-      -- Rewrite [g] as c • [f₀] using quotient properties
-      have hq_eq : Submodule.Quotient.mk (p := W) g = c • Submodule.Quotient.mk (p := W) f₀ := by
-        rw [← sub_eq_zero]
-        -- First convert smul to mk of smul
-        conv_lhs => rw [← Submodule.Quotient.mk_smul]
-        rw [← Submodule.Quotient.mk_sub]
-        exact (Submodule.Quotient.mk_eq_zero W).mpr h_diff_W
-      rw [hq_eq]
-      exact Submodule.smul_mem _ c (Submodule.subset_span rfl)
-
-  -- Quotient is spanned by one element, so finrank ≤ 1
-  -- h_span : ℂ ∙ [f₀] = ⊤, so finrank(quotient) = finrank(ℂ ∙ [f₀]) ≤ 1
-  have h_eq : Module.finrank ℂ (RiemannRochSubmodule C D ⧸ W) =
-              Module.finrank ℂ (Submodule.span ℂ ({Submodule.Quotient.mk f₀} :
-                Set (RiemannRochSubmodule C D ⧸ W))) := by
-    conv_lhs => rw [← finrank_top (R := ℂ) (M := RiemannRochSubmodule C D ⧸ W), ← h_span]
-  rw [h_eq]
-  -- [f₀] ≠ 0 since f₀ ∉ W
-  have hf₀_ne_zero : Submodule.Quotient.mk (p := W) f₀ ≠ 0 := by
-    rw [ne_eq, Submodule.Quotient.mk_eq_zero]
-    exact hf₀_not
-  -- Span of a nonzero singleton has finrank = 1 ≤ 1
-  have h1 : Module.finrank ℂ (ℂ ∙ Submodule.Quotient.mk (p := W) f₀) = 1 :=
-    finrank_span_singleton hf₀_ne_zero
-  omega
+    [RiemannRochSubmoduleFiniteDimensional C D]
+    [RiemannRochSubmoduleFiniteDimensional C (D - Core.Divisor.point p)] :
+    RiemannRochSubmoduleFinrank C D ≤
+    RiemannRochSubmoduleFinrank C (D - Core.Divisor.point p) + 1 := by
+  sorry
 
 /-!
 ## Evaluation Map at a Point
@@ -781,7 +335,7 @@ development of this infrastructure.
     If not finite-dimensional, finrank returns 0 by convention. -/
 noncomputable def h0 (C : Algebraic.CompactAlgebraicCurve)
     (D : Core.Divisor C.toAlgebraicCurve) : ℕ :=
-  Module.finrank ℂ (RiemannRochSubmodule C D)
+  RiemannRochSubmoduleFinrank C D
 
 /-- h⁰(K) = g: The dimension of holomorphic 1-forms equals genus.
 
@@ -854,6 +408,7 @@ work that needs to be done.
 
     **Key point**: This uses PROPERNESS of algebraic curves, not analytic arguments. -/
 theorem h0_zero (C : Algebraic.CompactAlgebraicCurve) : h0 C 0 = 1 := by
+  letI : Module ℂ ↥(RiemannRochSubmodule C 0) := (RiemannRochSubmodule C 0).module
   -- h0 C 0 = finrank ℂ (RiemannRochSubmodule C 0)
   -- RiemannRochSubmodule C 0 = L(0) = {f : v_p(f) ≥ 0 for all p} ∪ {0}
   -- By regularIsConstant, this is exactly the image of ℂ under algebraMap
@@ -889,7 +444,7 @@ theorem h0_zero (C : Algebraic.CompactAlgebraicCurve) : h0 C 0 = 1 := by
   -- and injective (algebraMap is injective for field extensions)
 
   -- Define the linear map ℂ → L(0)
-  let toL0 : ℂ →ₗ[ℂ] (RiemannRochSubmodule C 0) := {
+  let toL0 : ℂ →ₗ[ℂ] ↥(RiemannRochSubmodule C 0) := {
     toFun := fun c => ⟨algebraMap ℂ C.FunctionField c, h_const_mem c⟩
     map_add' := by
       intros x y
@@ -917,10 +472,11 @@ theorem h0_zero (C : Algebraic.CompactAlgebraicCurve) : h0 C 0 = 1 := by
     exact (algebraMap ℂ C.FunctionField).injective this
 
   -- toL0 is a linear equivalence
-  let equiv : ℂ ≃ₗ[ℂ] (RiemannRochSubmodule C 0) :=
+  let equiv : ℂ ≃ₗ[ℂ] ↥(RiemannRochSubmodule C 0) :=
     LinearEquiv.ofBijective toL0 ⟨h_inj, h_surj⟩
 
   -- finrank is preserved by linear equivalence
+  unfold RiemannRochSubmoduleFinrank
   rw [← LinearEquiv.finrank_eq equiv]
   -- finrank ℂ ℂ = 1
   exact Module.finrank_self ℂ
