@@ -23,10 +23,10 @@
   - `Core.f₄_ker_eq_range_f₃` is now proved (no theorem-level `sorry` remains in `Core.lean`).
   - `PointExactSequence/Core.lean` compiles with no open theorem placeholders.
   - `Constraint.LES_dimension_constraint` is now proved.
+  - `Constraint.f₃_ker_eq_range_f₂` is now proved.
   - Remaining point exact-sequence blockers are now localized to:
     - `PointExactSequence/Constraint.lean`:
       - `euler_char_skyscraper_constraint`
-      - `f₃_ker_eq_range_f₂`
 
 ## Key Dependency Flowchart
 ```text
