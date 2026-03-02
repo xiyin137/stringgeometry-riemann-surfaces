@@ -152,7 +152,8 @@ theorem mdifferentiable_chart_diffAt {M : Type*} [TopologicalSpace M] [ChartedSp
   have hq_e'_source : q ∈ e'.source := mem_chart_source ℂ q
 
   -- Target chart simplifies (target is ℂ)
-  have htarget : extChartAt 𝓘(ℂ, ℂ) (f q) = PartialEquiv.refl ℂ := by simp only [mfld_simps]
+  have htarget : extChartAt 𝓘(ℂ, ℂ) (f q) = PartialEquiv.refl ℂ := by
+    simpa using (extChartAt_model_space_eq_id (𝕜 := ℂ) (E := ℂ) (x := f q))
   have hrange : Set.range (𝓘(ℂ, ℂ) : ℂ → ℂ) = Set.univ := by simp
 
   -- Use mdifferentiableAt_iff_of_mem_source
@@ -864,9 +865,9 @@ def exactForms1 (RS : RiemannSurface) : Submodule ℂ (Form_10 RS × Form_01 RS)
     For a compact Riemann surface of genus g, dim H¹_dR = 2g.
     By the Hodge theorem, H¹_dR ≅ H^{1,0} ⊕ H^{0,1} (harmonic representatives). -/
 noncomputable def DeRhamH1 (CRS : CompactRiemannSurface) : Type :=
-  closedForms1 CRS.toRiemannSurface ⧸
-    Submodule.comap (closedForms1 CRS.toRiemannSurface).subtype
-      (exactForms1 CRS.toRiemannSurface)
+  (↥(closedForms1 CRS.toRiemannSurface)) ⧸
+    (Submodule.comap (closedForms1 CRS.toRiemannSurface).subtype
+      (exactForms1 CRS.toRiemannSurface)).toAddSubgroup
 
 /-- Hodge theorem: Harmonic forms represent de Rham cohomology.
     H^1_dR(X) ≅ H^1_harm(X) for compact X.

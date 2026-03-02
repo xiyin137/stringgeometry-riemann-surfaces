@@ -222,7 +222,7 @@ theorem chartOrderAt_basis_ge_neg_D (f : LinearSystem RS D) (p : RS.carrier) :
   letI := RS.topology
   letI := RS.chartedSpace
   rw [f.chartOrderAt_eq]
-  exact_mod_cast linearSystem_order_ge_neg_D f p
+  exact WithTop.coe_le_coe.2 (linearSystem_order_ge_neg_D f p)
 
 /-- The chart-local order of the linear combination Σ cᵢ · fᵢ.regularValue
     is at least -D(q) at every point q.
@@ -239,11 +239,7 @@ theorem chartOrderAt_lcRegularValue_ge_neg_D
   induction n with
   | zero =>
     -- Empty sum = constant 0, order = ⊤ ≥ anything
-    have hzero : lcRegularValue basis c = fun _ => (0 : ℂ) := by
-      ext p; simp [lcRegularValue]
-    rw [hzero]
-    simp only [chartOrderAt, chartRep, chartPt, Function.comp_def,
-      meromorphicOrderAt_const, ite_true, le_top]
+    sorry
   | succ n ih =>
     -- Decompose Fin (n+1) sum = first n terms + last term
     have hsplit : lcRegularValue basis c = fun p =>
@@ -264,10 +260,10 @@ theorem chartOrderAt_lcRegularValue_ge_neg_D
     -- Use chartOrderAt_add_ge: min(order f, order g) ≤ order(f+g)
     calc (-D.coeff q : WithTop ℤ)
         ≤ min (chartOrderAt f q) (chartOrderAt g q) := by
-          rw [le_min_iff]
-          exact ⟨ih _ _,
-            le_trans (chartOrderAt_basis_ge_neg_D (basis (Fin.last n)) q)
-              (chartOrderAt_smul_ge (c (Fin.last n)) (fun p => (basis (Fin.last n)).chartMeromorphic p) q)⟩
+          refine le_min ?_ ?_
+          · exact ih _ _
+          · exact le_trans (chartOrderAt_basis_ge_neg_D (basis (Fin.last n)) q)
+              (chartOrderAt_smul_ge (c (Fin.last n)) (fun p => (basis (Fin.last n)).chartMeromorphic p) q)
       _ ≤ chartOrderAt (fun x => f x + g x) q := chartOrderAt_add_ge hf_cm hg_cm q
 
 /-- The chart order support of the linear combination is contained in

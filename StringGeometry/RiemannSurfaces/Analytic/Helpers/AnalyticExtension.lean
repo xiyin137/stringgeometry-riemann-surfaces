@@ -53,10 +53,8 @@ theorem exists_analyticExtension_of_nonneg_order {f : ℂ → ℂ} {x : ℂ}
   set n := (meromorphicOrderAt f x).untop₀ with hn_def
   -- n ≥ 0 since order ≥ 0
   have hn_nonneg : 0 ≤ n := by
-    have := WithTop.coe_untop₀_of_ne_top hne_top
-    rw [← hn_def] at this
-    rw [← this] at hord
-    exact_mod_cast hord
+    rw [hn_def]
+    exact (WithTop.untop₀_nonneg).2 hord
   -- Lift n to ℕ
   obtain ⟨m, hm⟩ := Int.eq_ofNat_of_zero_le hn_nonneg
   -- The analytic extension is g(z) = (z - x)^m • h(z)

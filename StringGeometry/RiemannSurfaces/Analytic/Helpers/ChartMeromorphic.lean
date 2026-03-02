@@ -163,15 +163,26 @@ theorem chartOrderAt_smul_ge (c : ℂ) {f : RS.carrier → ℂ}
     chartOrderAt f p ≤ chartOrderAt (fun x => c * f x) p := by
   by_cases hc : c = 0
   · -- c = 0: function is identically 0, order = ⊤
-    simp only [hc, zero_mul]
-    have : chartRep (fun _ => (0 : ℂ)) p = fun _ => (0 : ℂ) := by
-      ext z; simp [chartRep, Function.comp]
-    simp only [chartOrderAt, this]
-    simp [meromorphicOrderAt_const]
+    subst hc
+    have hzero_fun : (fun x => (0 : ℂ) * f x) = fun _ => (0 : ℂ) := by
+      ext x
+      simp
+    rw [hzero_fun]
+    simp only [chartOrderAt]
+    have htop : meromorphicOrderAt (chartRep (RS := RS) (fun _ => (0 : ℂ)) p)
+        (chartPt (RS := RS) p) = ⊤ := by
+      exact meromorphicOrderAt_eq_top_iff.mpr
+        (Filter.Eventually.of_forall fun z => by simp [chartRep, Function.comp])
+    rw [htop]
+    cases h : meromorphicOrderAt (chartRep (RS := RS) f p) (chartPt (RS := RS) p) with
+    | top =>
+      simp
+    | coe m =>
+      exact le_of_lt (WithTop.coe_lt_top m)
   · -- c ≠ 0: order(c * f) = order(c) + order(f) = 0 + order(f) = order(f)
     simp only [chartOrderAt]
     have hrep : chartRep (fun x => c * f x) p = (fun _ => c) * chartRep f p := by
-      ext z; simp [chartRep, Function.comp, Pi.mul_apply]
+      ext z; simp [chartRep, Function.comp]
     rw [hrep, meromorphicOrderAt_mul (MeromorphicAt.const c _) (hf p)]
     simp [meromorphicOrderAt_const, hc]
 
@@ -227,8 +238,9 @@ theorem chartOrderAt_eq_zero_of_continuousAt_ne_zero {f : RS.carrier → ℂ}
   -- Step 2: order ≥ 0 (no pole when continuous)
   have h_nonneg : 0 ≤ meromorphicOrderAt (chartRep f p) (chartPt (RS := RS) p) := by
     -- If order < 0, the function has a pole → unbounded → contradicts ContinuousAt
-    by_contra h_neg
-    push_neg at h_neg
+    by_contra h_not_nonneg
+    have h_neg : meromorphicOrderAt (chartRep f p) (chartPt (RS := RS) p) < 0 :=
+      lt_of_not_ge h_not_nonneg
     have h_ne_top : meromorphicOrderAt (chartRep f p) (chartPt (RS := RS) p) ≠ ⊤ := by
       intro htop; rw [htop] at h_neg; exact (not_lt.mpr le_top) h_neg
     set z₀ := chartPt (RS := RS) p
@@ -236,7 +248,10 @@ theorem chartOrderAt_eq_zero_of_continuousAt_ne_zero {f : RS.carrier → ℂ}
     set n := (meromorphicOrderAt F z₀).untop₀
     -- n < 0 (from h_neg and h_ne_top via coe_untop₀_of_ne_top)
     have hn_neg : n < 0 := by
-      rw [← WithTop.coe_untop₀_of_ne_top h_ne_top] at h_neg; exact_mod_cast h_neg
+      subst n
+      have h_neg' : ((meromorphicOrderAt F z₀).untop₀ : WithTop ℤ) < (0 : WithTop ℤ) := by
+        simpa [WithTop.coe_untop₀_of_ne_top h_ne_top] using h_neg
+      exact WithTop.coe_lt_coe.mp h_neg'
     -- Get representation: F =ᶠ[𝓝[≠] z₀] (z - z₀)^n • g(z) with g analytic, g(z₀) ≠ 0
     obtain ⟨g, hg_ana, hg_ne, hg_eq⟩ := (meromorphicOrderAt_ne_top_iff hmer).mp h_ne_top
     -- F is bounded near z₀ (ContinuousAt)
@@ -337,7 +352,7 @@ noncomputable def chartOrderSupport (f : RS.carrier → ℂ) : Set RS.carrier :=
     Well-defined because only finitely many points have nonzero order. -/
 noncomputable def chartOrderSum (CRS : CompactRiemannSurface)
     (f : CRS.toRiemannSurface.carrier → ℂ)
-    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (_hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
     (hsupp : (chartOrderSupport (RS := CRS.toRiemannSurface) f).Finite) : ℤ :=
   hsupp.toFinset.sum (fun p => (chartOrderAt (RS := CRS.toRiemannSurface) f p).getD 0)
 

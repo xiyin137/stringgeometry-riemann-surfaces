@@ -25,7 +25,8 @@ open scoped Manifold Topology
 
 /-- The rank of ℂ as an ℝ-module is > 1. -/
 theorem complex_rank_gt_one : 1 < Module.rank ℝ ℂ :=
-  Module.one_lt_rank_of_one_lt_finrank (by rw [Complex.finrank_real_complex]; omega)
+  by
+    simpa using (Complex.rank_real_complex ▸ Nat.one_lt_ofNat)
 
 /-- In ℂ, the complement of a finite set is path-connected. -/
 theorem complex_compl_finite_pathConnected (S : Set ℂ) (hS : S.Finite) :

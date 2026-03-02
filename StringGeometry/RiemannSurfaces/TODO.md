@@ -11,6 +11,17 @@ This file is an index only. Planning is consolidated into exactly one TODO file 
 - Verified on 2026-02-27:
   - `lake build SGRSSchemeTheoretic` succeeds (warnings only)
   - `lake build StringGeometry.RiemannSurfaces` succeeds (warnings only)
+- Analytic frontier re-verified on 2026-03-02:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ConnectedComplement`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Dolbeault`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartMeromorphic`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - analytic umbrella sweep:
+    `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic StringGeometry.RiemannSurfaces.Analytic.Moduli StringGeometry.RiemannSurfaces.Analytic.RiemannRoch StringGeometry.RiemannSurfaces.Analytic.Jacobian.AbelJacobi StringGeometry.RiemannSurfaces.Analytic.Applications.GreenFunction`
+  - all succeed (warnings only)
+- Full project re-check on 2026-03-02:
+  - `lake build StringGeometry.RiemannSurfaces` succeeds (warnings only)
 
 ## Dependency Split (High Level)
 

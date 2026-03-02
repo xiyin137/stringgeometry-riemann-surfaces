@@ -215,7 +215,9 @@ theorem zero_counting_linear_combination (CRS : CompactRiemannSurface)
       | coe m =>
         show 1 ≤ m
         rw [h] at h_pos
-        have : (0 : ℤ) < m := by exact_mod_cast h_pos
+        have h_pos' : ((0 : ℤ) : WithTop ℤ) < (m : WithTop ℤ) := by
+          simpa using h_pos
+        have : (0 : ℤ) < m := WithTop.coe_lt_coe.mp h_pos'
         omega
     -- getD(ord) + D.coeff ≥ 0 at all points (from L(D) condition)
     have hadj_nonneg : ∀ p,
@@ -227,7 +229,9 @@ theorem zero_counting_linear_combination (CRS : CompactRiemannSurface)
       | coe m =>
         show 0 ≤ m + D.coeff p
         rw [h] at h_ge
-        have : -D.coeff p ≤ m := by exact_mod_cast h_ge
+        have h_ge' : ((-D.coeff p : ℤ) : WithTop ℤ) ≤ (m : WithTop ℤ) := by
+          simpa using h_ge
+        have : -D.coeff p ≤ m := WithTop.coe_le_coe.mp h_ge'
         linarith
     -- Injective image of test points in support
     have himg_sub : Finset.univ.image pts ⊆ hsupp.toFinset :=
@@ -277,7 +281,9 @@ theorem zero_counting_linear_combination (CRS : CompactRiemannSurface)
       -- From chartOrderAt g p ≥ -D.coeff p and chartOrderAt g p = 0: D.coeff p ≥ 0
       have h_ge := chartOrderAt_lcRegularValue_ge_neg_D basis c p
       rw [h_ord_zero] at h_ge
-      have : -D.coeff p ≤ 0 := by exact_mod_cast h_ge
+      have h_ge' : ((-D.coeff p : ℤ) : WithTop ℤ) ≤ (0 : WithTop ℤ) := by
+        simpa using h_ge
+      have : -D.coeff p ≤ 0 := WithTop.coe_le_coe.mp h_ge'
       linarith
     -- Combine: chartOrderSum = Σ_S (getD + D.coeff) - Σ_S D.coeff
     simp only [chartOrderSum]

@@ -166,7 +166,7 @@ noncomputable def dbar_fun (f : SmoothFunction RS) : Form_01 RS :=
      rw [mdifferentiableAt_iff_of_mem_source hp hfp] at hmdiffAt
      simp only [modelWithCornersSelf_coe, Set.range_id] at hmdiffAt
      have htarget : extChartAt 𝓘(ℂ, ℂ) (f.toFun p) = PartialEquiv.refl ℂ := by
-       simp only [mfld_simps]
+       simpa using (extChartAt_model_space_eq_id (𝕜 := ℂ) (E := ℂ) (x := f.toFun p))
      simp only [htarget, PartialEquiv.refl_coe] at hmdiffAt
      have hfun_eq : id ∘ f.toFun ∘ (extChartAt 𝓘(ℂ, ℂ) p).symm =
          f.toFun ∘ (@chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p).symm := by
@@ -243,7 +243,8 @@ theorem isHolomorphic_iff_mDifferentiable (f : SmoothFunction RS) :
     have hdiff_within := hmdiffAt.2
 
     -- For target ℂ (model space), extChartAt is identity
-    have htarget : extChartAt 𝓘(ℂ, ℂ) (f.toFun p) = PartialEquiv.refl ℂ := by simp only [mfld_simps]
+    have htarget : extChartAt 𝓘(ℂ, ℂ) (f.toFun p) = PartialEquiv.refl ℂ := by
+      simpa using (extChartAt_model_space_eq_id (𝕜 := ℂ) (E := ℂ) (x := f.toFun p))
 
     -- For source, extChartAt.symm = chartAt.symm
     have hsource_symm : ∀ z, (extChartAt 𝓘(ℂ, ℂ) p).symm z = e.symm z := by
@@ -330,7 +331,7 @@ theorem dbar_dbar_fun (f : SmoothFunction RS) :
     rw [mdifferentiableAt_iff_of_mem_source hp hfp] at hmdiffAt
     simp only [modelWithCornersSelf_coe, Set.range_id] at hmdiffAt
     have htarget : extChartAt 𝓘(ℂ, ℂ) (f.toFun p) = PartialEquiv.refl ℂ := by
-      simp only [mfld_simps]
+      simpa using (extChartAt_model_space_eq_id (𝕜 := ℂ) (E := ℂ) (x := f.toFun p))
     simp only [htarget, PartialEquiv.refl_coe] at hmdiffAt
     have hfun_eq : id ∘ f.toFun ∘ (extChartAt 𝓘(ℂ, ℂ) p).symm =
         f.toFun ∘ (@chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p).symm := by
@@ -464,7 +465,7 @@ theorem dbar_conj_eq_conj_d_chart (f : SmoothFunction RS) (p : RS.carrier) :
   rw [mdifferentiableAt_iff_of_mem_source hp hfp] at hmdiffAt
   simp only [modelWithCornersSelf_coe, Set.range_id] at hmdiffAt
   have htarget : extChartAt 𝓘(ℂ, ℂ) (f.toFun p) = PartialEquiv.refl ℂ := by
-    simp only [mfld_simps]
+    simpa using (extChartAt_model_space_eq_id (𝕜 := ℂ) (E := ℂ) (x := f.toFun p))
   simp only [htarget, PartialEquiv.refl_coe] at hmdiffAt
   have hfun_eq : id ∘ f.toFun ∘ (extChartAt 𝓘(ℂ, ℂ) p).symm =
       f.toFun ∘ (@chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p).symm := by
