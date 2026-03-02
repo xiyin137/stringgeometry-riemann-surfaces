@@ -19,10 +19,14 @@
     - `PointExactSequence/Constraint.lean`
     - with `PointExactSequence.lean` as a thin compatibility import file.
   - `scripts/check_lean_file_length.sh 2000` now passes for the repository.
-  - compile note: current `PointExactSequence/*` frontier is blocked by pre-existing
-    `AlgebraicCurves/Cohomology/AlgebraicCech.lean` instance-synthesis failures
-    (missing `Module`/`Module.Finite`/`IsNoetherian` instances for `RiemannRochSubmodule`),
-    not by the file split.
+- Point exact-sequence progress:
+  - `Core.f₄_ker_eq_range_f₃` is now proved (no theorem-level `sorry` remains in `Core.lean`).
+  - `PointExactSequence/Core.lean` compiles with no open theorem placeholders.
+  - Remaining point exact-sequence blockers are now localized to:
+    - `PointExactSequence/Constraint.lean`:
+      - `euler_char_skyscraper_constraint`
+      - `f₃_ker_eq_range_f₂`
+      - `LES_dimension_constraint`
 
 ## Key Dependency Flowchart
 ```text

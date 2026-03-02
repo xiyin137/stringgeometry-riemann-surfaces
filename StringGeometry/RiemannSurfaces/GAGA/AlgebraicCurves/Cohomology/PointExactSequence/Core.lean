@@ -1241,7 +1241,75 @@ theorem f₄_ker_eq_range_f₃
     [RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p)]
     [RiemannRochSubmoduleFiniteDimensional C (K.K - D)] :
     LinearMap.ker (f₄ C K D p) = LinearMap.range (f₃ C K D p) := by
-  sorry
+  letI : Module ℂ ↥(RiemannRochSubmodule C (K.K - D)) :=
+    (RiemannRochSubmodule C (K.K - D)).module
+  letI : Module ℂ ↥(RiemannRochSubmodule C (K.K - D + point p)) :=
+    (RiemannRochSubmodule C (K.K - D + point p)).module
+  let incl := Submodule.inclusion (RiemannRochSpace_KD_subset C K D p)
+  let coeffKD := f₂ C (K.K - D + point p) p
+  have hf₄_eq : f₄ C K D p = incl.dualMap := by
+    ext φ x
+    simp [f₄, incl, LinearMap.dualMap_apply']
+  have hKD_eq : K.K - D + point p - point p = K.K - D := by
+    ext q
+    simp only [sub_coeff, add_coeff, point]
+    ring
+  haveI : RiemannRochSubmoduleFiniteDimensional C (K.K - D + point p - point p) := by
+    rw [hKD_eq]
+    infer_instance
+  have hker_coeff :
+      LinearMap.ker coeffKD = LinearMap.range (f₁ C (K.K - D + point p) p) :=
+    f₂_ker_eq_range_f₁ C (K.K - D + point p) p
+  have hker_coeff' : LinearMap.ker coeffKD = LinearMap.range incl := by
+    ext ω
+    constructor
+    · intro hω
+      have hω' : ω ∈ LinearMap.range (f₁ C (K.K - D + point p) p) := by
+        rwa [← hker_coeff]
+      rcases hω' with ⟨x, rfl⟩
+      have hx_mem : x.val ∈ RiemannRochSubmodule C (K.K - D) := by
+        simpa [hKD_eq] using x.property
+      refine ⟨⟨x.val, hx_mem⟩, ?_⟩
+      ext
+      simp [f₁, inclusionMap, incl]
+    · intro hω
+      rcases hω with ⟨x, rfl⟩
+      have hx_mem :
+          x.val ∈ RiemannRochSubmodule C (K.K - D + point p - point p) := by
+        simpa [hKD_eq] using x.property
+      have hω' :
+          incl x ∈ LinearMap.range (f₁ C (K.K - D + point p) p) := by
+        refine ⟨⟨x.val, hx_mem⟩, ?_⟩
+        ext
+        simp [f₁, inclusionMap, incl]
+      rwa [← hker_coeff] at hω'
+  have hrange_dual_coeff :
+      LinearMap.range coeffKD.dualMap = (LinearMap.range incl).dualAnnihilator := by
+    calc
+      LinearMap.range coeffKD.dualMap = (LinearMap.ker coeffKD).dualAnnihilator := by
+        exact @LinearMap.range_dualMap_eq_dualAnnihilator_ker ℂ
+          ↥(RiemannRochSubmodule C (K.K - D + point p))
+          ℂ
+          inferInstance
+          (RiemannRochSubmodule C (K.K - D + point p)).addCommGroup
+          (RiemannRochSubmodule C (K.K - D + point p)).module
+          inferInstance
+          inferInstance
+          coeffKD
+      _ = (LinearMap.range incl).dualAnnihilator := by rw [hker_coeff']
+  have hf₃_eq :
+      f₃ C K D p = LinearMap.toSpanSingleton ℂ _ coeffKD := by
+    ext c
+    simp [f₃, coeffKD, LinearMap.toSpanSingleton_apply]
+  have hspan_f₃ : ℂ ∙ coeffKD = LinearMap.range (f₃ C K D p) := by
+    rw [hf₃_eq, LinearMap.span_singleton_eq_range]
+  calc
+    LinearMap.ker (f₄ C K D p) = (LinearMap.range incl).dualAnnihilator := by
+      rw [hf₄_eq, LinearMap.ker_dualMap_eq_dualAnnihilator_range]
+    _ = LinearMap.range coeffKD.dualMap := hrange_dual_coeff.symm
+    _ = ℂ ∙ coeffKD := by
+      exact LinearMap.range_dualMap_dual_eq_span_singleton coeffKD
+    _ = LinearMap.range (f₃ C K D p) := hspan_f₃
 
 set_option maxHeartbeats 800000 in
 /-- **Serre pairing containment**: range(f₂) ⊆ ker(f₃)
