@@ -51,6 +51,21 @@
   - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
   - status: pass (warnings only).
 
+### Incremental Update (latest pass: made canonical-degree hypothesis profile explicit)
+- `Analytic/RiemannRoch.lean`:
+  - refined `deg_canonical_eq_2g_minus_2` to take explicit hypothesis
+    `hK : h0 CRS K.representative = CRS.genus`.
+  - this removes hidden dependence on the unresolved theorem
+    `h0_canonical_eq_genus` while preserving the RR-corroborated derivation
+    `deg(K) = 2g - 2` under the standard Hodge input.
+- Why this matters:
+  - keeps theorem dependencies explicit and type-stable in the active RR frontier.
+  - avoids silently routing closed theorems through unresolved deep results.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: closed `hodge_decomposition_10` via conjugation reduction)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - removed theorem-level `sorry` from `hodge_decomposition_10`.

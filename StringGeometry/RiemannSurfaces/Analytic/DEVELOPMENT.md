@@ -128,6 +128,15 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `HodgeTheory/SerreDuality`
     - `Analytic/Analytic`
     (pass with warnings only).
+27. Tightened `RiemannRoch.deg_canonical_eq_2g_minus_2` to require explicit
+    Hodge input `hK : h0 CRS K.representative = CRS.genus`.
+28. Rationale:
+    this keeps the theorem explicit about dependencies and avoids hidden reliance
+    on unresolved `h0_canonical_eq_genus` in downstream usage.
+29. Compile frontier re-checked after this signature refinement:
+    - `RiemannRoch`
+    - `Analytic/Analytic`
+    (pass with warnings only).
 
 ## Current blocker clusters
 

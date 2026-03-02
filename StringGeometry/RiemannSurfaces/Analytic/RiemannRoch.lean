@@ -924,12 +924,12 @@ theorem riemann_roch_h0_duality (CRS : CompactRiemannSurface)
 /-- The degree of the canonical divisor is 2g - 2.
 
     Derived from the h⁰-duality form of Riemann-Roch by setting `D = K`:
-    `h⁰(K) - h⁰(0) = deg(K) + 1 - g`, together with `h⁰(K)=g` and `h⁰(0)=1`. -/
+    `h⁰(K) - h⁰(0) = deg(K) + 1 - g`, together with
+    an explicit hypothesis `h⁰(K)=g` and `h⁰(0)=1`. -/
 theorem deg_canonical_eq_2g_minus_2 (CRS : CompactRiemannSurface)
-    (K : CanonicalDivisor CRS) :
+    (K : CanonicalDivisor CRS)
+    (hK : h0 CRS K.representative = CRS.genus) :
     K.representative.degree = 2 * CRS.genus - 2 := by
-  have hK : h0 CRS K.representative = CRS.genus :=
-    h0_canonical_eq_genus CRS K
   have hrr :=
     riemann_roch_h0_duality CRS K.representative K hK
   have h0zero : h0 CRS (0 : Divisor CRS.toRiemannSurface) = 1 := h0_trivial CRS
