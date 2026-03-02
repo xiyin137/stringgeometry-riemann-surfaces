@@ -33,6 +33,43 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: closed `deg_canonical_eq_2g_minus_2` as a RR corollary)
+- `Analytic/RiemannRoch.lean`:
+  - removed theorem-level `sorry` from `deg_canonical_eq_2g_minus_2`.
+  - proof now derives degree of `K` from the already-proved h⁰-duality RR identity:
+    apply `riemann_roch_h0_duality` at `D = K`, simplify with
+    `h0_canonical_eq_genus` and `h0_trivial`, then finish by arithmetic.
+  - moved the theorem below `riemann_roch_h0_duality` so dependency order is explicit.
+- Why this matters:
+  - removes one independent RR-chain gap by expressing canonical degree as a formal
+    consequence of the RR core plus the Hodge input `h0_canonical_eq_genus`.
+  - narrows remaining RR blockers to genuinely deep inputs, instead of duplicated corollaries.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+
+### Incremental Update (latest pass: closed `hodge_decomposition_10` via conjugation reduction)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - removed theorem-level `sorry` from `hodge_decomposition_10`.
+  - proof strategy:
+    - apply `hodge_decomposition_01` to `ω.conj`,
+    - transport harmonicity/equality back via `Form_01.conj`,
+    - identify the exact term via `del_real f := (dbar_real_hd f.conj).conj`.
+  - no theorem weakening, no wrappers, no placeholder defs introduced.
+- Why this matters:
+  - reduces deep Hodge decomposition debt while preserving the intended
+    ℝ-smooth operator interface.
+  - clarifies the dependency direction: `(1,0)` decomposition is now formally
+    reduced to the `(0,1)` decomposition core.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: corrected Hodge decomposition theorem formulations)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - corrected `hodge_decomposition_01` to the intended ℝ-smooth form:

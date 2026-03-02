@@ -103,6 +103,31 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `RiemannRoch`
     - `Analytic/Analytic`
     (pass with warnings only).
+21. Closed `HodgeTheory/HodgeDecomposition.hodge_decomposition_10`
+    by reducing it to `hodge_decomposition_01` through conjugation:
+    apply decomposition to `ω.conj`, transport back with `Form_01.conj`,
+    and rewrite the exact term through `del_real`.
+22. This removes one theorem-level `sorry` in the core Hodge chain without
+    weakening the theorem statement.
+23. Compile frontier re-checked after the closure:
+    - `HodgeTheory/HodgeDecomposition`
+    - `HodgeTheory/SerreDuality`
+    - `RiemannRoch`
+    (pass with warnings only).
+24. Closed `RiemannRoch.deg_canonical_eq_2g_minus_2` by deriving it as a corollary
+    of `riemann_roch_h0_duality` at `D = K`, using:
+    - `h0_canonical_eq_genus` (Hodge input),
+    - `h0_trivial` (base case),
+    - arithmetic normalization.
+25. Structural cleanup:
+    moved `deg_canonical_eq_2g_minus_2` below `riemann_roch_h0_duality` so theorem
+    dependency order matches declaration order.
+26. Compile frontier re-checked after this RR corollary closure:
+    - `RiemannRoch`
+    - `HodgeTheory/HodgeDecomposition`
+    - `HodgeTheory/SerreDuality`
+    - `Analytic/Analytic`
+    (pass with warnings only).
 
 ## Current blocker clusters
 
@@ -134,7 +159,15 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
      Hodge infrastructure blocker is `dbar_real_hd_smooth_section`.
    - decomposition theorem statements are now corrected to ℝ-smooth `dbar_real_hd`/`del_real`
      forms; the remaining work is proof closure, not statement repair.
+   - `hodge_decomposition_10` is now closed by reduction to the `(0,1)` case; the
+     key decomposition blocker is `hodge_decomposition_01` together with
+     `dbar_real_hd_smooth_section`.
 4. RR endpoint theorem gaps in `RiemannRoch.lean`.
+   - `deg_canonical_eq_2g_minus_2` is now closed.
+   - remaining deep RR gaps are centered on:
+     `h0_canonical_eq_genus`, `eval_residue_complementarity`,
+     `harmonic_10_are_canonical_sections`, `connectionForm_exists`,
+     and `serre_duality_h1`.
 
 ## Working method
 

@@ -668,8 +668,21 @@ theorem hodge_decomposition_01 (CRS : CompactRiemannSurface) (ω : Form_01 CRS.t
 theorem hodge_decomposition_10 (CRS : CompactRiemannSurface) (ω : Form_10 CRS.toRiemannSurface) :
     ∃ (ω_harm : Form_10 CRS.toRiemannSurface) (f : RealSmoothFunction CRS.toRiemannSurface),
       ω_harm.IsHarmonic ∧ ω = ω_harm + del_real f := by
-  -- Every (1,0)-form that is ∂̄-closed is holomorphic
-  sorry
+  obtain ⟨η, f, hηharm, hηdecomp⟩ := hodge_decomposition_01 CRS ω.conj
+  obtain ⟨ωh, hωh_harm, hηeq⟩ := hηharm
+  refine ⟨ωh, f.conj, hωh_harm, ?_⟩
+  have hconj :
+      ω = η.conj + (dbar_real_hd f).conj := by
+    have hconj_raw := congrArg Form_01.conj hηdecomp
+    simpa [Form_10.conj_conj, Form_01.conj_add] using hconj_raw
+  have hηconj : η.conj = ωh := by
+    rw [hηeq, Form_10.conj_conj]
+  have hdel : (dbar_real_hd f).conj = del_real f.conj := by
+    unfold del_real
+    rw [RealSmoothFunction.conj_conj]
+  calc
+    ω = η.conj + (dbar_real_hd f).conj := hconj
+    _ = ωh + del_real f.conj := by rw [hηconj, hdel]
 
 /-!
 ## Linearity of del_01, del_real, dbar_real_hd

@@ -482,13 +482,6 @@ theorem canonical_divisor_exists (CRS : CompactRiemannSurface) :
     Nonempty (CanonicalDivisor CRS) := by
   exact ⟨⟨(0 : Divisor CRS.toRiemannSurface)⟩⟩
 
-/-- The degree of the canonical divisor is 2g - 2 (Riemann-Hurwitz).
-    This fundamental formula connects the genus to the canonical bundle. -/
-theorem deg_canonical_eq_2g_minus_2 (CRS : CompactRiemannSurface)
-    (K : CanonicalDivisor CRS) :
-    K.representative.degree = 2 * CRS.genus - 2 := by
-  sorry
-
 /-!
 ## h⁰(0) = 1: Constant Functions
 
@@ -926,6 +919,23 @@ theorem riemann_roch_h0_duality (CRS : CompactRiemannSurface)
       (0 : Divisor CRS.toRiemannSurface).degree = 1 - CRS.genus := by
     rw [neg_zero, add_zero, h0_trivial, hK, Divisor.degree_zero]
     omega
+  omega
+
+/-- The degree of the canonical divisor is 2g - 2.
+
+    Derived from the h⁰-duality form of Riemann-Roch by setting `D = K`:
+    `h⁰(K) - h⁰(0) = deg(K) + 1 - g`, together with `h⁰(K)=g` and `h⁰(0)=1`. -/
+theorem deg_canonical_eq_2g_minus_2 (CRS : CompactRiemannSurface)
+    (K : CanonicalDivisor CRS) :
+    K.representative.degree = 2 * CRS.genus - 2 := by
+  have hK : h0 CRS K.representative = CRS.genus :=
+    h0_canonical_eq_genus CRS K
+  have hrr :=
+    riemann_roch_h0_duality CRS K.representative K hK
+  have h0zero : h0 CRS (0 : Divisor CRS.toRiemannSurface) = 1 := h0_trivial CRS
+  have hcancel : K.representative + (-K.representative) = (0 : Divisor CRS.toRiemannSurface) := by
+    simp
+  rw [hK, hcancel, h0zero] at hrr
   omega
 
 /-!
