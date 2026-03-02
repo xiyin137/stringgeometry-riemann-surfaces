@@ -863,6 +863,38 @@ noncomputable def correctedValueAt {RS : RiemannSurface}
     (p : RS.carrier) (hord : chartOrderAt (RS := RS) f p = 0) : ℂ :=
   correctedValue (hf p) (le_of_eq hord.symm)
 
+/-- Under chart-level continuity, positive order of `f - c` at `p` forces `f p = c`. -/
+private theorem eq_const_of_shift_pos_of_continuousAt {RS : RiemannSurface}
+    {f : RS.carrier → ℂ} {p : RS.carrier} {c : ℂ}
+    (hf : IsChartMeromorphic (RS := RS) f)
+    (hcont : ContinuousAt (chartRep (RS := RS) f p) (chartPt (RS := RS) p))
+    (hpos : (0 : WithTop ℤ) < chartOrderAt (RS := RS) (fun x => f x - c) p) :
+    f p = c := by
+  let g : RS.carrier → ℂ := fun x => f x - c
+  have hg : IsChartMeromorphic (RS := RS) g :=
+    chartMeromorphic_sub_const (RS := RS) c hf
+  have hrep_sub : chartRep (RS := RS) g p = fun z => chartRep (RS := RS) f p z - c := by
+    ext z
+    simp [g, chartRep, Function.comp]
+  have hcont_g : ContinuousAt (chartRep (RS := RS) g p) (chartPt (RS := RS) p) := by
+    have hcont_sub : ContinuousAt (fun z => chartRep (RS := RS) f p z - c)
+        (chartPt (RS := RS) p) := hcont.sub continuousAt_const
+    simpa [hrep_sub]
+      using hcont_sub
+  have hnonneg_g : (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) g p := le_of_lt hpos
+  have hcv_eq : correctedValue (hg p) hnonneg_g = g p := by
+    -- The corrected value agrees with point-value at continuous non-polar points.
+    have hcv_chart :
+        correctedValue (hg p) hnonneg_g =
+          chartRep (RS := RS) g p (chartPt (RS := RS) p) := by
+      exact correctedValue_eq_of_continuousAt (hg p) hnonneg_g hcont_g
+    simpa [chartRep_apply_chartPt] using hcv_chart
+  have hcv_zero : correctedValue (hg p) hnonneg_g = 0 :=
+    correctedValue_eq_zero_of_pos (hg p) hpos
+  have hg_p_zero : g p = 0 := by
+    exact hcv_eq.symm.trans hcv_zero
+  simpa [g, sub_eq_zero] using hg_p_zero
+
 /-!
 ## Local Pole Preimage Lemma
 

@@ -41,9 +41,12 @@ under explicit regularity assumptions.
 
 ## Next concrete Lean targets
 
-1. Add a local lemma schema (name TBD):
-   `regular_point_value_matches_correctedValue`.
-2. Add a bridge lemma schema:
-   `regular_value_eq_c_iff_shift_order_pos`.
-3. Finish the chartOrderSum/fiber equality lemma and use
+1. Added:
+   `correctedValue_eq_of_continuousAt` in `Helpers/AnalyticExtension.lean`.
+2. Added:
+   `eq_const_of_shift_pos_of_continuousAt` in `Helpers/ArgumentPrinciple.lean`.
+3. Next:
+   prove the reverse local direction needed for fiber equality
+   (value fiber -> positive shift order under regularity assumptions).
+4. Finish the chartOrderSum/fiber equality lemma and use
    `fiberMultiplicity_constant_of_chartOrderSum_bridge`.

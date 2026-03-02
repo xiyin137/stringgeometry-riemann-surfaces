@@ -44,6 +44,9 @@
     `fiberMultiplicity_constant_of_chartOrderSum_bridge`:
     once a bridge identifies `fiberMultiplicity` with shifted `chartOrderSum`,
     constancy follows from the shifted argument principle.
+  - added local bridge ingredient
+    `eq_const_of_shift_pos_of_continuousAt`:
+    under chart continuity, positive order of `f - c` at `p` implies `f p = c`.
 - `Helpers/AnalyticExtension.lean`:
   - added
     `correctedValue_eq_of_continuousAt`:
