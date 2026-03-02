@@ -50,10 +50,30 @@
     `fiberMultiplicity_eq_totalPoleOrder_sub_const_of_regular_value_compat`,
     and `fiberMultiplicity_constant_of_regular_value_compat` now elaborate
     cleanly.
+  - added explicit bridge lemma
+    `regularValue_compat_of_continuous_regular`:
+    regular-point chart continuity implies the corrected-value compatibility
+    predicate used by the regular-value chain.
+  - added compositional corollary
+    `fiberMultiplicity_constant_of_continuous_regular_via_compat`:
+    the continuity-based constancy theorem now has a direct route through the
+    corrected-value compatibility framework.
 - Compile checks run:
   - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ArgumentPrinciple.lean`
   - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
   - status: pass (warnings only).
+  - refactor check (file-size policy):
+    - split monolithic `Helpers/ArgumentPrinciple.lean` into:
+      - `Helpers/ArgumentPrinciple/Foundation.lean` (1992 lines),
+      - `Helpers/ArgumentPrinciple/DegreeTheory.lean` (1446 lines),
+      - `Helpers/ArgumentPrinciple/FiberMultiplicity.lean` (678 lines),
+      - with `Helpers/ArgumentPrinciple.lean` as a thin import aggregator.
+    - preserved external import path compatibility for downstream files.
+    - compile checks:
+      - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple`
+      - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+      - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+      - status: pass (warnings only).
 
 ### Incremental Update (latest pass)
 - `Helpers/ArgumentPrinciple.lean`:
