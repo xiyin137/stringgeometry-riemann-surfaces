@@ -239,7 +239,16 @@ theorem chartOrderAt_lcRegularValue_ge_neg_D
   induction n with
   | zero =>
     -- Empty sum = constant 0, order = ⊤ ≥ anything
-    sorry
+    have hzero : lcRegularValue basis c = fun _ => (0 : ℂ) := by
+      ext p
+      simp [lcRegularValue]
+    rw [hzero, chartOrderAt]
+    have htop : meromorphicOrderAt (chartRep (RS := RS) (fun _ => (0 : ℂ)) q)
+        (chartPt (RS := RS) q) = ⊤ := by
+      exact meromorphicOrderAt_eq_top_iff.mpr
+        (Filter.Eventually.of_forall fun z => by simp [chartRep, Function.comp])
+    rw [htop]
+    exact le_of_lt (WithTop.coe_lt_top (-D.coeff q))
   | succ n ih =>
     -- Decompose Fin (n+1) sum = first n terms + last term
     have hsplit : lcRegularValue basis c = fun p =>

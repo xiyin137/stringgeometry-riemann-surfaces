@@ -33,13 +33,23 @@
     `zero_local_chart_sum_constant`,
     `chartOrderSum_locally_constant`,
     `chartOrderSum_zero_large_c`.
+- `Helpers/ArgumentPrinciple.lean`:
+  - proved `fiber_finite` (fiber finiteness now no longer a theorem-level gap).
+- `Helpers/LinearCombination.lean`:
+  - closed the `n = 0` branch in `chartOrderAt_lcRegularValue_ge_neg_D` (removed theorem-level `sorry`).
 - `Analytic/RiemannRoch.lean`:
   - repaired three `WithTop ℤ`/`ℤ` cast drifts (replaced brittle `exact_mod_cast` with explicit
     `WithTop.coe_lt_coe` / `WithTop.coe_le_coe` conversions).
 
 ### Active Blockers
 - `Helpers/ArgumentPrinciple.lean`:
-  - theorem-level proof debt remains in the five declarations listed above (rest of file now compiles).
+  - theorem-level proof debt remains in six declarations:
+    `fiberMultiplicity_constant`,
+    `meromorphic_pole_local_sum_zero`,
+    `pole_local_chart_sum_constant`,
+    `zero_local_chart_sum_constant`,
+    `chartOrderSum_locally_constant`,
+    `chartOrderSum_zero_large_c`.
 - RR-chain still has theorem-level gaps across:
   - `DolbeaultCohomology`, `HodgeDecomposition`, `SerreDuality`, `RiemannRoch`, `Helpers/ArgumentPrinciple`.
 

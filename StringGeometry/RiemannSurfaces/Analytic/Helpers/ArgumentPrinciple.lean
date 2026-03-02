@@ -369,7 +369,90 @@ theorem fiber_finite (CRS : CompactRiemannSurface)
     (c : ℂ) (hne : ∃ p, f p ≠ c) :
     {p : CRS.toRiemannSurface.carrier |
       f p = c ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite := by
-  sorry
+  letI := CRS.toRiemannSurface.topology
+  letI := CRS.toRiemannSurface.chartedSpace
+  haveI := CRS.toRiemannSurface.isManifold
+  haveI := CRS.toRiemannSurface.connected
+  haveI := CRS.toRiemannSurface.t2
+  have hfc : IsChartMeromorphic (RS := CRS.toRiemannSurface) (fun x => f x - c) := by
+    simpa [sub_eq_add_neg] using
+      (chartMeromorphic_add (RS := CRS.toRiemannSurface) hf
+        (chartMeromorphic_const (RS := CRS.toRiemannSurface) (-c)))
+  obtain ⟨p₀, hp₀_val⟩ := hne
+  have hp₀_ne_top : chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ ≠ ⊤ := by
+    by_cases hpole₀ : chartOrderAt (RS := CRS.toRiemannSurface) f p₀ < 0
+    · intro htop
+      have h_ev_ne : ∀ᶠ q in @nhdsWithin _ CRS.toRiemannSurface.topology p₀ {p₀}ᶜ, f q ≠ c :=
+        eventually_ne_const_at_pole (RS := CRS.toRiemannSurface) f hf p₀ hpole₀ c
+      have h_ev_zero_chart :
+          ∀ᶠ z in nhdsWithin (chartPt (RS := CRS.toRiemannSurface) p₀)
+            {chartPt (RS := CRS.toRiemannSurface) p₀}ᶜ,
+            chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ z = 0 :=
+        meromorphicOrderAt_eq_top_iff.mp htop
+      have h_ev_zero :
+          ∀ᶠ q in @nhdsWithin _ CRS.toRiemannSurface.topology p₀ {p₀}ᶜ,
+            (fun x => f x - c) q = 0 :=
+        eventually_eq_zero_of_chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀
+          h_ev_zero_chart
+      have h_ev_eq : ∀ᶠ q in @nhdsWithin _ CRS.toRiemannSurface.topology p₀ {p₀}ᶜ, f q = c :=
+        h_ev_zero.mono (fun q hq => sub_eq_zero.mp hq)
+      haveI := rs_nhdsNE_neBot (RS := CRS.toRiemannSurface) p₀
+      have hfalse : ∀ᶠ q in @nhdsWithin _ CRS.toRiemannSurface.topology p₀ {p₀}ᶜ, False :=
+        (h_ev_eq.and h_ev_ne).mono (fun q hq => hq.2 hq.1)
+      exact absurd (Filter.empty_mem_iff_bot.mp
+        (Filter.mem_of_superset hfalse (fun _ h => h.elim))) (Filter.NeBot.ne ‹_›)
+    · have hnonneg₀ : (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p₀ :=
+        le_of_not_gt hpole₀
+      have hcont_f₀ : ContinuousAt
+          (chartRep (RS := CRS.toRiemannSurface) f p₀)
+          (chartPt (RS := CRS.toRiemannSurface) p₀) := (hreg p₀ hnonneg₀).continuousAt
+      have hrep_sub₀ : chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ =
+          fun z => chartRep (RS := CRS.toRiemannSurface) f p₀ z - c := by
+        ext z
+        simp [chartRep, Function.comp]
+      have hcont_sub₀ : ContinuousAt
+          (fun z => chartRep (RS := CRS.toRiemannSurface) f p₀ z - c)
+          (chartPt (RS := CRS.toRiemannSurface) p₀) :=
+        hcont_f₀.sub continuousAt_const
+      have hcont₀ : ContinuousAt
+          (chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀)
+          (chartPt (RS := CRS.toRiemannSurface) p₀) := by
+        simpa [hrep_sub₀] using hcont_sub₀
+      have hne₀ : (fun x => f x - c) p₀ ≠ 0 := by
+        simpa [sub_eq_zero] using hp₀_val
+      have hzero₀ : chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ = 0 :=
+        chartOrderAt_eq_zero_of_continuousAt_ne_zero (RS := CRS.toRiemannSurface) hfc p₀ hcont₀ hne₀
+      rw [hzero₀]
+      exact WithTop.zero_ne_top
+  have hne_top_all : ∀ p, chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p ≠ ⊤ :=
+    fun p => chartOrderAt_ne_top_of_ne_top_somewhere (RS := CRS.toRiemannSurface)
+      (fun x => f x - c) hfc p₀ hp₀_ne_top p
+  have hsupp_fin : (chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c)).Finite :=
+    chartOrderSupport_finite_general CRS (fun x => f x - c) hfc ⟨p₀, hp₀_ne_top⟩
+  refine hsupp_fin.subset ?_
+  intro p hp
+  rcases hp with ⟨hfp, hnonnegp⟩
+  have hfp_zero : (fun x => f x - c) p = 0 := by
+    simp [hfp]
+  have hcont_f : ContinuousAt
+      (chartRep (RS := CRS.toRiemannSurface) f p)
+      (chartPt (RS := CRS.toRiemannSurface) p) := (hreg p hnonnegp).continuousAt
+  have hrep_sub : chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p =
+      fun z => chartRep (RS := CRS.toRiemannSurface) f p z - c := by
+    ext z
+    simp [chartRep, Function.comp]
+  have hcont_sub : ContinuousAt
+      (fun z => chartRep (RS := CRS.toRiemannSurface) f p z - c)
+      (chartPt (RS := CRS.toRiemannSurface) p) :=
+    hcont_f.sub continuousAt_const
+  have hcont : ContinuousAt
+      (chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p)
+      (chartPt (RS := CRS.toRiemannSurface) p) := by
+    simpa [hrep_sub] using hcont_sub
+  have hpos : (0 : WithTop ℤ) < chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p :=
+    chartOrderAt_pos_of_zero (RS := CRS.toRiemannSurface) hfc p hfp_zero hcont
+  rw [chartOrderSupport, Set.mem_setOf_eq]
+  exact ⟨ne_of_gt hpos, hne_top_all p⟩
 
 /-- The total pole order: Σ |ord_p(f)| over poles. -/
 noncomputable def totalPoleOrder (CRS : CompactRiemannSurface)
