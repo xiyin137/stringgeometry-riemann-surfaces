@@ -675,5 +675,27 @@ theorem fiberMultiplicity_constant_of_continuous_regular_via_compat
   exact fiberMultiplicity_constant_of_regular_value_compat CRS f hf hcompat hnc
     c₁ c₂ hfib₁ hfib₂
 
+/-- Canonical constancy interface for fiber multiplicity.
+
+This version keeps the historical theorem name while making the needed
+regular-value compatibility hypothesis explicit. -/
+theorem fiberMultiplicity_constant
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hcompat : ∀ p (hp : (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p),
+      f p = correctedValue (hf p) hp)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q) :
+    ∀ (c₁ c₂ : ℂ)
+      (hfib₁ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₁ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite)
+      (hfib₂ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₂ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
+      fiberMultiplicity CRS f c₁ hfib₁ = fiberMultiplicity CRS f c₂ hfib₂ := by
+  intro c₁ c₂ hfib₁ hfib₂
+  exact fiberMultiplicity_constant_of_regular_value_compat CRS f hf hcompat hnc
+    c₁ c₂ hfib₁ hfib₂
+
 
 end RiemannSurfaces.Analytic

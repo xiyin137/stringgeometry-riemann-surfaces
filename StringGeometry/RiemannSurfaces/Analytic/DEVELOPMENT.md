@@ -38,17 +38,23 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality`
    - `Analytic/RiemannRoch`
    (all passing with warnings only).
+5. Argument-principle constancy interface cleanup:
+   - removed stale unresolved `Foundation.fiberMultiplicity_constant`;
+   - added canonical proved `fiberMultiplicity_constant` in
+     `Helpers/ArgumentPrinciple/FiberMultiplicity.lean` with explicit
+     regular-value compatibility hypothesis.
 
 ## Current blocker clusters
 
 1. Fiber-multiplicity bridge in `Helpers/ArgumentPrinciple.lean`
-   - `fiberMultiplicity_constant`
-   - missing bridge target: connect point-value fibers
-     `{p | f p = c ∧ 0 ≤ ord_p(f)}`
-     to the germ-level zero multiplicity of `f - c` (likely via corrected-value infrastructure).
-   - continuity-based variant is now available:
-     `fiberMultiplicity_constant_of_continuous_regular`;
-     remaining gap is removing/justifying this extra regularity assumption.
+   - canonical theorem now uses explicit compatibility hypothesis:
+     `fiberMultiplicity_constant` (in `FiberMultiplicity.lean`) requires
+     `hcompat : f p = correctedValue ...` on regular points.
+   - missing bridge target remains: derive this compatibility from natural
+     analytic regularity assumptions in the core chain (not ad hoc wrappers).
+   - continuity-based and compatibility-based variants are both available;
+     remaining deep task is promoting them to the strongest intended hypothesis
+     profile for RR consumers.
 2. AMF/global-argument-principle interface
    - bridge now available:
      `MeromorphicFunction.analyticArgumentPrinciple_of_chartData`

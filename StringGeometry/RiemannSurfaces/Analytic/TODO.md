@@ -33,6 +33,31 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: close `Foundation.fiberMultiplicity_constant` gap via canonical interface)
+- `Analytic/Helpers/ArgumentPrinciple/Foundation.lean`:
+  - removed the stale unresolved declaration
+    `fiberMultiplicity_constant` from the foundational file.
+  - replaced with a note pointing to the formalized constancy theorem in
+    `FiberMultiplicity.lean`.
+- `Analytic/Helpers/ArgumentPrinciple/FiberMultiplicity.lean`:
+  - added canonical theorem name
+    `fiberMultiplicity_constant` as a proved interface using explicit
+    regular-value compatibility:
+    `hcompat : f p = correctedValue ...`.
+  - implementation delegates to the already-proved
+    `fiberMultiplicity_constant_of_regular_value_compat`.
+- Rationale:
+  - under the old `Foundation` assumptions alone (`IsChartMeromorphic`, finite support,
+    nonconstant regular locus), point-value fiber multiplicity constancy is not derivable
+    without a regular-value compatibility bridge.
+  - this change keeps theorem naming stable while making the required bridge explicit.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.Foundation`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.FiberMultiplicity`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: removed `del_real_smooth_section` blocker)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - removed theorem-level `sorry` `del_real_smooth_section` by refactoring

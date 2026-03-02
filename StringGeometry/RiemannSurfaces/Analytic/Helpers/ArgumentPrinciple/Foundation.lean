@@ -319,36 +319,16 @@ noncomputable def fiberMultiplicity (CRS : CompactRiemannSurface)
 noncomputable def poleSet (f : RS.carrier → ℂ) : Set RS.carrier :=
   { p | chartOrderAt (RS := RS) f p < 0 }
 
-/-- **Constancy of fiber multiplicity.**
+/- **Constancy of fiber multiplicity.**
 
 On a compact RS, for a nonconstant chart-meromorphic function, the fiber
 multiplicity N(c) is the same for all c ∈ ℂ. This is the degree of f
 as a map to ℙ¹.
 
-**Proof idea:**
-1. N is locally constant: By the local mapping theorem, near each preimage
-   of c₀, the contribution to N is constant for c near c₀. By compactness,
-   no extra preimages appear.
-2. N is defined on ℂ \ (finite branch set), which is connected.
-3. A locally constant function on a connected set is constant.
-4. N extends continuously to the branch values (by the LMT), so N is constant
-   on all of ℂ. -/
-theorem fiberMultiplicity_constant (CRS : CompactRiemannSurface)
-    (f : CRS.toRiemannSurface.carrier → ℂ)
-    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
-    (hsupp : (chartOrderSupport (RS := CRS.toRiemannSurface) f).Finite)
-    (hne : ∃ p, f p ≠ 0)
-    -- We need f to be "nonconstant on the regular locus"
-    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
-      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q) :
-    -- For any c₁, c₂ with finite fibers, N(c₁) = N(c₂)
-    ∀ (c₁ c₂ : ℂ)
-      (hfib₁ : {p : CRS.toRiemannSurface.carrier |
-        f p = c₁ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite)
-      (hfib₂ : {p : CRS.toRiemannSurface.carrier |
-        f p = c₂ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
-      fiberMultiplicity CRS f c₁ hfib₁ = fiberMultiplicity CRS f c₂ hfib₂ := by
-  sorry
+The formalized constancy theorem is provided in
+`Helpers/ArgumentPrinciple/FiberMultiplicity.lean` as
+`fiberMultiplicity_constant` with an explicit regular-value compatibility
+hypothesis (or continuity-based variants). -/
 
 /-!
 ## Part 3: The Argument Principle
