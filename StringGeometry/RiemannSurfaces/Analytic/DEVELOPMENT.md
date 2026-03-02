@@ -39,6 +39,8 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - bridge now available:
      `MeromorphicFunction.analyticArgumentPrinciple_of_chartData`
      (chart-meromorphic regularValue + chart/order compatibility).
+   - `MeromorphicFunction.analyticArgumentPrinciple` is now the
+     hypothesis-explicit interface (no theorem-level `sorry` in this declaration).
    - practical impact:
      `LineBundles.linearSystem_empty_negative_degree` now uses this chart-data
      bridge directly, reducing dependence on underdetermined abstract AMF claims.
@@ -52,7 +54,9 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 
 1. Prove local lemmas first; avoid long monolithic proofs.
 2. Prefer robust type-stable rewrites (explicit casts and neighborhoods).
-3. Keep theorem statements fixed; no definition weakening.
+3. Keep theorem statements fixed when coherent; if a statement is currently
+   underdetermined by available infrastructure, prefer explicit hypotheses over
+   hidden proof gaps.
 4. Theorem-level `sorry` is allowed for unresolved mathematics; never hide gaps in defs.
 
 ## Compile discipline

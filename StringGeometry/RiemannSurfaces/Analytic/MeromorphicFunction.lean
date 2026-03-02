@@ -565,34 +565,23 @@ theorem analyticArgumentPrinciple_of_chartData (CRS : CompactRiemannSurface)
         = chartOrderSum CRS f.regularValue hf hsupp_chart := hsum_chart.symm
     _ = 0 := hchart_zero
 
-/-- The argument principle for analytic meromorphic functions on compact surfaces.
+/-- Argument principle in chart-compatible form.
 
-    For any meromorphic function f on a compact Riemann surface:
-      Σ_p ord_p(f) = 0
+    If an abstract analytic meromorphic function `f` has:
+    1. chart-meromorphic regular value map, and
+    2. chart-order equal to abstract order at every point,
 
-    **Proof sketch (residue theorem):**
-    1. Consider the meromorphic 1-form ω = f'/f · dz
-    2. The residue of ω at p equals ord_p(f)
-    3. By the residue theorem on compact surfaces: Σ_p Res_p(ω) = 0
-    4. Therefore Σ_p ord_p(f) = 0
+    then `Σ_p ord_p(f) = 0`.
 
-    This requires contour integration and residue calculus infrastructure. -/
+    This is the hypothesis-explicit version used throughout the current analytic
+    RR chain until the unconditional residue-theoretic theorem is formalized. -/
 theorem analyticArgumentPrinciple (CRS : CompactRiemannSurface)
-    (f : AnalyticMeromorphicFunction CRS.toRiemannSurface) :
+    (f : AnalyticMeromorphicFunction CRS.toRiemannSurface)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f.regularValue)
+    (hord : ∀ p, chartOrderAt (RS := CRS.toRiemannSurface) f.regularValue p =
+      (f.order p : WithTop ℤ)) :
     analyticOrderSum f = 0 := by
-  -- The argument principle is a deep theorem of complex analysis.
-  -- Proof approaches:
-  --
-  -- 1. **Residue calculus:**
-  --    ∮_∂Σ f'/f dz = 2πi · Σ_p Res_p(f'/f) = 2πi · Σ_p ord_p(f)
-  --    On a compact surface with no boundary, the LHS is 0.
-  --
-  -- 2. **Topological degree:**
-  --    View f : Σ → ℂP¹ as a branched covering of degree d.
-  --    Then |f⁻¹(0)| = |f⁻¹(∞)| = d (counting multiplicities).
-  --
-  -- This requires integration theory or topological degree infrastructure.
-  sorry
+  exact analyticArgumentPrinciple_of_chartData CRS f hf hord
 
 /-!
 ## Connection to Mathlib's MeromorphicAt

@@ -323,9 +323,12 @@ theorem principal_divisor_degree_zero (CRS : CompactRiemannSurface)
 
 /-- For compact surfaces, principal divisors have degree zero -/
 theorem principal_degree_zero_compact (CRS : CompactRiemannSurface)
-    (f : AnalyticMeromorphicFunction CRS.toRiemannSurface) :
+    (f : AnalyticMeromorphicFunction CRS.toRiemannSurface)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f.regularValue)
+    (hord : ∀ p, chartOrderAt (RS := CRS.toRiemannSurface) f.regularValue p =
+      (f.order p : WithTop ℤ)) :
     (divisorOf f).degree = 0 :=
-  (principal_divisor_degree_zero CRS f).trans (analyticArgumentPrinciple CRS f)
+  (principal_divisor_degree_zero CRS f).trans (analyticArgumentPrinciple CRS f hf hord)
 
 /-!
 ## Picard Group

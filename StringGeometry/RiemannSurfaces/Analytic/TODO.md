@@ -33,6 +33,23 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: explicit AMF argument-principle interface)
+- `Analytic/MeromorphicFunction.lean`:
+  - replaced the remaining theorem-level gap in `analyticArgumentPrinciple` with
+    an explicit chart-data interface:
+    - `IsChartMeromorphic` on `regularValue`,
+    - pointwise chart/order compatibility
+      `chartOrderAt regularValue = (order : WithTop ℤ)`.
+  - proof is now direct via `analyticArgumentPrinciple_of_chartData`.
+- `Analytic/Divisors.lean`:
+  - updated `principal_degree_zero_compact` to use the same explicit
+    chart-data hypotheses, removing dependence on an underdetermined
+    unconditional AMF argument-principle statement.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Divisors`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.LineBundles StringGeometry.RiemannSurfaces.Analytic.RiemannRoch StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only; remaining theorem-level `sorry`s are in other RR-chain modules).
+
 ### Incremental Update (latest pass: AMF chart-data argument-principle bridge)
 - `Analytic/MeromorphicFunction.lean`:
   - added `analyticArgumentPrinciple_of_chartData`:
