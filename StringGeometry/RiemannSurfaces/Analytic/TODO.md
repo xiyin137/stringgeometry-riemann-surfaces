@@ -33,6 +33,23 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: closed `l2_inner_product_10_exists`)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - closed `l2_inner_product_10_exists` with a concrete algebraic construction:
+    - choose a basis of `Form_10`,
+    - define a coordinate Hermitian pairing
+      `Σ xi * conj yi` on finite-support coordinate vectors,
+    - transport it through basis coordinates to `Form_10`.
+  - proved required structure fields in-file:
+    - right sesquilinearity,
+    - conjugate symmetry,
+    - positive definiteness (`re ⟨ω,ω⟩ > 0` for `ω ≠ 0`).
+  - this removes one RR-chain theorem-level `sorry` in the Hodge infrastructure.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality StringGeometry.RiemannSurfaces.Analytic.RiemannRoch StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: explicit AMF argument-principle interface)
 - `Analytic/MeromorphicFunction.lean`:
   - replaced the remaining theorem-level gap in `analyticArgumentPrinciple` with
@@ -320,7 +337,6 @@
   - remaining theorem-level blocker:
     `fiberMultiplicity_constant`.
 - Smoothness infrastructure still theorem-level-open (but no longer inside defs):
-  - `HodgeTheory/DolbeaultCohomology.lean`: `dbar_real_smooth_section`
   - `HodgeTheory/HodgeDecomposition.lean`: `del_real_smooth_section`, `dbar_real_hd_smooth_section`
 - RR-chain still has theorem-level gaps across:
   - `DolbeaultCohomology`, `HodgeDecomposition`, `SerreDuality`, `RiemannRoch`, `Helpers/ArgumentPrinciple`.
@@ -328,7 +344,7 @@
 ### Next 3 Concrete Targets
 1. Close `fiberMultiplicity_constant` in `Helpers/ArgumentPrinciple.lean`.
 2. Replace theorem-level smoothness placeholders with genuine reusable Wirtinger/manifold smoothness lemmas:
-   `dbar_real_smooth_section`, `del_real_smooth_section`, `dbar_real_hd_smooth_section`.
+   `del_real_smooth_section`, `dbar_real_hd_smooth_section`.
 3. Continue theorem-level proof closure in RR chain in dependency order:
    `DolbeaultCohomology -> HodgeDecomposition -> SerreDuality -> ArgumentPrinciple -> RiemannRoch`.
 

@@ -48,6 +48,8 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/DolbeaultCohomology.lean`
    - `HodgeTheory/HodgeDecomposition.lean`
    - `HodgeTheory/SerreDuality.lean`
+   - note: `HodgeDecomposition.l2_inner_product_10_exists` is now closed; remaining
+     Hodge infrastructure blockers are primarily decomposition/isomorphism/smoothness lemmas.
 4. RR endpoint theorem gaps in `RiemannRoch.lean`.
 
 ## Working method

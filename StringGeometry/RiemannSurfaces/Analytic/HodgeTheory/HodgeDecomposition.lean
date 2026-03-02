@@ -966,7 +966,90 @@ structure L2InnerProduct10 (CRS : CompactRiemannSurface) where
     This follows from the existence of a hermitian metric on the surface. -/
 theorem l2_inner_product_10_exists (CRS : CompactRiemannSurface) :
     Nonempty (L2InnerProduct10 CRS) := by
-  sorry  -- Requires: integration theory and hermitian metric
+  classical
+  let RS := CRS.toRiemannSurface
+  let b : Module.Basis (Module.Free.ChooseBasisIndex ℂ (Form_10 RS)) ℂ (Form_10 RS) :=
+    Module.Free.chooseBasis ℂ (Form_10 RS)
+  let pairCoeff : (Module.Free.ChooseBasisIndex ℂ (Form_10 RS) →₀ ℂ) →
+      (Module.Free.ChooseBasisIndex ℂ (Form_10 RS) →₀ ℂ) → ℂ :=
+    fun x y => x.sum (fun i xi => xi * starRingEnd ℂ (y i))
+
+  have h_pair_right : ∀ (x y z : Module.Free.ChooseBasisIndex ℂ (Form_10 RS) →₀ ℂ) (c : ℂ),
+      pairCoeff x (y + c • z) = pairCoeff x y + (starRingEnd ℂ c) * pairCoeff x z := by
+    intro x y z c
+    unfold pairCoeff
+    simp [Finsupp.add_apply, Finsupp.smul_apply, map_add, map_mul, mul_add]
+    have hmul : x.sum (fun a b => b * ((starRingEnd ℂ) c * (starRingEnd ℂ) (z a))) =
+        x.sum (fun a b => (starRingEnd ℂ c) * (b * (starRingEnd ℂ (z a)))) := by
+      apply Finsupp.sum_congr
+      intro a ha
+      ring
+    rw [hmul, ← Finsupp.mul_sum]
+
+  have h_pair_symm : ∀ (x y : Module.Free.ChooseBasisIndex ℂ (Form_10 RS) →₀ ℂ),
+      pairCoeff y x = starRingEnd ℂ (pairCoeff x y) := by
+    intro x y
+    let s : Finset (Module.Free.ChooseBasisIndex ℂ (Form_10 RS)) := x.support ∪ y.support
+    have hx : pairCoeff x y = ∑ i ∈ s, x i * starRingEnd ℂ (y i) := by
+      unfold pairCoeff s
+      refine Finset.sum_subset Finset.subset_union_left ?_
+      intro i hi hix
+      have hxi : x i = 0 := (Finsupp.notMem_support_iff.mp hix)
+      simp [hxi]
+    have hy : pairCoeff y x = ∑ i ∈ s, y i * starRingEnd ℂ (x i) := by
+      unfold pairCoeff s
+      refine Finset.sum_subset Finset.subset_union_right ?_
+      intro i hi hiy
+      have hyi : y i = 0 := (Finsupp.notMem_support_iff.mp hiy)
+      simp [hyi]
+    rw [hy, hx, map_sum]
+    apply Finset.sum_congr rfl
+    intro i hi
+    simp [map_mul, mul_comm]
+
+  have h_pair_pos : ∀ x : Module.Free.ChooseBasisIndex ℂ (Form_10 RS) →₀ ℂ,
+      x ≠ 0 → (pairCoeff x x).re > 0 := by
+    intro x hx
+    have hs_nonempty : x.support.Nonempty := by
+      by_contra hs
+      apply hx
+      apply (Finsupp.support_eq_empty).1
+      exact Finset.not_nonempty_iff_eq_empty.mp hs
+    have hsum_pos : 0 < ∑ i ∈ x.support, ‖x i‖ ^ (2 : ℕ) := by
+      refine Finset.sum_pos ?_ hs_nonempty
+      intro i hi
+      have hne : x i ≠ 0 := (Finsupp.mem_support_iff.mp hi)
+      have hn : 0 < ‖x i‖ := norm_pos_iff.mpr hne
+      positivity
+    have hre : (pairCoeff x x).re = ∑ i ∈ x.support, ‖x i‖ ^ (2 : ℕ) := by
+      have hpair : pairCoeff x x = ∑ i ∈ x.support, (↑‖x i‖ : ℂ) ^ (2 : ℕ) := by
+        unfold pairCoeff
+        refine Finset.sum_congr rfl ?_
+        intro i hi
+        simpa using (Complex.mul_conj' (x i))
+      rw [hpair]
+      simp [pow_two]
+    rw [hre]
+    exact hsum_pos
+
+  refine ⟨{
+    pairing := fun ω η => pairCoeff (b.repr ω) (b.repr η)
+    sesquilinear_right := ?_
+    conj_symm := ?_
+    pos_def := ?_
+  }⟩
+  · intro ω η₁ η₂ c
+    simpa [pairCoeff, LinearEquiv.map_add, LinearEquiv.map_smul] using
+      h_pair_right (b.repr ω) (b.repr η₁) (b.repr η₂) c
+  · intro ω η
+    simpa [pairCoeff] using h_pair_symm (b.repr ω) (b.repr η)
+  · intro ω hω
+    have hrepr_ne : b.repr ω ≠ 0 := by
+      intro h0
+      apply hω
+      apply b.repr.injective
+      simpa using h0
+    simpa [pairCoeff] using h_pair_pos (b.repr ω) hrepr_ne
 
 /-- The L² inner product on (1,0)-forms, given an inner product structure.
 
