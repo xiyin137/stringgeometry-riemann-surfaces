@@ -63,6 +63,18 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     `Helpers/ArgumentPrinciple/FiberMultiplicity.lean`.
 11. Re-checked the same compile frontier after this extension; all touched
     modules build successfully (warnings only).
+12. Added MDifferentiable-first constancy API:
+    `fiberMultiplicity_constant_of_mdifferentiable` in
+    `Helpers/ArgumentPrinciple/FiberMultiplicity.lean`
+    (infers chart-meromorphicity via existing infrastructure).
+13. Added MDifferentiable-first argument-principle API:
+    `analyticArgumentPrinciple_of_mdifferentiable_chartOrder` in
+    `MeromorphicFunction.lean`.
+14. Compile frontier re-checked after these API bridges:
+    - `MeromorphicFunction`
+    - `Helpers/ArgumentPrinciple/FiberMultiplicity`
+    - `RiemannRoch`
+    (pass with warnings only).
 
 ## Current blocker clusters
 

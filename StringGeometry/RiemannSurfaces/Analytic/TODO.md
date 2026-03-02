@@ -33,6 +33,26 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: MDifferentiable-first API bridges in AMF + fiber constancy)
+- `Analytic/Helpers/ArgumentPrinciple/FiberMultiplicity.lean`:
+  - added
+    `fiberMultiplicity_constant_of_mdifferentiable`:
+    global MDifferentiable hypothesis now yields constancy directly (chart-meromorphic
+    hypothesis inferred internally via `isChartMeromorphic_of_mdifferentiable`).
+- `Analytic/MeromorphicFunction.lean`:
+  - added
+    `analyticArgumentPrinciple_of_mdifferentiable_chartOrder`:
+    chart-meromorphic regular-value hypothesis can now be inferred from global
+    MDifferentiability of `regularValue`, with order-compatibility retained explicit.
+- Why this matters:
+  - removes repetitive chart-meromorphic boilerplate at two key RR-chain interfaces
+    while keeping theorem statements mathematically explicit and sound.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.MeromorphicFunction`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.FiberMultiplicity`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: global-MDifferentiable compatibility/constancy bridge)
 - `Analytic/Helpers/ArgumentPrinciple/Foundation.lean`:
   - added

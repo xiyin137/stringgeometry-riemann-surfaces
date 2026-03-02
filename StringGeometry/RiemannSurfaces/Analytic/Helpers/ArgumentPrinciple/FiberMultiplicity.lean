@@ -701,6 +701,27 @@ theorem fiberMultiplicity_constant_of_mdifferentiable_via_compat
   exact fiberMultiplicity_constant_of_regular_value_compat CRS f hf hcompat hnc
     c₁ c₂ hfib₁ hfib₂
 
+/-- Global MDifferentiability-based constancy (chart-meromorphicity inferred). -/
+theorem fiberMultiplicity_constant_of_mdifferentiable
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hmd : @MDifferentiable ℂ _ ℂ _ _ ℂ _ 𝓘(ℂ, ℂ)
+      CRS.toRiemannSurface.carrier CRS.toRiemannSurface.topology CRS.toRiemannSurface.chartedSpace
+      ℂ _ _ ℂ _ 𝓘(ℂ, ℂ) ℂ _ _ f)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q) :
+    ∀ (c₁ c₂ : ℂ)
+      (hfib₁ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₁ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite)
+      (hfib₂ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₂ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
+      fiberMultiplicity CRS f c₁ hfib₁ = fiberMultiplicity CRS f c₂ hfib₂ := by
+  let hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f :=
+    isChartMeromorphic_of_mdifferentiable (RS := CRS.toRiemannSurface) f hmd
+  intro c₁ c₂ hfib₁ hfib₂
+  exact fiberMultiplicity_constant_of_mdifferentiable_via_compat CRS f hf hmd hnc
+    c₁ c₂ hfib₁ hfib₂
+
 /-- Continuity-based constancy via the corrected-value compatibility bridge. -/
 theorem fiberMultiplicity_constant_of_continuous_regular_via_compat
     (CRS : CompactRiemannSurface)

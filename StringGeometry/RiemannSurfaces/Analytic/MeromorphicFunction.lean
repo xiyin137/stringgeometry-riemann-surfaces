@@ -565,6 +565,30 @@ theorem analyticArgumentPrinciple_of_chartData (CRS : CompactRiemannSurface)
         = chartOrderSum CRS f.regularValue hf hsupp_chart := hsum_chart.symm
     _ = 0 := hchart_zero
 
+/-- Argument principle with chart-meromorphicity inferred from global
+MDifferentiability of `regularValue`. -/
+theorem analyticArgumentPrinciple_of_mdifferentiable_chartOrder
+    (CRS : CompactRiemannSurface)
+    (f : AnalyticMeromorphicFunction CRS.toRiemannSurface)
+    (hmd : ∀ p,
+      letI := CRS.toRiemannSurface.topology
+      letI := CRS.toRiemannSurface.chartedSpace
+      letI := CRS.toRiemannSurface.isManifold
+      MDifferentiableAt (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) f.regularValue p)
+    (hord : ∀ p, chartOrderAt (RS := CRS.toRiemannSurface) f.regularValue p =
+      (f.order p : WithTop ℤ)) :
+    analyticOrderSum f = 0 := by
+  letI := CRS.toRiemannSurface.topology
+  letI := CRS.toRiemannSurface.chartedSpace
+  letI := CRS.toRiemannSurface.isManifold
+  have hmd_global :
+      MDifferentiable (modelWithCornersSelf ℂ ℂ) (modelWithCornersSelf ℂ ℂ) f.regularValue := by
+    intro p
+    exact hmd p
+  let hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f.regularValue :=
+    isChartMeromorphic_of_mdifferentiable (RS := CRS.toRiemannSurface) f.regularValue hmd_global
+  exact analyticArgumentPrinciple_of_chartData CRS f hf hord
+
 /-- Argument principle in chart-compatible form.
 
     If an abstract analytic meromorphic function `f` has:
