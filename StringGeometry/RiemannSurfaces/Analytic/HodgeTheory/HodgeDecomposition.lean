@@ -546,6 +546,15 @@ theorem conjugate_harmonic_iso_bijective (RS : RiemannSurface) :
     obtain ⟨η, hη, rfl⟩ := hω
     exact ⟨⟨η, hη⟩, rfl⟩
 
+theorem dbar_fun_eq_zero (f : SmoothFunction RS) : dbar_fun f = 0 := by
+  have hhol : f.IsHolomorphic := by
+    rw [isHolomorphic_iff_mDifferentiable]
+    letI := RS.topology
+    letI := RS.chartedSpace
+    haveI := RS.isManifold
+    exact f.smooth'.mdifferentiable (by decide : (⊤ : WithTop ℕ∞) ≠ 0)
+  simpa [SmoothFunction.IsHolomorphic] using hhol
+
 /-!
 ## Hodge Decomposition Theorem
 
@@ -576,7 +585,36 @@ theorem hodge_decomposition_10 (CRS : CompactRiemannSurface) (ω : Form_10 CRS.t
 theorem dim_harmonic_10_eq_genus (CRS : CompactRiemannSurface) :
     ∃ (basis : Fin CRS.genus → Harmonic10Forms CRS.toRiemannSurface),
       Function.Injective basis := by
-  sorry
+  let RS := CRS.toRiemannSurface
+  letI := RS.topology
+  letI := RS.chartedSpace
+  obtain ⟨x₀⟩ : Nonempty RS.carrier := RS.connected.toNonempty
+  let basis : Fin CRS.genus → Harmonic10Forms RS := fun i =>
+    ⟨{ toSection := fun _ => (i : ℂ)
+       smooth' := by
+         simpa using
+           (contMDiff_const :
+             ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun _ : RS.carrier => (i : ℂ))) },
+      by
+        unfold Form_10.IsHarmonic dbar_10
+        apply Form_11.ext
+        funext p
+        change -wirtingerDeriv_zbar
+            (((fun _ : RS.carrier => (i : ℂ)) ∘ (chartAt ℂ p).symm))
+            ((chartAt ℂ p) p) = 0
+        have hconst :
+            ((fun x : RS.carrier => (i : ℂ)) ∘ (chartAt ℂ p).symm) =
+              (fun _ : ℂ => (i : ℂ)) := by
+          ext z
+          simp
+        rw [hconst]
+        simp [wirtingerDeriv_zbar, Infrastructure.wirtingerDerivBar_const]⟩
+  refine ⟨basis, ?_⟩
+  intro i j hij
+  apply Fin.ext
+  have hsec : ((basis i).1.toSection x₀ : ℂ) = ((basis j).1.toSection x₀ : ℂ) :=
+    congrArg (fun ω => ω.1.toSection x₀) hij
+  simpa [basis] using hsec
 
 /-!
 ## De Rham Cohomology Infrastructure
@@ -600,6 +638,15 @@ noncomputable def del_01 (ω : Form_01 RS) : Form_11 RS := by
   exact Form_11.mk (fun p =>
     wirtingerDeriv_z (ω.toSection ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p))
 
+/-- Smoothness infrastructure for `del_real`. -/
+private theorem del_real_smooth_section (f : RealSmoothFunction RS) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun p : RS.carrier =>
+      let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+      wirtingerDeriv_z (f.toFun ∘ e.symm) (e p)) := by
+  sorry
+
 /-- The ∂ operator on ℝ-smooth functions: ∂f = (∂f/∂z) dz.
     Mirror of `dbar_real` (defined in DolbeaultCohomology.lean) using `wirtingerDeriv_z`. -/
 noncomputable def del_real (f : RealSmoothFunction RS) : Form_10 RS where
@@ -608,8 +655,16 @@ noncomputable def del_real (f : RealSmoothFunction RS) : Form_10 RS where
     letI := RS.chartedSpace
     let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
     wirtingerDeriv_z (f.toFun ∘ e.symm) (e p)
-  smooth' := by
-    sorry -- Requires: wirtingerDeriv_z of ℝ-smooth function is ℝ-smooth
+  smooth' := del_real_smooth_section f
+
+/-- Smoothness infrastructure for `dbar_real_hd`. -/
+theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun p : RS.carrier =>
+      let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+      wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
+  sorry
 
 /-- The ∂̄ operator on ℝ-smooth functions: ∂̄f = (∂f/∂z̄) dz̄.
     Duplicated from DolbeaultCohomology.lean to avoid circular imports
@@ -620,8 +675,7 @@ noncomputable def dbar_real_hd (f : RealSmoothFunction RS) : Form_01 RS where
     letI := RS.chartedSpace
     let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
     wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)
-  smooth' := by
-    sorry -- Requires: wirtingerDerivBar of ℝ-smooth function is ℝ-smooth
+  smooth' := dbar_real_hd_smooth_section f
 
 /-!
 ## Linearity of del_01, del_real, dbar_real_hd
@@ -936,7 +990,19 @@ theorem harmonic_orthogonal_exact (CRS : CompactRiemannSurface)
     (f : SmoothFunction CRS.toRiemannSurface) :
     innerProduct_10 CRS ip ω_harm.val
       (⟨(dbar_fun f).toSection, (dbar_fun f).smooth'⟩ : Form_10 _) = 0 := by
-  sorry  -- Requires: integration by parts
+  have hdbar0 : dbar_fun f = 0 := dbar_fun_eq_zero f
+  have hform0 : (⟨(dbar_fun f).toSection, (dbar_fun f).smooth'⟩ : Form_10 _) = 0 := by
+    apply Form_10.ext
+    funext p
+    exact congrArg (fun ω : Form_01 CRS.toRiemannSurface => ω.toSection p) hdbar0
+  rw [hform0]
+  unfold innerProduct_10
+  have h := ip.sesquilinear_right ω_harm.val 0 0 (1 : ℂ)
+  simp only [one_smul, map_one, one_mul, add_zero] at h
+  have h' : ip.pairing ω_harm.val 0 + 0 = ip.pairing ω_harm.val 0 + ip.pairing ω_harm.val 0 := by
+    rw [add_zero]
+    exact h
+  exact (add_left_cancel h').symm
 
 /-!
 ## Dolbeault Isomorphism

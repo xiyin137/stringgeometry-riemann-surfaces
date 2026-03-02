@@ -598,6 +598,32 @@ theorem chartOrderAt_sub_const_at_pole {f : RS.carrier → ℂ} {p : RS.carrier}
     simp only [neg_eq_zero, hc, ↓reduceIte]
     exact hpole
 
+/-- Subtracting a constant preserves the pole/non-pole dichotomy (`< 0`). -/
+theorem chartOrderAt_sub_const_lt_zero_iff {f : RS.carrier → ℂ} {p : RS.carrier} (c : ℂ) :
+    chartOrderAt (RS := RS) (fun x => f x - c) p < 0 ↔ chartOrderAt (RS := RS) f p < 0 := by
+  constructor
+  · intro hpole_sub
+    have h :=
+      chartOrderAt_sub_const_at_pole (RS := RS) (f := fun x => f x - c) (p := p) (-c) hpole_sub
+    have h' : chartOrderAt (RS := RS) f p =
+        chartOrderAt (RS := RS) (fun x => f x - c) p := by
+      simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h
+    exact h'.symm ▸ hpole_sub
+  · intro hpole
+    exact (chartOrderAt_sub_const_at_pole (RS := RS) (f := f) (p := p) c hpole) ▸ hpole
+
+/-- Subtracting a constant preserves non-pole status (`≥ 0`). -/
+theorem chartOrderAt_sub_const_nonneg_iff {f : RS.carrier → ℂ} {p : RS.carrier} (c : ℂ) :
+    (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) (fun x => f x - c) p ↔
+      (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) f p := by
+  constructor
+  · intro h
+    exact le_of_not_gt (fun hpole =>
+      (not_lt_of_ge h) ((chartOrderAt_sub_const_lt_zero_iff (RS := RS) (f := f) (p := p) c).2 hpole))
+  · intro h
+    exact le_of_not_gt (fun hpole_sub =>
+      (not_lt_of_ge h) ((chartOrderAt_sub_const_lt_zero_iff (RS := RS) (f := f) (p := p) c).1 hpole_sub))
+
 /-- The total zero order of a chart-meromorphic function: the sum of chart orders
     over all zeros (points with positive finite order). -/
 noncomputable def totalZeroOrder (CRS : CompactRiemannSurface)
@@ -873,7 +899,299 @@ theorem meromorphic_pole_local_sum_zero {g : ℂ → ℂ} {z₀ : ℂ} {ρ : ℝ
           meromorphicOrderAt (fun w => g w - c) z ≠ ⊤ → z ∈ S) ∧
         -- The sum of orders over S is 0
         S.sum (fun z => (meromorphicOrderAt (fun w => g w - c) z).getD 0) = 0 := by
-  sorry
+  have hne_top : meromorphicOrderAt g z₀ ≠ ⊤ := by
+    intro h; rw [h] at hpole; exact absurd le_top (not_le.mpr hpole)
+  set m : ℤ := (meromorphicOrderAt g z₀).untop₀ with hm_def
+  have hm_coe : meromorphicOrderAt g z₀ = (m : WithTop ℤ) :=
+    (WithTop.coe_untop₀_of_ne_top hne_top).symm
+  have hm_neg : m < 0 := by
+    have hpole' : ((m : WithTop ℤ) < (0 : WithTop ℤ)) := by
+      simpa [hm_coe] using hpole
+    exact WithTop.coe_lt_coe.mp hpole'
+  set n : ℕ := (-m).toNat with hn_def
+  have hn_eq : (n : ℤ) = -m := Int.toNat_of_nonneg (le_of_lt (neg_pos.mpr hm_neg))
+  have hn_pos : 1 ≤ n := by omega
+  have hm_eq : meromorphicOrderAt g z₀ = (-(n : ℤ) : WithTop ℤ) := by
+    rw [hm_coe]; congr 1; linarith [hn_eq]
+  have hg_inv : MeromorphicAt g⁻¹ z₀ := hg.inv
+  have hg_inv_ord : meromorphicOrderAt g⁻¹ z₀ = (n : ℤ) := by
+    rw [meromorphicOrderAt_inv, hm_eq]; simp
+  have hg_inv_nonneg : (0 : WithTop ℤ) ≤ meromorphicOrderAt g⁻¹ z₀ := by
+    rw [hg_inv_ord]
+    exact WithTop.coe_le_coe.mpr (Int.natCast_nonneg n)
+  have hg_inv_ne_top : meromorphicOrderAt g⁻¹ z₀ ≠ ⊤ := by
+    rw [hg_inv_ord]; exact WithTop.coe_ne_top
+  obtain ⟨H, hH_ana, hH_agree, hH_mord⟩ :=
+    exists_analyticExtension_of_nonneg_order hg_inv hg_inv_ne_top hg_inv_nonneg
+  have hH_mord_eq : meromorphicOrderAt H z₀ = (n : ℤ) := by rw [hH_mord, hg_inv_ord]
+  have hH_aord : analyticOrderAt H z₀ = n := by
+    have h := hH_ana.meromorphicOrderAt_eq
+    rw [hH_mord_eq] at h
+    cases hn' : analyticOrderAt H z₀ with
+    | top => simp [hn'] at h
+    | coe k => simp [hn'] at h; exact_mod_cast h.symm
+  have hH0 : H z₀ = 0 := by
+    rw [← hH_ana.analyticOrderAt_ne_zero]
+    rw [hH_aord]
+    exact_mod_cast Nat.one_le_iff_ne_zero.mp hn_pos
+  obtain ⟨r_ana, hr_ana_pos, hH_ana_ball⟩ :=
+    Metric.eventually_nhds_iff.mp hH_ana.eventually_analyticAt
+  obtain ⟨r_agr, hr_agr_pos, h_agree_ball⟩ := Metric.eventually_nhds_iff.mp
+    (eventually_nhdsWithin_iff.mp hH_agree)
+  obtain ⟨r, hr_pos, hr_le_bound, ε, hε_pos, h_iso, h_count, h_deriv_ne⟩ :=
+    local_mapping_theorem (h := H) (z₀ := z₀) (k := n) (r_bound := min ρ (min r_ana r_agr))
+      hn_pos hH_ana hH0 hH_aord (lt_min hρ (lt_min hr_ana_pos hr_agr_pos))
+  have hr_le_ρ : r ≤ ρ := le_trans hr_le_bound (min_le_left _ _)
+  have hr_le_ana : r ≤ r_ana := le_trans hr_le_bound (le_trans (min_le_right _ _) (min_le_left _ _))
+  have hr_le_agr : r ≤ r_agr := le_trans hr_le_bound (le_trans (min_le_right _ _) (min_le_right _ _))
+  set C : ℝ := ε⁻¹ + 1 with hC_def
+  have hC_pos : 0 < C := by
+    have : (0 : ℝ) ≤ ε⁻¹ := inv_nonneg.mpr (le_of_lt hε_pos)
+    linarith
+  refine ⟨r, hr_pos, hr_le_ρ, C, hC_pos, ?_⟩
+  intro c hc
+  set w : ℂ := c⁻¹ with hw_def
+  have hc_ne_zero : c ≠ 0 := by
+    intro hc0
+    have : ‖c‖ = 0 := by simpa [hc0]
+    linarith [hc]
+  have hc_norm_pos : 0 < ‖c‖ := norm_pos_iff.mpr hc_ne_zero
+  have hw_ne : w ≠ 0 := by
+    simpa [hw_def] using inv_ne_zero hc_ne_zero
+  have hw_norm_pos : 0 < ‖w‖ := norm_pos_iff.mpr hw_ne
+  have hw_norm_lt : ‖w‖ < ε := by
+    have hε_inv_lt : ε⁻¹ < ‖c‖ := by
+      have hC_lt : C < ‖c‖ := hc
+      linarith [hC_def]
+    have h_inv : (‖c‖)⁻¹ < ε := (inv_lt_comm₀ hc_norm_pos hε_pos).2 hε_inv_lt
+    simpa [hw_def, norm_inv] using h_inv
+  have h_count_w : {z : ℂ | ‖z - z₀‖ < r ∧ H z = w}.ncard = n :=
+    h_count w hw_norm_pos hw_norm_lt
+  set T : Set ℂ := {z : ℂ | ‖z - z₀‖ < r ∧ H z = w}
+  have hT_ncard : T.ncard = n := by
+    simpa [T] using h_count_w
+  have hn_pos' : 0 < n := Nat.succ_le_iff.mp hn_pos
+  have hT_finite : T.Finite := Set.finite_of_ncard_pos (by simpa [hT_ncard] using hn_pos')
+  refine ⟨insert z₀ hT_finite.toFinset, ?_, ?_, ?_⟩
+  · -- S is contained in B(z₀, r)
+    intro z hzS
+    rcases Finset.mem_insert.mp hzS with rfl | hzT
+    · simpa using hr_pos
+    · exact (hT_finite.mem_toFinset.mp hzT).1
+  · -- Capture all nonzero finite-order points of (g - c) in the ball
+    intro z hz hord_ne0 hord_ne_top
+    by_cases hzz₀ : z = z₀
+    · exact Finset.mem_insert.mpr (Or.inl hzz₀)
+    · refine Finset.mem_insert.mpr (Or.inr ?_)
+      have hzT : z ∈ T := by
+        have hHz_ne0 : H z ≠ 0 := h_iso z hz hzz₀
+        by_cases hHw : H z = w
+        · exact ⟨hz, hHw⟩
+        · have hH_ana_z : AnalyticAt ℂ H z :=
+            hH_ana_ball (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_ana)
+          set z0 : ℂ := z₀ with hz0_def
+          have hg_eq_near : g =ᶠ[nhds z] fun u => (H u)⁻¹ := by
+            set d : ℝ := min (r_agr - dist z z0) (dist z z0 / 2) with hd_def
+            have hd_pos : 0 < d := by
+              have hz_dist : dist z z0 < r_agr := by
+                simpa [hz0_def] using (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_agr)
+              have hz_dist_pos : 0 < dist z z0 := by
+                simpa [hz0_def] using (dist_pos.mpr hzz₀)
+              have hleft : 0 < r_agr - dist z z0 := by linarith
+              have hright : 0 < dist z z0 / 2 := by positivity
+              simpa [hd_def] using lt_min hleft hright
+            exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) (fun u hu => by
+              have hu_dist : dist u z < d := Metric.mem_ball.mp hu
+              have hu_agr0 : dist u z0 < r_agr := by
+                have hdu : dist u z < r_agr - dist z z0 := lt_of_lt_of_le hu_dist (min_le_left _ _)
+                linarith [dist_triangle u z z0]
+              have hu_ne0 : u ≠ z0 := by
+                intro hu0
+                subst hu0
+                have hu_dist' : dist z z0 < d := by simpa [dist_comm] using hu_dist
+                have : dist z z0 < dist z z0 / 2 := by
+                  exact lt_of_lt_of_le hu_dist' (min_le_right _ _)
+                have hnonneg : 0 ≤ dist z z0 := dist_nonneg
+                linarith
+              calc g u = ((g u)⁻¹)⁻¹ := (inv_inv (g u)).symm
+                _ = (g⁻¹ u)⁻¹ := rfl
+                _ = (H u)⁻¹ := by
+                  have hu_agr : dist u z₀ < r_agr := by simpa [hz0_def] using hu_agr0
+                  have hu_ne : u ∈ ({z₀} : Set ℂ)ᶜ := by
+                    simpa [hz0_def] using (Set.mem_compl_singleton_iff.mpr hu_ne0)
+                  rw [h_agree_ball hu_agr hu_ne])
+          have h_congr : (fun u => g u - c) =ᶠ[nhdsWithin z {z}ᶜ] (fun u => (H u)⁻¹ - c) :=
+            (hg_eq_near.filter_mono nhdsWithin_le_nhds).mono fun u hu => by
+              show g u - c = (H u)⁻¹ - c
+              rw [hu]
+          have h_inv_ne_c : (H z)⁻¹ ≠ c := by
+            intro hEq
+            apply hHw
+            have : H z = c⁻¹ := by simpa using congrArg Inv.inv hEq
+            simpa [hw_def] using this
+          have h_ord_zero : meromorphicOrderAt (fun u => (H u)⁻¹ - c) z = 0 := by
+            have h_ana : AnalyticAt ℂ (fun u => (H u)⁻¹ - c) z :=
+              (hH_ana_z.inv hHz_ne0).sub analyticAt_const
+            exact (tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero h_ana.meromorphicAt).mp
+              ⟨(H z)⁻¹ - c, sub_ne_zero.mpr h_inv_ne_c,
+                h_ana.continuousAt.tendsto.mono_left nhdsWithin_le_nhds⟩
+          have h_ord : meromorphicOrderAt (fun u => g u - c) z = 0 := by
+            rw [meromorphicOrderAt_congr h_congr]
+            exact h_ord_zero
+          exact (hord_ne0 h_ord).elim
+      exact hT_finite.mem_toFinset.mpr hzT
+  · -- Sum of local orders in S is zero: pole contribution (-n) + n simple zeros (+1)
+    have hz0_not_mem : z₀ ∉ hT_finite.toFinset := by
+      intro hz0_mem
+      have hz0_in_T : z₀ ∈ T := hT_finite.mem_toFinset.mp hz0_mem
+      exact hw_ne (by simpa [hH0] using hz0_in_T.2.symm)
+    rw [Finset.sum_insert hz0_not_mem]
+    have hz0_term : (meromorphicOrderAt (fun u => g u - c) z₀).getD 0 = -(n : ℤ) := by
+      have hz0_ord : meromorphicOrderAt (fun u => g u - c) z₀ = (-(n : ℤ) : WithTop ℤ) := by
+        rw [meromorphicOrderAt_sub_const_at_pole_loc c hpole, hm_eq]
+      exact congrArg (fun t : WithTop ℤ => t.getD 0) hz0_ord
+    have hsum_T :
+        hT_finite.toFinset.sum (fun z => (meromorphicOrderAt (fun u => g u - c) z).getD 0) =
+          (n : ℤ) := by
+      have h_each_one : ∀ z ∈ hT_finite.toFinset,
+          (meromorphicOrderAt (fun u => g u - c) z).getD 0 = 1 := by
+        intro z hz_fin
+        have hzT : z ∈ T := hT_finite.mem_toFinset.mp hz_fin
+        have hz_ball : ‖z - z₀‖ < r := hzT.1
+        have hHz : H z = w := hzT.2
+        have hzz0 : z ≠ z₀ := by
+          intro hEq
+          have hw0 : w = 0 := by
+            calc
+              w = H z := hHz.symm
+              _ = H z₀ := by simpa [hEq]
+              _ = 0 := hH0
+          exact hw_ne hw0
+        have hHz_ne0 : H z ≠ 0 := by
+          rw [hHz]
+          exact hw_ne
+        have hH_ana_z : AnalyticAt ℂ H z :=
+          hH_ana_ball (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_ana)
+        have hderiv_z : deriv H z ≠ 0 := h_deriv_ne z hz_ball hzz0
+        set z0 : ℂ := z₀ with hz0_def
+        set d : ℝ := min (min (r_agr - dist z z0) (r - dist z z0)) (dist z z0 / 2) with hd_def
+        have hd_pos : 0 < d := by
+          have hz_dist_agr : dist z z0 < r_agr := by
+            simpa [hz0_def] using (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_agr)
+          have hz_dist_r : dist z z0 < r := by
+            simpa [dist_eq_norm] using hz_ball
+          have hz_dist_pos : 0 < dist z z0 := by
+            simpa [hz0_def] using (dist_pos.mpr hzz0)
+          have h1 : 0 < r_agr - dist z z0 := by linarith
+          have h2 : 0 < r - dist z z0 := by linarith
+          have h3 : 0 < dist z z0 / 2 := by positivity
+          have h12 : 0 < min (r_agr - dist z z0) (r - dist z z0) := lt_min h1 h2
+          simpa [hd_def] using lt_min h12 h3
+        have hg_eq_near : g =ᶠ[nhds z] fun u => (H u)⁻¹ := by
+          exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) (fun u hu => by
+            have hu_dist : dist u z < d := Metric.mem_ball.mp hu
+            have hu_agr0 : dist u z0 < r_agr := by
+              have hu1 : dist u z < r_agr - dist z z0 := by
+                exact lt_of_lt_of_le hu_dist (le_trans (min_le_left _ _) (min_le_left _ _))
+              linarith [dist_triangle u z z0]
+            have hu_ne0 : u ≠ z0 := by
+              intro hu0
+              subst hu0
+              have hu_dist' : dist z z0 < d := by simpa [dist_comm] using hu_dist
+              have : dist z z0 < dist z z0 / 2 := by
+                exact lt_of_lt_of_le hu_dist' (min_le_right _ _)
+              have hnonneg : 0 ≤ dist z z0 := dist_nonneg
+              linarith
+            have hu_agr : dist u z₀ < r_agr := by simpa [hz0_def] using hu_agr0
+            have hu_ne : u ∈ ({z₀} : Set ℂ)ᶜ := by
+              simpa [hz0_def] using (Set.mem_compl_singleton_iff.mpr hu_ne0)
+            calc
+              g u = ((g u)⁻¹)⁻¹ := (inv_inv (g u)).symm
+              _ = (g⁻¹ u)⁻¹ := rfl
+              _ = (H u)⁻¹ := by rw [h_agree_ball hu_agr hu_ne])
+        have hH_near : ∀ᶠ u in nhds z, H u ≠ 0 := by
+          exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) (fun u hu => by
+            have hu_dist : dist u z < d := Metric.mem_ball.mp hu
+            have hu_r0 : dist u z0 < r := by
+              have hu1 : dist u z < r - dist z z0 := by
+                exact lt_of_lt_of_le hu_dist (le_trans (min_le_left _ _) (min_le_right _ _))
+              linarith [dist_triangle u z z0]
+            have hu_ne0 : u ≠ z0 := by
+              intro hu0
+              subst hu0
+              have hu_dist' : dist z z0 < d := by simpa [dist_comm] using hu_dist
+              have : dist z z0 < dist z z0 / 2 := by
+                exact lt_of_lt_of_le hu_dist' (min_le_right _ _)
+              have hnonneg : 0 ≤ dist z z0 := dist_nonneg
+              linarith
+            have hu_r : dist u z₀ < r := by simpa [hz0_def] using hu_r0
+            have hu_ne : u ≠ z₀ := by simpa [hz0_def] using hu_ne0
+            exact h_iso u (by simpa [dist_eq_norm] using hu_r) hu_ne)
+        have h_mul_congr :
+            (fun u => (g u - c) * H u) =ᶠ[nhdsWithin z {z}ᶜ] (fun u => 1 - c * H u) := by
+          exact ((hg_eq_near.and hH_near).filter_mono nhdsWithin_le_nhds).mono (fun u hu => by
+            rcases hu with ⟨hu_g, hu_H⟩
+            calc
+              (g u - c) * H u = ((H u)⁻¹ - c) * H u := by rw [hu_g]
+              _ = 1 - c * H u := by
+                rw [sub_mul, inv_mul_cancel₀ hu_H])
+        have hcw : c * w = 1 := by
+          simp [hw_def, hc_ne_zero]
+        have h_one_minus :
+            (fun u => 1 - c * H u) = (fun _ : ℂ => -c) * (fun u => H u - w) := by
+          funext u
+          calc
+            1 - c * H u = c * w - c * H u := by simpa [hcw]
+            _ = (-c) * (H u - w) := by ring
+        have h_ord_H_sub_w : meromorphicOrderAt (fun u => H u - w) z = 1 := by
+          have hzero_z : (fun u => H u - w) z = 0 := by simpa [hHz]
+          have hderiv_sub : deriv (fun u => H u - w) z ≠ 0 := by simpa using hderiv_z
+          exact meromorphicOrderAt_eq_one_of_simple_zero
+            (hH_ana_z.sub analyticAt_const) hzero_z hderiv_sub
+        have h_ord_one_minus : meromorphicOrderAt (fun u => 1 - c * H u) z = 1 := by
+          rw [h_one_minus]
+          have hmul :
+              meromorphicOrderAt ((fun _ : ℂ => -c) * (fun u => H u - w)) z =
+                meromorphicOrderAt (fun u => H u - w) z :=
+            meromorphicOrderAt_mul_of_ne_zero (x := z)
+              (f := fun u => H u - w) (g := fun _ : ℂ => -c)
+              (hg := analyticAt_const) (hg' := by simpa using neg_ne_zero.mpr hc_ne_zero)
+          rw [hmul, h_ord_H_sub_w]
+        have h_ord_mul : meromorphicOrderAt (fun u => (g u - c) * H u) z = 1 := by
+          rw [meromorphicOrderAt_congr h_mul_congr]
+          exact h_ord_one_minus
+        have h_ord_sub : meromorphicOrderAt (fun u => g u - c) z = 1 := by
+          have hmul :
+              meromorphicOrderAt (fun u => H u * (g u - c)) z =
+                meromorphicOrderAt (fun u => g u - c) z :=
+            meromorphicOrderAt_mul_of_ne_zero (x := z)
+              (f := fun u => g u - c) (g := H) hH_ana_z hHz_ne0
+          have hmul' : meromorphicOrderAt (fun u => H u * (g u - c)) z = 1 := by
+            have hswap : (fun u => H u * (g u - c)) = (fun u => (g u - c) * H u) := by
+              funext u
+              ring
+            rw [hswap]
+            exact h_ord_mul
+          rw [hmul] at hmul'
+          exact hmul'
+        exact congrArg (fun t : WithTop ℤ => t.getD 0) h_ord_sub
+      calc
+        hT_finite.toFinset.sum (fun z => (meromorphicOrderAt (fun u => g u - c) z).getD 0)
+            = hT_finite.toFinset.sum (fun _ => (1 : ℤ)) := by
+              refine Finset.sum_congr rfl ?_
+              intro z hz
+              exact h_each_one z hz
+        _ = (hT_finite.toFinset.card : ℤ) := by simp
+        _ = (n : ℤ) := by
+              have hcard : hT_finite.toFinset.card = n := by
+                calc
+                  hT_finite.toFinset.card = T.ncard := by
+                    symm
+                    exact Set.ncard_eq_toFinset_card T hT_finite
+                  _ = n := hT_ncard
+              exact_mod_cast hcard
+    rw [hz0_term, hsum_T]
+    ring
 /-- If G is analytic at w and G(w) ≠ c, then meromorphicOrderAt(G - c, w) = 0. -/
 private theorem meromorphicOrderAt_analytic_sub_const_eq_zero' {G : ℂ → ℂ} {w c : ℂ}
     (hG : AnalyticAt ℂ G w) (hne : G w ≠ c) :
@@ -1036,7 +1354,159 @@ private theorem pole_local_chart_sum_constant
         S.sum (fun z => (meromorphicOrderAt
           (fun w => chartRep (RS := RS) f q w - c) z).getD 0) =
           (chartOrderAt (RS := RS) (fun x => f x - c₀) q).getD 0 := by
-  sorry
+  letI := RS.topology
+  letI := RS.chartedSpace
+  haveI := RS.isManifold
+  set g := chartRep (RS := RS) f q
+  set z₀ := chartPt (RS := RS) q
+  -- Step 1: Extract pole order n ≥ 1 and construct H = analytic extension of g⁻¹
+  have hpole_z : meromorphicOrderAt g z₀ < 0 := hpole
+  have hne_top_z : meromorphicOrderAt g z₀ ≠ ⊤ := by
+    intro h; rw [h] at hpole_z; exact absurd le_top (not_le.mpr hpole_z)
+  set m : ℤ := (meromorphicOrderAt g z₀).untop₀ with hm_def
+  have hm_coe : meromorphicOrderAt g z₀ = (m : WithTop ℤ) :=
+    (WithTop.coe_untop₀_of_ne_top hne_top_z).symm
+  have hm_neg : m < 0 := by
+    have hpole_z' : ((m : WithTop ℤ) < (0 : WithTop ℤ)) := by
+      simpa [hm_coe] using hpole_z
+    exact WithTop.coe_lt_coe.mp hpole_z'
+  set n := (-m).toNat with hn_def
+  have hn_eq : (n : ℤ) = -m := Int.toNat_of_nonneg (le_of_lt (neg_pos.mpr hm_neg))
+  have hn_pos : 1 ≤ n := by omega
+  have hm_eq : meromorphicOrderAt g z₀ = (-(n : ℤ) : WithTop ℤ) := by
+    rw [hm_coe]; congr 1; linarith [hn_eq]
+  have hg_inv : MeromorphicAt g⁻¹ z₀ := (hf q).inv
+  have hg_inv_ord : meromorphicOrderAt g⁻¹ z₀ = (n : ℤ) := by
+    rw [meromorphicOrderAt_inv, hm_eq]; simp
+  have hg_inv_nonneg : (0 : WithTop ℤ) ≤ meromorphicOrderAt g⁻¹ z₀ := by
+    rw [hg_inv_ord]
+    exact WithTop.coe_le_coe.mpr (Int.natCast_nonneg n)
+  have hg_inv_ne_top : meromorphicOrderAt g⁻¹ z₀ ≠ ⊤ := by
+    rw [hg_inv_ord]; exact WithTop.coe_ne_top
+  obtain ⟨H, hH_ana, hH_agree, hH_mord⟩ :=
+    exists_analyticExtension_of_nonneg_order hg_inv hg_inv_ne_top hg_inv_nonneg
+  -- Step 2: Get analytic order of H
+  have hH_mord_eq : meromorphicOrderAt H z₀ = (n : ℤ) := by rw [hH_mord, hg_inv_ord]
+  have hH_aord : analyticOrderAt H z₀ = n := by
+    have h := hH_ana.meromorphicOrderAt_eq
+    rw [hH_mord_eq] at h
+    cases hn : analyticOrderAt H z₀ with
+    | top => simp [hn] at h
+    | coe k => simp [hn] at h; exact_mod_cast h.symm
+  have hH0 : H z₀ = 0 := by
+    rw [← hH_ana.analyticOrderAt_ne_zero]
+    rw [hH_aord]; exact_mod_cast Nat.one_le_iff_ne_zero.mp hn_pos
+  -- Step 3: Extract key balls
+  -- (a) Isolated zero of H: H(z) ≠ 0 for z ≠ z₀ near z₀
+  have hH_aord_ne_top : analyticOrderAt H z₀ ≠ ⊤ := by
+    rw [hH_aord]; exact WithTop.coe_ne_top
+  have h_iso_evt : ∀ᶠ z in nhdsWithin z₀ {z₀}ᶜ, H z ≠ 0 := by
+    rcases hH_ana.eventually_eq_zero_or_eventually_ne_zero with h | h
+    · exact absurd (analyticOrderAt_eq_top.mpr h) hH_aord_ne_top
+    · exact h
+  obtain ⟨r_iso, hr_iso, h_iso⟩ := Metric.eventually_nhds_iff.mp
+    (eventually_nhdsWithin_iff.mp h_iso_evt)
+  -- (b) Analyticity ball: H analytic at all points near z₀
+  obtain ⟨r_ana, hr_ana, hH_ana_ball⟩ :=
+    Metric.eventually_nhds_iff.mp hH_ana.eventually_analyticAt
+  -- (c) Agreement ball: g⁻¹ = H near z₀ (punctured)
+  obtain ⟨r_agr, hr_agr, h_agree_ball⟩ := Metric.eventually_nhds_iff.mp
+    (eventually_nhdsWithin_iff.mp hH_agree)
+  -- (d) Continuity ball: ‖H(z)‖ < δ where δ = (‖c₀‖ + 2)⁻¹
+  set δ := (‖c₀‖ + 2)⁻¹ with hδ_def
+  have hc₀_bound_pos : (0 : ℝ) < ‖c₀‖ + 2 := by linarith [norm_nonneg c₀]
+  have hδ_pos : 0 < δ := inv_pos.mpr hc₀_bound_pos
+  have hH_cont_evt : ∀ᶠ z in nhds z₀, ‖H z‖ < δ := by
+    have h_tend : Tendsto H (nhds z₀) (nhds (0 : ℂ)) := by
+      rw [← hH0]
+      exact hH_ana.continuousAt
+    have h_norm : Tendsto (fun z => ‖H z‖) (nhds z₀) (nhds ‖(0 : ℂ)‖) := h_tend.norm
+    have h_neigh : nhds ‖(0 : ℂ)‖ = nhds (0 : ℝ) := by simp
+    have h_norm0 : Tendsto (fun z => ‖H z‖) (nhds z₀) (nhds (0 : ℝ)) := by
+      simpa [h_neigh] using h_norm
+    exact h_norm0.eventually (Iio_mem_nhds hδ_pos)
+  obtain ⟨r_cont, hr_cont, h_cont⟩ := Metric.eventually_nhds_iff.mp hH_cont_evt
+  -- Step 3: Combine into r ≤ ρ
+  set r := min (min (min r_iso r_ana) (min r_agr r_cont)) ρ with hr_def
+  have hr : 0 < r := lt_min (lt_min (lt_min hr_iso hr_ana) (lt_min hr_agr hr_cont)) hρ
+  have hr_le : r ≤ ρ := min_le_right _ _
+  -- Convenience: ball property extraction
+  have h_in_iso (z : ℂ) (hz : ‖z - z₀‖ < r) : dist z z₀ < r_iso :=
+    lt_of_lt_of_le (by rwa [dist_eq_norm]) (le_trans (min_le_left _ _)
+      (le_trans (min_le_left _ _) (min_le_left _ _)))
+  have h_in_ana (z : ℂ) (hz : ‖z - z₀‖ < r) : dist z z₀ < r_ana :=
+    lt_of_lt_of_le (by rwa [dist_eq_norm]) (le_trans (min_le_left _ _)
+      (le_trans (min_le_left _ _) (min_le_right _ _)))
+  have h_in_agr (z : ℂ) (hz : ‖z - z₀‖ < r) : dist z z₀ < r_agr :=
+    lt_of_lt_of_le (by rwa [dist_eq_norm]) (le_trans (min_le_left _ _)
+      (le_trans (min_le_right _ _) (min_le_left _ _)))
+  have h_in_cont (z : ℂ) (hz : ‖z - z₀‖ < r) : dist z z₀ < r_cont :=
+    lt_of_lt_of_le (by rwa [dist_eq_norm]) (le_trans (min_le_left _ _)
+      (le_trans (min_le_right _ _) (min_le_right _ _)))
+  -- Step 4: Prove the result with S = {z₀}, ε = 1
+  refine ⟨r, hr, hr_le, 1, one_pos, ?_⟩
+  intro c hc
+  refine ⟨{z₀}, ?_, ?_, ?_⟩
+  · -- S ⊆ B(z₀, r)
+    intro z hz; simp only [Finset.mem_singleton] at hz; subst hz; simp [hr]
+  · -- Capture: all support in ball is in S = {z₀}
+    intro z hz hord_ne0 hord_ne_top
+    simp only [Finset.mem_singleton]
+    by_contra hne
+    -- z ≠ z₀ and z ∈ B(z₀, r)
+    have hHz_ne : H z ≠ 0 :=
+      h_iso (h_in_iso z hz) (Set.mem_compl_singleton_iff.mpr hne)
+    have hHz_small : ‖H z‖ < δ := h_cont (h_in_cont z hz)
+    -- g =ᶠ H⁻¹ near z (since z ≠ z₀ and agreement holds on punctured nhds)
+    have hgz : g z = (H z)⁻¹ := by
+      have h_agr := h_agree_ball (h_in_agr z hz) (Set.mem_compl_singleton_iff.mpr hne)
+      calc g z = ((g z)⁻¹)⁻¹ := (inv_inv (g z)).symm
+        _ = (g⁻¹ z)⁻¹ := rfl
+        _ = (H z)⁻¹ := by rw [h_agr]
+    -- |g(z)| = |H(z)|⁻¹ > 1/δ = ‖c₀‖ + 2
+    have hgz_large : ‖c₀‖ + 2 ≤ ‖g z‖ := by
+      rw [hgz, norm_inv]
+      rw [le_inv_comm₀ (by linarith [norm_nonneg c₀] : (0 : ℝ) < ‖c₀‖ + 2)
+        (norm_pos_iff.mpr hHz_ne)]
+      exact le_of_lt hHz_small
+    -- ‖c‖ < ‖g z‖
+    have hgz_ne_c : g z ≠ c := by
+      intro h; rw [h] at hgz_large
+      have : ‖c‖ ≤ ‖c₀‖ + ‖c - c₀‖ := norm_le_norm_add_norm_sub' c c₀
+      linarith
+    -- g is analytic at z (H analytic, H(z) ≠ 0 → H⁻¹ analytic)
+    have hH_ana_z : AnalyticAt ℂ H z := hH_ana_ball (h_in_ana z hz)
+    have hg_eq_near : g =ᶠ[nhds z] fun w => (H w)⁻¹ := by
+      set d := min (r_agr - dist z z₀) (dist z z₀ / 2)
+      have hd_pos : 0 < d :=
+        lt_min (by linarith [h_in_agr z hz]) (half_pos (dist_pos.mpr hne))
+      exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) fun w hw => by
+        have hw_dist : dist w z < d := Metric.mem_ball.mp hw
+        have hw_agr : dist w z₀ < r_agr := by
+          linarith [dist_triangle w z z₀, min_le_left (r_agr - dist z z₀) (dist z z₀ / 2)]
+        have hw_ne : w ≠ z₀ := by
+          intro heq; rw [heq] at hw_dist
+          linarith [min_le_right (r_agr - dist z z₀) (dist z z₀ / 2), dist_comm z z₀,
+            (dist_nonneg : 0 ≤ dist z₀ z)]
+        calc g w = ((g w)⁻¹)⁻¹ := (inv_inv _).symm
+          _ = (g⁻¹ w)⁻¹ := rfl
+          _ = (H w)⁻¹ := by rw [h_agree_ball hw_agr (Set.mem_compl_singleton_iff.mpr hw_ne)]
+    -- meromorphicOrderAt(g - c, z) = meromorphicOrderAt(H⁻¹ - c, z) = 0
+    have h_congr : (fun w => g w - c) =ᶠ[nhdsWithin z {z}ᶜ] (fun w => (H w)⁻¹ - c) :=
+      (hg_eq_near.filter_mono nhdsWithin_le_nhds).mono fun w hw => by
+        show g w - c = (H w)⁻¹ - c; rw [hw]
+    rw [meromorphicOrderAt_congr h_congr] at hord_ne0
+    exact hord_ne0 (meromorphicOrderAt_analytic_sub_const_eq_zero'
+      (hH_ana_z.inv hHz_ne) (show (H z)⁻¹ ≠ c by rwa [← hgz]))
+  · -- Sum: S.sum = chartOrderAt(f - c₀, q).getD 0
+    simp only [Finset.sum_singleton]
+    -- meromorphicOrderAt(g - c, z₀) = meromorphicOrderAt(g, z₀) by pole invariance
+    rw [meromorphicOrderAt_sub_const_at_pole_loc c hpole_z]
+    -- chartOrderAt(f - c₀, q) = chartOrderAt(f, q) by pole invariance
+    rw [show chartOrderAt (RS := RS) (fun x => f x - c₀) q =
+      chartOrderAt (RS := RS) f q from chartOrderAt_sub_const_at_pole c₀ hpole]
+    -- meromorphicOrderAt g z₀ = chartOrderAt f q definitionally
+    rfl
 
 /-- At a non-pole point q where f-c₀ has a zero of positive finite order k,
     the local sum of orders of (chartRep f q - c) in a chart ball is constant (= k)
@@ -1063,7 +1533,302 @@ private theorem zero_local_chart_sum_constant
         S.sum (fun z => (meromorphicOrderAt
           (fun w => chartRep (RS := RS) f q w - c) z).getD 0) =
           (chartOrderAt (RS := RS) (fun x => f x - c₀) q).getD 0 := by
-  sorry
+  letI := RS.topology
+  letI := RS.chartedSpace
+  haveI := RS.isManifold
+  set g := chartRep (RS := RS) f q
+  set z₀ := chartPt (RS := RS) q
+  have hzero_mord_pos : (0 : WithTop ℤ) < meromorphicOrderAt (fun w => g w - c₀) z₀ := by
+    simpa [g, z₀, chartOrderAt, chartRep_sub_const] using hzero
+  have hzero_mord_ne_top : meromorphicOrderAt (fun w => g w - c₀) z₀ ≠ ⊤ := by
+    simpa [g, z₀, chartOrderAt, chartRep_sub_const] using hzero_ne_top
+  set m : ℤ := (meromorphicOrderAt (fun w => g w - c₀) z₀).untop₀ with hm_def
+  have hm_coe : meromorphicOrderAt (fun w => g w - c₀) z₀ = (m : WithTop ℤ) :=
+    (WithTop.coe_untop₀_of_ne_top hzero_mord_ne_top).symm
+  have hm_pos : 0 < m := by
+    have hpos' : (0 : WithTop ℤ) < (m : WithTop ℤ) := by
+      simpa [hm_coe] using hzero_mord_pos
+    exact WithTop.coe_lt_coe.mp hpos'
+  set k : ℕ := m.toNat with hk_def
+  have hk_eq : (k : ℤ) = m := Int.toNat_of_nonneg (le_of_lt hm_pos)
+  have hk_pos : 1 ≤ k := by omega
+  have hzero_mord_eq : meromorphicOrderAt (fun w => g w - c₀) z₀ = (k : ℤ) := by
+    rw [hm_coe, ← hk_eq]
+  obtain ⟨G, hG_ana, hG_agree, _⟩ :=
+    exists_analyticExtension_of_nonneg_order (hf q) hne_top hord_nonneg
+  have h_congr : (fun w => g w - c₀) =ᶠ[nhdsWithin z₀ {z₀}ᶜ] (fun w => G w - c₀) := by
+    filter_upwards [hG_agree] with w hw
+    simpa [g] using congrArg (fun t => t - c₀) hw
+  have hG_sub_mord : meromorphicOrderAt (fun w => G w - c₀) z₀ = (k : ℤ) := by
+    have htmp := hzero_mord_eq
+    rw [meromorphicOrderAt_congr h_congr] at htmp
+    exact htmp
+  have hG_sub_ana : AnalyticAt ℂ (fun w => G w - c₀) z₀ := hG_ana.sub analyticAt_const
+  have hG_sub_aord : analyticOrderAt (fun w => G w - c₀) z₀ = k := by
+    have h := hG_sub_ana.meromorphicOrderAt_eq
+    rw [hG_sub_mord] at h
+    cases hk' : analyticOrderAt (fun w => G w - c₀) z₀ with
+    | top => simp [hk'] at h
+    | coe n => simp [hk'] at h; exact_mod_cast h.symm
+  have hG_sub_zero : (fun w => G w - c₀) z₀ = 0 := by
+    rw [← hG_sub_ana.analyticOrderAt_ne_zero]
+    rw [hG_sub_aord]
+    exact_mod_cast Nat.one_le_iff_ne_zero.mp hk_pos
+  obtain ⟨r_ana, hr_ana_pos, hG_ana_ball⟩ :=
+    Metric.eventually_nhds_iff.mp hG_ana.eventually_analyticAt
+  obtain ⟨r_agr, hr_agr_pos, h_agree_ball⟩ := Metric.eventually_nhds_iff.mp
+    (eventually_nhdsWithin_iff.mp hG_agree)
+  obtain ⟨r, hr_pos, hr_le_bound, ε, hε_pos, h_iso, h_count, h_deriv_ne⟩ :=
+    local_mapping_theorem (h := fun w => G w - c₀) (z₀ := z₀) (k := k)
+      (r_bound := min ρ (min r_ana r_agr))
+      hk_pos hG_sub_ana hG_sub_zero hG_sub_aord (lt_min hρ (lt_min hr_ana_pos hr_agr_pos))
+  have hr_le_ρ : r ≤ ρ := le_trans hr_le_bound (min_le_left _ _)
+  have hr_le_ana : r ≤ r_ana :=
+    le_trans hr_le_bound (le_trans (min_le_right _ _) (min_le_left _ _))
+  have hr_le_agr : r ≤ r_agr :=
+    le_trans hr_le_bound (le_trans (min_le_right _ _) (min_le_right _ _))
+  refine ⟨r, hr_pos, hr_le_ρ, ε, hε_pos, ?_⟩
+  intro c hc
+  by_cases hcc : c = c₀
+  · subst c
+    refine ⟨{z₀}, ?_, ?_, ?_⟩
+    · intro z hz
+      simp only [Finset.mem_singleton] at hz
+      subst hz
+      simpa using hr_pos
+    · intro z hz hord_ne0 hord_ne_top
+      simp only [Finset.mem_singleton]
+      by_contra hne
+      have hG_sub_ne : (G z - c₀) ≠ 0 := h_iso z hz hne
+      have hG_sub_ana_z : AnalyticAt ℂ (fun w => G w - c₀) z :=
+        (hG_ana_ball (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_ana)).sub analyticAt_const
+      have h_eq_near : (fun w => chartRep (RS := RS) f q w - c₀)
+          =ᶠ[nhds z] (fun w => G w - c₀) := by
+        set d : ℝ := min (r_agr - dist z z₀) (dist z z₀ / 2) with hd_def
+        have hd_pos : 0 < d := by
+          have hz_agr : dist z z₀ < r_agr := lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_agr
+          have hz_pos : 0 < dist z z₀ := dist_pos.mpr hne
+          have h1 : 0 < r_agr - dist z z₀ := by linarith
+          have h2 : 0 < dist z z₀ / 2 := by positivity
+          simpa [hd_def] using lt_min h1 h2
+        exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) (fun w hw => by
+          have hw_dist : dist w z < d := Metric.mem_ball.mp hw
+          have hw_agr : dist w z₀ < r_agr := by
+            have hlt : dist w z < r_agr - dist z z₀ := lt_of_lt_of_le hw_dist (min_le_left _ _)
+            linarith [dist_triangle w z z₀]
+          have hw_ne : w ≠ z₀ := by
+            intro hw0
+            subst hw0
+            have : dist z z₀ < dist z z₀ / 2 := by
+              have hw_dist' : dist z z₀ < d := by simpa [dist_comm] using hw_dist
+              exact lt_of_lt_of_le hw_dist' (min_le_right _ _)
+            have hnonneg : 0 ≤ dist z z₀ := dist_nonneg
+            linarith
+          have hw_eq : chartRep (RS := RS) f q w = G w :=
+            h_agree_ball hw_agr (Set.mem_compl_singleton_iff.mpr hw_ne)
+          simpa using congrArg (fun t => t - c₀) hw_eq)
+      have h_congr : (fun w => chartRep (RS := RS) f q w - c₀)
+          =ᶠ[nhdsWithin z {z}ᶜ] (fun w => G w - c₀) :=
+        h_eq_near.filter_mono nhdsWithin_le_nhds
+      have h_ord0 : meromorphicOrderAt (fun w => G w - c₀) z = 0 := by
+        exact (tendsto_ne_zero_iff_meromorphicOrderAt_eq_zero hG_sub_ana_z.meromorphicAt).mp
+          ⟨G z - c₀, hG_sub_ne, hG_sub_ana_z.continuousAt.tendsto.mono_left nhdsWithin_le_nhds⟩
+      rw [meromorphicOrderAt_congr h_congr] at hord_ne0
+      exact (hord_ne0 h_ord0).elim
+    · -- At c = c₀, the singleton sum is exactly chartOrderAt(f-c₀,q).getD 0
+      simp [chartOrderAt, chartRep_sub_const, g, z₀]
+  · set v : ℂ := c - c₀ with hv_def
+    have hv_ne : v ≠ 0 := by simpa [hv_def, sub_eq_zero] using hcc
+    have hv_norm_pos : 0 < ‖v‖ := norm_pos_iff.mpr hv_ne
+    have hv_norm_lt : ‖v‖ < ε := by simpa [hv_def] using hc
+    have h_count_v :
+        {z : ℂ | ‖z - z₀‖ < r ∧ (G z - c₀) = v}.ncard = k :=
+      h_count v hv_norm_pos hv_norm_lt
+    set T : Set ℂ := {z : ℂ | ‖z - z₀‖ < r ∧ (G z - c₀) = v} with hT_def
+    have hT_ncard : T.ncard = k := by simpa [T, hT_def] using h_count_v
+    have hk_pos' : 0 < k := Nat.succ_le_iff.mp hk_pos
+    have hT_finite : T.Finite := Set.finite_of_ncard_pos (by simpa [hT_ncard] using hk_pos')
+    refine ⟨hT_finite.toFinset, ?_, ?_, ?_⟩
+    · intro z hz
+      exact (hT_finite.mem_toFinset.mp hz).1
+    · intro z hz hord_ne0 _hord_ne_top
+      have hz_ne : z ≠ z₀ := by
+        intro hz0
+        subst hz0
+        have hGz0_eq : G z₀ = c₀ := sub_eq_zero.mp hG_sub_zero
+        have hGz0_ne_c : G z₀ ≠ c := by
+          intro hEq
+          exact hcc (calc
+            c = G z₀ := hEq.symm
+            _ = c₀ := hGz0_eq)
+        have h_congr0 : (fun w => g w - c) =ᶠ[nhdsWithin z₀ {z₀}ᶜ] (fun w => G w - c) := by
+          filter_upwards [hG_agree] with w hw
+          simpa [g] using congrArg (fun t => t - c) hw
+        have h_ord0 : meromorphicOrderAt (fun w => g w - c) z₀ = 0 := by
+          rw [meromorphicOrderAt_congr h_congr0]
+          exact meromorphicOrderAt_analytic_sub_const_eq_zero' hG_ana hGz0_ne_c
+        exact (hord_ne0 h_ord0).elim
+      have h_congrz : (fun w => g w - c) =ᶠ[nhdsWithin z {z}ᶜ] (fun w => G w - c) := by
+        have h_eq_nhds : (fun w => g w - c) =ᶠ[nhds z] (fun w => G w - c) := by
+          set d : ℝ := min (r_agr - dist z z₀) (dist z z₀ / 2) with hd_def
+          have hd_pos : 0 < d := by
+            have hz_agr : dist z z₀ < r_agr := lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_agr
+            have hz_pos : 0 < dist z z₀ := dist_pos.mpr hz_ne
+            have h1 : 0 < r_agr - dist z z₀ := by linarith
+            have h2 : 0 < dist z z₀ / 2 := by positivity
+            simpa [hd_def] using lt_min h1 h2
+          exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) (fun w hw => by
+            have hw_dist : dist w z < d := Metric.mem_ball.mp hw
+            have hw_agr : dist w z₀ < r_agr := by
+              have hlt : dist w z < r_agr - dist z z₀ := lt_of_lt_of_le hw_dist (min_le_left _ _)
+              linarith [dist_triangle w z z₀]
+            have hw_ne : w ≠ z₀ := by
+              intro hw0
+              subst hw0
+              have : dist z z₀ < dist z z₀ / 2 := by
+                have hw_dist' : dist z z₀ < d := by simpa [dist_comm] using hw_dist
+                exact lt_of_lt_of_le hw_dist' (min_le_right _ _)
+              have hnonneg : 0 ≤ dist z z₀ := dist_nonneg
+              linarith
+            have hw_eq : chartRep (RS := RS) f q w = G w :=
+              h_agree_ball hw_agr (Set.mem_compl_singleton_iff.mpr hw_ne)
+            simpa [g] using congrArg (fun t => t - c) hw_eq)
+        exact h_eq_nhds.filter_mono nhdsWithin_le_nhds
+      by_contra hnot
+      have hG_ne_c : G z ≠ c := by
+        intro hEq
+        apply hnot
+        have hzT : z ∈ T := by
+          refine ⟨hz, ?_⟩
+          have h_sub : G z - c₀ = c - c₀ := by simpa [hEq]
+          simpa [hv_def] using h_sub
+        exact hT_finite.mem_toFinset.mpr hzT
+      have hG_ana_z : AnalyticAt ℂ G z :=
+        hG_ana_ball (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_ana)
+      have h_ord0G : meromorphicOrderAt (fun w => G w - c) z = 0 :=
+        meromorphicOrderAt_analytic_sub_const_eq_zero' hG_ana_z hG_ne_c
+      have h_ord0 : meromorphicOrderAt (fun w => g w - c) z = 0 := by
+        rw [meromorphicOrderAt_congr h_congrz]
+        exact h_ord0G
+      exact (hord_ne0 h_ord0).elim
+    · -- For c ≠ c₀, each point in T is a simple zero of (g - c); summing gives k.
+      have h_each_one : ∀ z ∈ hT_finite.toFinset,
+          (meromorphicOrderAt (fun w => g w - c) z).getD 0 = 1 := by
+        intro z hz_fin
+        have hzT : z ∈ T := hT_finite.mem_toFinset.mp hz_fin
+        have hz_ball : ‖z - z₀‖ < r := hzT.1
+        have hz_eq_v : G z - c₀ = v := hzT.2
+        have hz_ne : z ≠ z₀ := by
+          intro hz0
+          have hv0 : v = 0 := by
+            subst hz0
+            calc
+              v = G z₀ - c₀ := by simpa using hz_eq_v.symm
+              _ = 0 := hG_sub_zero
+          exact hv_ne hv0
+        have hG_ana_z : AnalyticAt ℂ G z :=
+          hG_ana_ball (lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_ana)
+        have hderiv_sub : deriv (fun w => G w - c) z ≠ 0 := by
+          simpa using (h_deriv_ne z hz_ball hz_ne)
+        have hzero_z : (fun w => G w - c) z = 0 := by
+          have h_sub : G z - c₀ = c - c₀ := by simpa [hv_def] using hz_eq_v
+          have h_add := congrArg (fun t : ℂ => t + c₀) h_sub
+          have hGc : G z = c := by
+            simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using h_add
+          simpa [hGc]
+        have h_ord_G : meromorphicOrderAt (fun w => G w - c) z = 1 :=
+          meromorphicOrderAt_eq_one_of_simple_zero (hG_ana_z.sub analyticAt_const) hzero_z hderiv_sub
+        have h_congrz : (fun w => g w - c) =ᶠ[nhdsWithin z {z}ᶜ] (fun w => G w - c) := by
+          have h_eq_nhds : (fun w => g w - c) =ᶠ[nhds z] (fun w => G w - c) := by
+            set d : ℝ := min (r_agr - dist z z₀) (dist z z₀ / 2) with hd_def
+            have hd_pos : 0 < d := by
+              have hz_agr : dist z z₀ < r_agr := lt_of_lt_of_le (by rwa [dist_eq_norm]) hr_le_agr
+              have hz_pos : 0 < dist z z₀ := dist_pos.mpr hz_ne
+              have h1 : 0 < r_agr - dist z z₀ := by linarith
+              have h2 : 0 < dist z z₀ / 2 := by positivity
+              simpa [hd_def] using lt_min h1 h2
+            exact Filter.eventually_of_mem (Metric.ball_mem_nhds z hd_pos) (fun w hw => by
+              have hw_dist : dist w z < d := Metric.mem_ball.mp hw
+              have hw_agr : dist w z₀ < r_agr := by
+                have hlt : dist w z < r_agr - dist z z₀ := lt_of_lt_of_le hw_dist (min_le_left _ _)
+                linarith [dist_triangle w z z₀]
+              have hw_ne : w ≠ z₀ := by
+                intro hw0
+                subst hw0
+                have : dist z z₀ < dist z z₀ / 2 := by
+                  have hw_dist' : dist z z₀ < d := by simpa [dist_comm] using hw_dist
+                  exact lt_of_lt_of_le hw_dist' (min_le_right _ _)
+                have hnonneg : 0 ≤ dist z z₀ := dist_nonneg
+                linarith
+              have hw_eq : chartRep (RS := RS) f q w = G w :=
+                h_agree_ball hw_agr (Set.mem_compl_singleton_iff.mpr hw_ne)
+              simpa [g] using congrArg (fun t => t - c) hw_eq)
+          exact h_eq_nhds.filter_mono nhdsWithin_le_nhds
+        have h_ord_g : meromorphicOrderAt (fun w => g w - c) z = 1 := by
+          rw [meromorphicOrderAt_congr h_congrz]
+          exact h_ord_G
+        exact congrArg (fun t : WithTop ℤ => t.getD 0) h_ord_g
+      have hsum_T :
+          hT_finite.toFinset.sum (fun z => (meromorphicOrderAt (fun w => g w - c) z).getD 0) = (k : ℤ) := by
+        calc
+          hT_finite.toFinset.sum (fun z => (meromorphicOrderAt (fun w => g w - c) z).getD 0)
+              = hT_finite.toFinset.sum (fun _ => (1 : ℤ)) := by
+                refine Finset.sum_congr rfl ?_
+                intro z hz
+                exact h_each_one z hz
+          _ = (hT_finite.toFinset.card : ℤ) := by simp
+          _ = (k : ℤ) := by
+              have hcard : hT_finite.toFinset.card = k := by
+                calc
+                  hT_finite.toFinset.card = T.ncard := by
+                    symm
+                    exact Set.ncard_eq_toFinset_card T hT_finite
+                  _ = k := hT_ncard
+              exact_mod_cast hcard
+      have h_rhs : (chartOrderAt (RS := RS) (fun x => f x - c₀) q).getD 0 = (k : ℤ) := by
+        have hco : chartOrderAt (RS := RS) (fun x => f x - c₀) q = (k : WithTop ℤ) := by
+          simpa [g, z₀, chartOrderAt, chartRep_sub_const] using hzero_mord_eq
+        exact congrArg (fun t : WithTop ℤ => t.getD 0) hco
+      have hsum_goal :
+          hT_finite.toFinset.sum (fun z => (meromorphicOrderAt (fun w => g w - c) z).getD 0) =
+            (chartOrderAt (RS := RS) (fun x => f x - c₀) q).getD 0 := by
+        calc
+          hT_finite.toFinset.sum (fun z => (meromorphicOrderAt (fun w => g w - c) z).getD 0)
+              = (k : ℤ) := hsum_T
+          _ = (chartOrderAt (RS := RS) (fun x => f x - c₀) q).getD 0 := by
+              simpa using h_rhs.symm
+      simpa [g] using hsum_goal
+
+/-- Unified local constancy datum at a support point of `f - c₀`.
+
+    If `q` is a pole of `f`, use `pole_local_chart_sum_constant`.
+    Otherwise `f` is non-polar at `q`, and support membership of `f - c₀`
+    forces a positive finite order, so `zero_local_chart_sum_constant` applies. -/
+private theorem support_local_chart_sum_constant
+    {f : RS.carrier → ℂ} {q : RS.carrier} (c₀ : ℂ) {ρ : ℝ}
+    (hf : IsChartMeromorphic (RS := RS) f)
+    (hne_top : chartOrderAt (RS := RS) f q ≠ ⊤)
+    (hord_ne_zero : chartOrderAt (RS := RS) (fun x => f x - c₀) q ≠ 0)
+    (hord_ne_top : chartOrderAt (RS := RS) (fun x => f x - c₀) q ≠ ⊤)
+    (hρ : 0 < ρ) :
+    ∃ r > 0, r ≤ ρ ∧ ∃ ε > 0, ∀ c : ℂ, ‖c - c₀‖ < ε →
+      ∃ S : Finset ℂ,
+        (∀ z ∈ S, ‖z - chartPt (RS := RS) q‖ < r) ∧
+        (∀ z, ‖z - chartPt (RS := RS) q‖ < r →
+          meromorphicOrderAt (fun w => chartRep (RS := RS) f q w - c) z ≠ 0 →
+          meromorphicOrderAt (fun w => chartRep (RS := RS) f q w - c) z ≠ ⊤ →
+          z ∈ S) ∧
+        S.sum (fun z => (meromorphicOrderAt
+          (fun w => chartRep (RS := RS) f q w - c) z).getD 0) =
+          (chartOrderAt (RS := RS) (fun x => f x - c₀) q).getD 0 := by
+  by_cases hpole : chartOrderAt (RS := RS) f q < 0
+  · exact pole_local_chart_sum_constant (RS := RS) c₀ hf hpole hρ
+  · have hnonneg_f : (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) f q := le_of_not_gt hpole
+    have hnonneg_sub : (0 : WithTop ℤ) ≤ chartOrderAt (RS := RS) (fun x => f x - c₀) q :=
+      (chartOrderAt_sub_const_nonneg_iff (RS := RS) (f := f) (p := q) c₀).2 hnonneg_f
+    have hpos_sub : (0 : WithTop ℤ) < chartOrderAt (RS := RS) (fun x => f x - c₀) q :=
+      lt_of_le_of_ne hnonneg_sub (by simpa using hord_ne_zero.symm)
+    exact zero_local_chart_sum_constant (RS := RS) c₀ hf hne_top hnonneg_f hpos_sub hord_ne_top hρ
 
 /-- chartOrderSum(f - c) is locally constant as a function of c ∈ ℂ.
 
@@ -1080,7 +1845,697 @@ theorem chartOrderSum_locally_constant (CRS : CompactRiemannSurface)
       chartOrderSum CRS (fun x => f x - c)
         (chartMeromorphic_sub_const c hf)
         (chartOrderSupport_sub_const_finite CRS f c hf)) := by
-  sorry
+  letI := CRS.toRiemannSurface.topology
+  letI := CRS.toRiemannSurface.chartedSpace
+  haveI := CRS.toRiemannSurface.isManifold
+  haveI := CRS.toRiemannSurface.t2
+  haveI : CompactSpace CRS.toRiemannSurface.carrier := CRS.compact
+  rw [IsLocallyConstant.iff_eventually_eq]
+  intro c₀
+  set f₀ : CRS.toRiemannSurface.carrier → ℂ := fun x => f x - c₀
+  have hf₀ : IsChartMeromorphic (RS := CRS.toRiemannSurface) f₀ := by
+    simpa [f₀] using chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₀ hf
+  have hsupp₀ : (chartOrderSupport (RS := CRS.toRiemannSurface) f₀).Finite := by
+    simpa [f₀] using chartOrderSupport_sub_const_finite CRS f c₀ hf
+  obtain ⟨U, hU_mem_open, hU_disj⟩ := hsupp₀.t2_separation
+  have hlocal :
+      ∀ q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀,
+        ∃ r > 0, r ≤ 1 ∧
+          (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r →
+            z ∈ (extChartAt 𝓘(ℂ, ℂ) q).target ∧
+            (extChartAt 𝓘(ℂ, ℂ) q).symm z ∈ U q) ∧
+          ∃ ε > 0, ∀ c : ℂ, ‖c - c₀‖ < ε →
+          ∃ S : Finset ℂ,
+            (∀ z ∈ S, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r) ∧
+            (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r →
+              meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ 0 →
+              meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ ⊤ →
+              z ∈ S) ∧
+            S.sum (fun z => (meromorphicOrderAt
+              (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z).getD 0) =
+              (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0 := by
+    intro q hq
+    set e_q := extChartAt 𝓘(ℂ, ℂ) q
+    have hU_nhds : U q ∈ @nhds _ CRS.toRiemannSurface.topology q :=
+      (hU_mem_open q).2.mem_nhds (hU_mem_open q).1
+    have hpreU : e_q.symm ⁻¹' U q ∈ nhds (chartPt (RS := CRS.toRiemannSurface) q) := by
+      have hU_nhds' : U q ∈ nhds (e_q.symm (chartPt (RS := CRS.toRiemannSurface) q)) := by
+        simpa [e_q, chartPt] using hU_nhds
+      exact (continuousAt_extChartAt_symm (I := 𝓘(ℂ, ℂ)) q).preimage_mem_nhds hU_nhds'
+    have htgt_nhds : e_q.target ∈ nhds (chartPt (RS := CRS.toRiemannSurface) q) := by
+      simpa [e_q, chartPt] using extChartAt_target_mem_nhds (I := 𝓘(ℂ, ℂ)) q
+    obtain ⟨ρq, hρq_pos, hρq_sub⟩ := Metric.nhds_basis_ball.mem_iff.mp
+      (Filter.inter_mem htgt_nhds hpreU)
+    set ρ : ℝ := min 1 ρq with hρ_def
+    have hρ_pos : 0 < ρ := by
+      exact lt_min zero_lt_one hρq_pos
+    obtain ⟨r, hr_pos, hr_le_ρ, ε, hε_pos, hloc⟩ :=
+      support_local_chart_sum_constant (RS := CRS.toRiemannSurface) c₀
+        (hf := hf) (q := q) (hne_top q) hq.1 hq.2 hρ_pos
+    refine ⟨r, hr_pos, le_trans hr_le_ρ (min_le_left _ _), ?_, ε, hε_pos, hloc⟩
+    intro z hz
+    have hzρq : ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < ρq := by
+      exact lt_of_lt_of_le hz (le_trans hr_le_ρ (min_le_right _ _))
+    have hz_ball : z ∈ Metric.ball (chartPt (RS := CRS.toRiemannSurface) q) ρq := by
+      simpa [Metric.mem_ball, dist_eq_norm] using hzρq
+    exact hρq_sub hz_ball
+  by_cases htop₀ : ∀ q, chartOrderAt (RS := CRS.toRiemannSurface) f₀ q = ⊤
+  · -- Degenerate branch: `f - c₀` is locally zero everywhere.
+    -- Then `chartOrderSum(f-c)` vanishes for every `c`.
+    have hsum_zero :
+        ∀ c : ℂ,
+          chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf) = 0 := by
+      intro c
+      by_cases hc : c = c₀
+      · subst c
+        have hsupp_empty : chartOrderSupport (RS := CRS.toRiemannSurface) f₀ = ∅ := by
+          ext q
+          simp [chartOrderSupport, htop₀ q]
+        have hsupp_empty' :
+            chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c₀) = ∅ := by
+          simpa [f₀] using hsupp_empty
+        simp only [chartOrderSum]
+        rw [show (chartOrderSupport_sub_const_finite CRS f c₀ hf).toFinset = ∅ from by
+              rw [← Finset.val_eq_zero]
+              ext q
+              simp [hsupp_empty']]
+        simp
+      · set d : ℂ := c - c₀ with hd_def
+        have hd_ne : d ≠ 0 := by simpa [d, hd_def, sub_eq_zero] using hc
+        have hfun : ∀ x, f x - c = f₀ x - d := by
+          intro x
+          simp [f₀, d]
+        have hord_zero_aux :
+            ∀ q, chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f₀ x - d) q = 0 := by
+          intro q
+          simp only [chartOrderAt, chartRep_sub_const]
+          have hrep : (fun z => chartRep (RS := CRS.toRiemannSurface) f₀ q z - d) =
+              (fun _ => -d) + chartRep (RS := CRS.toRiemannSurface) f₀ q := by
+            ext z
+            simp [Pi.add_apply, sub_eq_add_neg, add_comm]
+          rw [hrep]
+          have htop_chart :
+              meromorphicOrderAt (chartRep (RS := CRS.toRiemannSurface) f₀ q)
+                (chartPt (RS := CRS.toRiemannSurface) q) = ⊤ := by
+            simpa [chartOrderAt] using htop₀ q
+          have hlt :
+              meromorphicOrderAt (fun _ : ℂ => -d) (chartPt (RS := CRS.toRiemannSurface) q) <
+                meromorphicOrderAt (chartRep (RS := CRS.toRiemannSurface) f₀ q)
+                  (chartPt (RS := CRS.toRiemannSurface) q) := by
+            have hconst0 :
+                meromorphicOrderAt (fun _ : ℂ => -d) (chartPt (RS := CRS.toRiemannSurface) q) = 0 := by
+              rw [meromorphicOrderAt_const]
+              simp [hd_ne]
+            rw [hconst0, htop_chart]
+            have h0top : ((0 : WithTop ℤ) < (⊤ : WithTop ℤ)) := by
+              exact lt_top_iff_ne_top.mpr (by simp)
+            exact h0top
+          rw [meromorphicOrderAt_add_eq_left_of_lt (hf₀ q) hlt, meromorphicOrderAt_const]
+          simp [hd_ne]
+        have hord_zero :
+            ∀ q, chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) q = 0 := by
+          intro q
+          rw [chartOrderAt_congr' (RS := CRS.toRiemannSurface) (f := fun x => f x - c)
+            (g := fun x => f₀ x - d) hfun q]
+          exact hord_zero_aux q
+        have hsupp_empty_c :
+            chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) = ∅ := by
+          ext q
+          simp [chartOrderSupport, hord_zero q]
+        simp only [chartOrderSum]
+        rw [show (chartOrderSupport_sub_const_finite CRS f c hf).toFinset = ∅ from by
+              rw [← Finset.val_eq_zero]
+              ext q
+              simp [hsupp_empty_c]]
+        simp
+    exact Filter.Eventually.of_forall (fun c => by
+      rw [hsum_zero c, hsum_zero c₀])
+  · push_neg at htop₀
+    obtain ⟨q₁, hq₁_ne_top⟩ := htop₀
+    have hne_top₀ : ∀ q, chartOrderAt (RS := CRS.toRiemannSurface) f₀ q ≠ ⊤ := by
+      intro q
+      exact chartOrderAt_ne_top_of_ne_top_somewhere (RS := CRS.toRiemannSurface)
+        f₀ hf₀ q₁ hq₁_ne_top q
+    set K : Set CRS.toRiemannSurface.carrier :=
+      (⋃ q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀, U q)ᶜ with hK_def
+    have hK_compact : @IsCompact _ CRS.toRiemannSurface.topology K := by
+      have h_union_open :
+          IsOpen (⋃ q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀, U q) := by
+        refine isOpen_iUnion ?_
+        intro q
+        refine isOpen_iUnion ?_
+        intro _hq
+        exact (hU_mem_open q).2
+      have hK_closed : IsClosed K := by
+        simpa [K, hK_def] using h_union_open.isClosed_compl
+      exact hK_closed.isCompact
+    have hK_no_support :
+        ∀ q ∈ K, chartOrderAt (RS := CRS.toRiemannSurface) f₀ q = 0 := by
+      intro q hqK
+      have hq_not_union : q ∉ ⋃ q' ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀, U q' := by
+        simpa [K, hK_def] using hqK
+      have hq_not_supp : q ∉ chartOrderSupport (RS := CRS.toRiemannSurface) f₀ := by
+        intro hq_supp
+        exact hq_not_union (Set.mem_iUnion₂.mpr ⟨q, hq_supp, (hU_mem_open q).1⟩)
+      have hnot :
+          ¬ (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q ≠ 0 ∧
+            chartOrderAt (RS := CRS.toRiemannSurface) f₀ q ≠ ⊤) := by
+        simpa [chartOrderSupport] using hq_not_supp
+      by_cases hq0 : chartOrderAt (RS := CRS.toRiemannSurface) f₀ q = 0
+      · exact hq0
+      · have hq_top : chartOrderAt (RS := CRS.toRiemannSurface) f₀ q = ⊤ := by
+          by_contra hq_ne_top
+          exact hnot ⟨hq0, hq_ne_top⟩
+        exact (hne_top₀ q hq_top).elim
+    have hK_no_pole :
+        ∀ q ∈ K, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f q := by
+      intro q hqK
+      have hnonneg_sub : (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f₀ q := by
+        simpa [hK_no_support q hqK]
+      exact (chartOrderAt_sub_const_nonneg_iff (RS := CRS.toRiemannSurface)
+        (f := f) (p := q) c₀).1 hnonneg_sub
+    obtain ⟨εK, hεK_pos, hεK⟩ :=
+      no_support_on_compact_near_c₀ CRS f hf hne_top c₀ K hK_compact hK_no_pole hK_no_support
+    have hsupport_subset :
+        ∀ c : ℂ, ‖c - c₀‖ < εK →
+          chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) ⊆
+            ⋃ q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀, U q := by
+      intro c hc p hp
+      by_contra hp_not_union
+      have hpK : p ∈ K := by
+        simpa [K, hK_def] using hp_not_union
+      have hord0 : chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p = 0 :=
+        hεK c hc p hpK
+      exact hp.1 hord0
+    by_cases hsupp₀_empty : chartOrderSupport (RS := CRS.toRiemannSurface) f₀ = ∅
+    · have hsum_c₀ :
+          chartOrderSum CRS (fun x => f x - c₀)
+            (chartMeromorphic_sub_const c₀ hf)
+            (chartOrderSupport_sub_const_finite CRS f c₀ hf) = 0 := by
+        simp only [chartOrderSum]
+        rw [show (chartOrderSupport_sub_const_finite CRS f c₀ hf).toFinset = ∅ from by
+              rw [← Finset.val_eq_zero]
+              ext q
+              simp [f₀, hsupp₀_empty]]
+        simp
+      refine Filter.mem_of_superset (Metric.ball_mem_nhds c₀ hεK_pos) ?_
+      intro c hcball
+      have hc : ‖c - c₀‖ < εK := by simpa [dist_eq_norm] using hcball
+      have hsupp_empty_c :
+          chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) = ∅ := by
+        ext p
+        constructor
+        · intro hp
+          have hp_union : p ∈ ⋃ q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀, U q :=
+            hsupport_subset c hc hp
+          simpa [hsupp₀_empty] using hp_union
+        · intro hp
+          simpa using hp
+      have hsum_c :
+          chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf) = 0 := by
+        simp only [chartOrderSum]
+        rw [show (chartOrderSupport_sub_const_finite CRS f c hf).toFinset = ∅ from by
+              rw [← Finset.val_eq_zero]
+              ext q
+              simp [hsupp_empty_c]]
+        simp
+      simpa [hsum_c, hsum_c₀]
+    have hsupp₀_nonempty : (chartOrderSupport (RS := CRS.toRiemannSurface) f₀).Nonempty :=
+      Set.nonempty_iff_ne_empty.mpr hsupp₀_empty
+    set s₀ : Finset CRS.toRiemannSurface.carrier := hsupp₀.toFinset with hs₀_def
+    have hs₀_nonempty : s₀.Nonempty := by
+      obtain ⟨q, hq⟩ := hsupp₀_nonempty
+      exact ⟨q, by simpa [s₀, hs₀_def] using hsupp₀.mem_toFinset.mpr hq⟩
+    have hlocal_fin :
+        ∀ q ∈ s₀,
+          ∃ r > 0, r ≤ 1 ∧
+            (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r →
+              z ∈ (extChartAt 𝓘(ℂ, ℂ) q).target ∧
+              (extChartAt 𝓘(ℂ, ℂ) q).symm z ∈ U q) ∧
+            ∃ ε > 0, ∀ c : ℂ, ‖c - c₀‖ < ε →
+            ∃ S : Finset ℂ,
+              (∀ z ∈ S, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r) ∧
+              (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r →
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ 0 →
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ ⊤ →
+                z ∈ S) ∧
+              S.sum (fun z => (meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z).getD 0) =
+                (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0 := by
+      intro q hq
+      exact hlocal q (by simpa [s₀, hs₀_def] using hsupp₀.mem_toFinset.mp hq)
+    choose r hr_pos hr_le_one hr_chart ε hε_pos hloc using hlocal_fin
+    set t₀ : Finset {q // q ∈ s₀} := s₀.attach with ht₀_def
+    have ht₀_nonempty : t₀.Nonempty := by
+      simpa [t₀, ht₀_def] using hs₀_nonempty.attach
+    set eFun : {q // q ∈ s₀} → ℝ := fun q => ε q.1 q.2 with heFun_def
+    set ε₀ : ℝ := min εK (t₀.inf' ht₀_nonempty eFun) with hε₀_def
+    have hε_inf_pos : 0 < t₀.inf' ht₀_nonempty eFun :=
+      Finset.inf'_induction ht₀_nonempty eFun
+        (fun _ h₁ _ h₂ => lt_min h₁ h₂) (fun q hq => by
+          exact hε_pos q.1 q.2)
+    have hε₀_pos : 0 < ε₀ := by
+      exact lt_min hεK_pos hε_inf_pos
+    have hlocal_at :
+        ∀ c : ℂ, ‖c - c₀‖ < ε₀ →
+          ∀ q, ∀ hq : q ∈ s₀,
+            ∃ S : Finset ℂ,
+              (∀ z ∈ S, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r q hq) ∧
+              (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r q hq →
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ 0 →
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ ⊤ →
+                z ∈ S) ∧
+              S.sum (fun z => (meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z).getD 0) =
+                (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0 := by
+      intro c hc q hq
+      have hcεq : ‖c - c₀‖ < ε q hq := by
+        have hq_attach : (⟨q, hq⟩ : {q // q ∈ s₀}) ∈ t₀ := by
+          simpa [t₀, ht₀_def]
+        have hc_inf : ‖c - c₀‖ < t₀.inf' ht₀_nonempty eFun :=
+          lt_of_lt_of_le hc (min_le_right _ _)
+        have hle : t₀.inf' ht₀_nonempty eFun ≤ eFun ⟨q, hq⟩ := Finset.inf'_le eFun hq_attach
+        exact lt_of_lt_of_le hc_inf (by simpa [eFun, heFun_def] using hle)
+      exact hloc q hq c hcεq
+    set W : Set CRS.toRiemannSurface.carrier :=
+      ⋃ q : CRS.toRiemannSurface.carrier, ⋃ hq : q ∈ s₀,
+        U q ∩ ((extChartAt 𝓘(ℂ, ℂ) q).source ∩
+          (extChartAt 𝓘(ℂ, ℂ) q) ⁻¹'
+            Metric.ball (chartPt (RS := CRS.toRiemannSurface) q) (r q hq))
+      with hW_def
+    set KW : Set CRS.toRiemannSurface.carrier := Wᶜ with hKW_def
+    have hW_open : IsOpen W := by
+      refine isOpen_iUnion ?_
+      intro q
+      refine isOpen_iUnion ?_
+      intro hq
+      have hchart_open :
+          IsOpen
+            ((extChartAt 𝓘(ℂ, ℂ) q).source ∩
+              (extChartAt 𝓘(ℂ, ℂ) q) ⁻¹'
+                Metric.ball (chartPt (RS := CRS.toRiemannSurface) q) (r q hq)) :=
+        (continuousOn_extChartAt q).isOpen_inter_preimage
+          (isOpen_extChartAt_source (I := 𝓘(ℂ, ℂ)) q) Metric.isOpen_ball
+      exact (hU_mem_open q).2.inter hchart_open
+    have hKW_compact : @IsCompact _ CRS.toRiemannSurface.topology KW := by
+      have hKW_closed : IsClosed KW := by
+        simpa [KW, hKW_def] using hW_open.isClosed_compl
+      exact hKW_closed.isCompact
+    have hKW_no_support :
+        ∀ p ∈ KW, chartOrderAt (RS := CRS.toRiemannSurface) f₀ p = 0 := by
+      intro p hpKW
+      have hp_not_W : p ∉ W := by simpa [KW, hKW_def] using hpKW
+      have hp_not_supp :
+          p ∉ chartOrderSupport (RS := CRS.toRiemannSurface) f₀ := by
+        intro hp_supp
+        have hp_s₀ : p ∈ s₀ := by
+          simpa [s₀, hs₀_def] using hsupp₀.mem_toFinset.mpr hp_supp
+        have hpW : p ∈ W := by
+          refine Set.mem_iUnion₂.mpr ⟨p, hp_s₀, ?_⟩
+          refine ⟨(hU_mem_open p).1, ?_⟩
+          refine ⟨mem_extChartAt_source (I := 𝓘(ℂ, ℂ)) p, ?_⟩
+          have hpball :
+              extChartAt 𝓘(ℂ, ℂ) p p ∈
+                Metric.ball (chartPt (RS := CRS.toRiemannSurface) p) (r p hp_s₀) := by
+            change dist (extChartAt 𝓘(ℂ, ℂ) p p)
+                (chartPt (RS := CRS.toRiemannSurface) p) < r p hp_s₀
+            simpa [chartPt] using hr_pos p hp_s₀
+          exact hpball
+        exact hp_not_W hpW
+      have hnot :
+          ¬ (chartOrderAt (RS := CRS.toRiemannSurface) f₀ p ≠ 0 ∧
+            chartOrderAt (RS := CRS.toRiemannSurface) f₀ p ≠ ⊤) := by
+        simpa [chartOrderSupport] using hp_not_supp
+      by_cases hp0 : chartOrderAt (RS := CRS.toRiemannSurface) f₀ p = 0
+      · exact hp0
+      · have hp_top : chartOrderAt (RS := CRS.toRiemannSurface) f₀ p = ⊤ := by
+          by_contra hp_ne_top
+          exact hnot ⟨hp0, hp_ne_top⟩
+        exact (hne_top₀ p hp_top).elim
+    have hKW_no_pole :
+        ∀ p ∈ KW, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p := by
+      intro p hpKW
+      have hnonneg_sub : (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f₀ p := by
+        simpa [hKW_no_support p hpKW]
+      exact (chartOrderAt_sub_const_nonneg_iff (RS := CRS.toRiemannSurface)
+        (f := f) (p := p) c₀).1 hnonneg_sub
+    obtain ⟨εW, hεW_pos, hεW⟩ :=
+      no_support_on_compact_near_c₀ CRS f hf hne_top c₀ KW hKW_compact hKW_no_pole hKW_no_support
+    set ε₁ : ℝ := min ε₀ εW with hε₁_def
+    have hε₁_pos : 0 < ε₁ := lt_min hε₀_pos hεW_pos
+    refine Filter.mem_of_superset (Metric.ball_mem_nhds c₀ hε₁_pos) ?_
+    intro c hcball
+    have hc : ‖c - c₀‖ < ε₁ := by simpa [dist_eq_norm] using hcball
+    have hc₀ : ‖c - c₀‖ < ε₀ := lt_of_lt_of_le hc (min_le_left _ _)
+    have hcW : ‖c - c₀‖ < εW := lt_of_lt_of_le hc (min_le_right _ _)
+    have hsupp_subset_W :
+        chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) ⊆ W := by
+      intro p hp
+      by_contra hp_not_W
+      have hpKW : p ∈ KW := by simpa [KW, hKW_def] using hp_not_W
+      have hord0 : chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p = 0 :=
+        hεW c hcW p hpKW
+      exact hp.1 hord0
+    have hlocal_c :
+        ∀ q, ∀ hq : q ∈ s₀,
+          ∃ S : Finset ℂ,
+            (∀ z ∈ S, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r q hq) ∧
+            (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) q‖ < r q hq →
+              meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ 0 →
+              meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z ≠ ⊤ →
+              z ∈ S) ∧
+            S.sum (fun z => (meromorphicOrderAt
+              (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c) z).getD 0) =
+              (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0 :=
+      hlocal_at c hc₀
+    choose Sc hSc_ball hSc_cap hSc_sum using hlocal_c
+    have hsupp_owner :
+        ∀ p ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c),
+          ∃ q, ∃ hq : q ∈ s₀,
+            p ∈ U q ∧
+            p ∈ (extChartAt 𝓘(ℂ, ℂ) q).source ∧
+            extChartAt 𝓘(ℂ, ℂ) q p ∈
+              Metric.ball (chartPt (RS := CRS.toRiemannSurface) q) (r q hq) := by
+      intro p hp
+      have hpW : p ∈ W := hsupp_subset_W hp
+      rcases Set.mem_iUnion₂.mp hpW with ⟨q, hq, hpq⟩
+      rcases hpq with ⟨hpU, hpRest⟩
+      rcases hpRest with ⟨hpSrc, hpBall⟩
+      exact ⟨q, hq, hpU, hpSrc, hpBall⟩
+    have hsupp_owner_unique :
+        ∀ p q₁ q₂, q₁ ∈ s₀ → q₂ ∈ s₀ → p ∈ U q₁ → p ∈ U q₂ → q₁ = q₂ := by
+      intro p q₁ q₂ hq₁ hq₂ hpU₁ hpU₂
+      have hq₁_supp : q₁ ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀ := by
+        simpa [s₀, hs₀_def] using hsupp₀.mem_toFinset.mp hq₁
+      have hq₂_supp : q₂ ∈ chartOrderSupport (RS := CRS.toRiemannSurface) f₀ := by
+        simpa [s₀, hs₀_def] using hsupp₀.mem_toFinset.mp hq₂
+      have hnot_disj : ¬ Disjoint (U q₁) (U q₂) := by
+        exact Set.not_disjoint_iff.mpr ⟨p, hpU₁, hpU₂⟩
+      exact Set.PairwiseDisjoint.elim hU_disj hq₁_supp hq₂_supp hnot_disj
+    have hsupp_point_mem_Sc :
+        ∀ p ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c),
+          ∃ q, ∃ hq : q ∈ s₀,
+            p ∈ U q ∧
+            p ∈ (extChartAt 𝓘(ℂ, ℂ) q).source ∧
+            extChartAt 𝓘(ℂ, ℂ) q p ∈ Sc q hq := by
+      intro p hp
+      rcases hsupp_owner p hp with ⟨q, hq, hpU, hpSrc, hpBall⟩
+      have hpEChart : p ∈ (eChart q).source := by
+        change p ∈ (extChartAt 𝓘(ℂ, ℂ) q).source
+        simpa using hpSrc
+      have horder_eq :
+          chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p =
+            meromorphicOrderAt
+              (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c)
+              (extChartAt 𝓘(ℂ, ℂ) q p) := by
+        rw [chartOrderAt_eq_in_chart (RS := CRS.toRiemannSurface) (fun x => f x - c) q p
+          (chartMeromorphic_sub_const c hf) hpEChart, chartRep_sub_const]
+      have hchart_ne0 :
+          meromorphicOrderAt
+            (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c)
+            (extChartAt 𝓘(ℂ, ℂ) q p) ≠ 0 := by
+        intro h0
+        exact hp.1 (horder_eq.trans h0)
+      have hchart_ne_top :
+          meromorphicOrderAt
+            (fun w => chartRep (RS := CRS.toRiemannSurface) f q w - c)
+            (extChartAt 𝓘(ℂ, ℂ) q p) ≠ ⊤ := by
+        intro htop
+        exact hp.2 (horder_eq.trans htop)
+      have hpNorm :
+          ‖extChartAt 𝓘(ℂ, ℂ) q p - chartPt (RS := CRS.toRiemannSurface) q‖ < r q hq := by
+        simpa [dist_eq_norm] using Metric.mem_ball.mp hpBall
+      refine ⟨q, hq, hpU, hpSrc, ?_⟩
+      exact hSc_cap q hq (extChartAt 𝓘(ℂ, ℂ) q p) hpNorm hchart_ne0 hchart_ne_top
+    have hsupp0_finset_eq_s₀ :
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf).toFinset = s₀ := by
+      ext p
+      simp [s₀, hs₀_def, f₀]
+    have hsum_c₀_as_s₀ :
+        chartOrderSum CRS (fun x => f x - c₀)
+          (chartMeromorphic_sub_const c₀ hf)
+          (chartOrderSupport_sub_const_finite CRS f c₀ hf) =
+          s₀.sum (fun q =>
+            (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0) := by
+      simp [chartOrderSum, hsupp0_finset_eq_s₀, f₀]
+    have hsum_locals :
+        s₀.sum (fun q =>
+          (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0) =
+          (s₀.attach).sum (fun q =>
+            (Sc q.1 q.2).sum (fun z =>
+              (meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) := by
+      calc
+        s₀.sum (fun q => (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0)
+            = (s₀.attach).sum (fun q =>
+                (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q.1).getD 0) := by
+                  symm
+                  exact Finset.sum_attach s₀
+                    (fun q => (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0)
+        _ = (s₀.attach).sum (fun q =>
+              (Sc q.1 q.2).sum (fun z =>
+                (meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) := by
+              refine Finset.sum_congr rfl ?_
+              intro q hq
+              simpa using (hSc_sum q.1 q.2).symm
+    have hsum_c_as_locals :
+        chartOrderSum CRS (fun x => f x - c)
+          (chartMeromorphic_sub_const c hf)
+          (chartOrderSupport_sub_const_finite CRS f c hf) =
+          (s₀.attach).sum (fun q =>
+            (Sc q.1 q.2).sum (fun z =>
+              (meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) := by
+      set suppc : Finset CRS.toRiemannSurface.carrier :=
+        (chartOrderSupport_sub_const_finite CRS f c hf).toFinset with hsuppc_def
+      set F : CRS.toRiemannSurface.carrier → ℤ := fun p =>
+        (chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p).getD 0 with hF_def
+      have hsum_def :
+          chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf) = suppc.sum F := by
+        simp [chartOrderSum, suppc, F]
+      set Tsub : {q // q ∈ s₀} → Finset CRS.toRiemannSurface.carrier :=
+        fun q => suppc.filter (fun p => p ∈ U q.1) with hTsub_def
+      have hTsub_disj : (↑t₀ : Set {q // q ∈ s₀}).PairwiseDisjoint Tsub := by
+        intro q₁ hq₁ q₂ hq₂ hne
+        refine Finset.disjoint_left.2 ?_
+        intro p hp₁ hp₂
+        have hpU₁ : p ∈ U q₁.1 := (Finset.mem_filter.mp hp₁).2
+        have hpU₂ : p ∈ U q₂.1 := (Finset.mem_filter.mp hp₂).2
+        have hqeq : q₁.1 = q₂.1 := hsupp_owner_unique p q₁.1 q₂.1 q₁.2 q₂.2 hpU₁ hpU₂
+        exact hne (Subtype.ext hqeq)
+      have hsuppc_eq_biUnion : suppc = t₀.biUnion Tsub := by
+        ext p
+        constructor
+        · intro hp
+          have hp_supp :
+              p ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) := by
+            simpa [suppc, hsuppc_def] using
+              (chartOrderSupport_sub_const_finite CRS f c hf).mem_toFinset.mp hp
+          rcases hsupp_owner p hp_supp with ⟨q, hq, hpU, _hpSrc, _hpBall⟩
+          have hq_t₀ : (⟨q, hq⟩ : {q // q ∈ s₀}) ∈ t₀ := by
+            simpa [t₀, ht₀_def]
+          refine Finset.mem_biUnion.mpr ⟨⟨q, hq⟩, hq_t₀, ?_⟩
+          exact Finset.mem_filter.mpr ⟨hp, hpU⟩
+        · intro hp
+          rcases Finset.mem_biUnion.mp hp with ⟨q, _hq_t₀, hpT⟩
+          exact (Finset.mem_filter.mp hpT).1
+      have hsum_partition :
+          suppc.sum F = t₀.sum (fun q => (Tsub q).sum F) := by
+        rw [hsuppc_eq_biUnion]
+        simpa using (Finset.sum_biUnion hTsub_disj)
+      have hTsub_mem_source :
+          ∀ q : {q // q ∈ s₀}, ∀ p ∈ Tsub q,
+            p ∈ (extChartAt 𝓘(ℂ, ℂ) q.1).source := by
+        intro q p hpT
+        have hp_in_suppc : p ∈ suppc := (Finset.mem_filter.mp hpT).1
+        have hpUq : p ∈ U q.1 := (Finset.mem_filter.mp hpT).2
+        have hp_supp :
+            p ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) := by
+          simpa [suppc, hsuppc_def] using
+            (chartOrderSupport_sub_const_finite CRS f c hf).mem_toFinset.mp hp_in_suppc
+        rcases hsupp_owner p hp_supp with ⟨q₀, hq₀, hpU₀, hpSrc₀, _hpBall₀⟩
+        have hqeq : q.1 = q₀ := hsupp_owner_unique p q.1 q₀ q.2 hq₀ hpUq hpU₀
+        subst hqeq
+        simpa using hpSrc₀
+      set Gsub : {q // q ∈ s₀} → ℂ → ℤ := fun q z =>
+        (meromorphicOrderAt
+          (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0 with hGsub_def
+      have hF_eq_Gsub :
+          ∀ q : {q // q ∈ s₀}, ∀ p ∈ Tsub q,
+            F p = Gsub q (extChartAt 𝓘(ℂ, ℂ) q.1 p) := by
+        intro q p hpT
+        unfold F Gsub
+        have hpSrc : p ∈ (extChartAt 𝓘(ℂ, ℂ) q.1).source := hTsub_mem_source q p hpT
+        have hpEChart : p ∈ (eChart q.1).source := by
+          change p ∈ (extChartAt 𝓘(ℂ, ℂ) q.1).source
+          simpa using hpSrc
+        rw [chartOrderAt_eq_in_chart (RS := CRS.toRiemannSurface) (fun x => f x - c) q.1 p
+          (chartMeromorphic_sub_const c hf) hpEChart, chartRep_sub_const]
+      have hTsub_sum_image :
+          ∀ q : {q // q ∈ s₀},
+            (Tsub q).sum F =
+              ((Tsub q).image (fun p => extChartAt 𝓘(ℂ, ℂ) q.1 p)).sum (Gsub q) := by
+        intro q
+        have hsum_rewrite :
+            (Tsub q).sum F = (Tsub q).sum (fun p => Gsub q (extChartAt 𝓘(ℂ, ℂ) q.1 p)) := by
+          refine Finset.sum_congr rfl ?_
+          intro p hpT
+          exact hF_eq_Gsub q p hpT
+        rw [hsum_rewrite]
+        symm
+        refine Finset.sum_image ?_
+        intro p₁ hp₁ p₂ hp₂ heq
+        exact (extChartAt 𝓘(ℂ, ℂ) q.1).injOn
+          (hTsub_mem_source q p₁ hp₁) (hTsub_mem_source q p₂ hp₂) heq
+      set Iq : {q // q ∈ s₀} → Finset ℂ := fun q =>
+        (Tsub q).image (fun p => extChartAt 𝓘(ℂ, ℂ) q.1 p) with hIq_def
+      have hIq_subset_Sc :
+          ∀ q : {q // q ∈ s₀}, ∀ z ∈ Iq q, z ∈ Sc q.1 q.2 := by
+        intro q z hzIq
+        rcases Finset.mem_image.mp (by simpa [Iq, hIq_def] using hzIq) with ⟨p, hpT, rfl⟩
+        have hp_in_suppc : p ∈ suppc := (Finset.mem_filter.mp hpT).1
+        have hpUq : p ∈ U q.1 := (Finset.mem_filter.mp hpT).2
+        have hp_supp :
+            p ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) := by
+          simpa [suppc, hsuppc_def] using
+            (chartOrderSupport_sub_const_finite CRS f c hf).mem_toFinset.mp hp_in_suppc
+        rcases hsupp_point_mem_Sc p hp_supp with ⟨q₀, hq₀, hpU₀, _hpSrc₀, hzSc₀⟩
+        have hqeq : q.1 = q₀ := hsupp_owner_unique p q.1 q₀ q.2 hq₀ hpUq hpU₀
+        subst hqeq
+        have hproof : hq₀ = q.2 := Subsingleton.elim _ _
+        simpa [hproof] using hzSc₀
+      have hsum_as_images :
+          chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf) =
+          t₀.sum (fun q => (Iq q).sum (Gsub q)) := by
+        rw [hsum_def, hsum_partition]
+        refine Finset.sum_congr rfl ?_
+        intro q hq
+        simpa [Iq, hIq_def] using hTsub_sum_image q
+      have himages_eq_locals :
+          t₀.sum (fun q => (Iq q).sum (Gsub q)) =
+            t₀.sum (fun q =>
+              (Sc q.1 q.2).sum (fun z =>
+                (meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) := by
+        refine Finset.sum_congr rfl ?_
+        intro q hq
+        have hsubset : Iq q ⊆ Sc q.1 q.2 := by
+          intro z hz
+          exact hIq_subset_Sc q z hz
+        have hzero :
+            ∀ z ∈ Sc q.1 q.2, z ∉ Iq q → Gsub q z = 0 := by
+          intro z hzSc hzNotIq
+          by_cases hz0 :
+              meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z = 0
+          · unfold Gsub
+            rw [hz0]
+            rfl
+          · by_cases hzTop :
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z = ⊤
+            · unfold Gsub
+              rw [hzTop]
+              rfl
+            · have hzBall : ‖z - chartPt (RS := CRS.toRiemannSurface) q.1‖ < r q.1 q.2 :=
+                hSc_ball q.1 q.2 z hzSc
+              have hzTargetU :
+                  z ∈ (extChartAt 𝓘(ℂ, ℂ) q.1).target ∧
+                  (extChartAt 𝓘(ℂ, ℂ) q.1).symm z ∈ U q.1 :=
+                hr_chart q.1 q.2 z hzBall
+              let p : CRS.toRiemannSurface.carrier := (extChartAt 𝓘(ℂ, ℂ) q.1).symm z
+              have hpU : p ∈ U q.1 := by
+                simpa [p] using hzTargetU.2
+              have hpSrc : p ∈ (extChartAt 𝓘(ℂ, ℂ) q.1).source := by
+                exact (extChartAt 𝓘(ℂ, ℂ) q.1).map_target hzTargetU.1
+              have hpEChart : p ∈ (eChart q.1).source := by
+                change p ∈ (extChartAt 𝓘(ℂ, ℂ) q.1).source
+                exact hpSrc
+              have hzEq : extChartAt 𝓘(ℂ, ℂ) q.1 p = z := by
+                change (extChartAt 𝓘(ℂ, ℂ) q.1) ((extChartAt 𝓘(ℂ, ℂ) q.1).symm z) = z
+                exact (extChartAt 𝓘(ℂ, ℂ) q.1).right_inv hzTargetU.1
+              have horder_eq :
+                  chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p =
+                    meromorphicOrderAt
+                      (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z := by
+                rw [chartOrderAt_eq_in_chart (RS := CRS.toRiemannSurface) (fun x => f x - c) q.1 p
+                  (chartMeromorphic_sub_const c hf) hpEChart, chartRep_sub_const, hzEq]
+              have hp_supp :
+                  p ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c) := by
+                refine ⟨?_, ?_⟩
+                · intro hp0
+                  exact hz0 (horder_eq.symm.trans hp0)
+                · intro hpTop
+                  exact hzTop (horder_eq.symm.trans hpTop)
+              have hp_suppc : p ∈ suppc := by
+                simpa [suppc, hsuppc_def] using
+                  (chartOrderSupport_sub_const_finite CRS f c hf).mem_toFinset.mpr hp_supp
+              have hpTsub : p ∈ Tsub q := Finset.mem_filter.mpr ⟨hp_suppc, hpU⟩
+              have hzIq : z ∈ Iq q := by
+                refine Finset.mem_image.mpr ⟨p, hpTsub, ?_⟩
+                simpa [p] using hzEq
+              exact (hzNotIq hzIq).elim
+        have hsum_subset :
+            (Iq q).sum (Gsub q) = (Sc q.1 q.2).sum (Gsub q) :=
+          Finset.sum_subset hsubset hzero
+        simpa [Gsub, hGsub_def] using hsum_subset
+      calc
+        chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf)
+            = t₀.sum (fun q => (Iq q).sum (Gsub q)) := hsum_as_images
+        _ = t₀.sum (fun q =>
+              (Sc q.1 q.2).sum (fun z =>
+                (meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) :=
+              himages_eq_locals
+        _ = (s₀.attach).sum (fun q =>
+              (Sc q.1 q.2).sum (fun z =>
+                (meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) := by
+              simpa [t₀, ht₀_def]
+    have hsum_c_eq_hsum_c₀ :
+        chartOrderSum CRS (fun x => f x - c)
+          (chartMeromorphic_sub_const c hf)
+          (chartOrderSupport_sub_const_finite CRS f c hf) =
+        chartOrderSum CRS (fun x => f x - c₀)
+          (chartMeromorphic_sub_const c₀ hf)
+          (chartOrderSupport_sub_const_finite CRS f c₀ hf) := by
+      calc
+        chartOrderSum CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf)
+            =
+            (s₀.attach).sum (fun q =>
+              (Sc q.1 q.2).sum (fun z =>
+                (meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f q.1 w - c) z).getD 0)) :=
+              hsum_c_as_locals
+        _ = s₀.sum (fun q =>
+              (chartOrderAt (RS := CRS.toRiemannSurface) f₀ q).getD 0) := by
+                simpa using hsum_locals.symm
+        _ = chartOrderSum CRS (fun x => f x - c₀)
+              (chartMeromorphic_sub_const c₀ hf)
+              (chartOrderSupport_sub_const_finite CRS f c₀ hf) := by
+                simpa using hsum_c₀_as_s₀.symm
+    simpa using hsum_c_eq_hsum_c₀
 /-- If G is analytic at w and G(w) ≠ c, then meromorphicOrderAt(G - c, w) = 0. -/
 private theorem meromorphicOrderAt_analytic_sub_const_eq_zero {G : ℂ → ℂ} {w c : ℂ}
     (hG : AnalyticAt ℂ G w) (hne : G w ≠ c) :
@@ -1232,7 +2687,467 @@ theorem chartOrderSum_zero_large_c (CRS : CompactRiemannSurface)
     ∃ c₀ : ℂ, chartOrderSum CRS (fun x => f x - c₀)
       (chartMeromorphic_sub_const c₀ hf)
       (chartOrderSupport_sub_const_finite CRS f c₀ hf) = 0 := by
-  sorry
+  letI := CRS.toRiemannSurface.topology
+  letI := CRS.toRiemannSurface.chartedSpace
+  haveI := CRS.toRiemannSurface.isManifold
+  haveI := CRS.toRiemannSurface.t2
+  haveI : CompactSpace CRS.toRiemannSurface.carrier := CRS.compact
+  obtain ⟨q₀⟩ := (inferInstance : Nonempty CRS.toRiemannSurface.carrier)
+  have hsupp_f : (chartOrderSupport (RS := CRS.toRiemannSurface) f).Finite :=
+    chartOrderSupport_finite_general CRS f hf ⟨q₀, hne_top q₀⟩
+  have hpole_fin : (poleSet (RS := CRS.toRiemannSurface) f).Finite :=
+    poleSet_finite CRS f hf hsupp_f
+  obtain ⟨U, hU_mem_open, hU_disj⟩ := hpole_fin.t2_separation
+  set K : Set CRS.toRiemannSurface.carrier :=
+    (⋃ p ∈ poleSet (RS := CRS.toRiemannSurface) f, U p)ᶜ
+  by_cases hpole_empty : poleSet (RS := CRS.toRiemannSurface) f = ∅
+  · have hnonneg : ∀ q, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f q := by
+      intro q
+      exact le_of_not_gt (by
+        intro hlt
+        have hmem : q ∈ poleSet (RS := CRS.toRiemannSurface) f := by
+          simpa [poleSet, Set.mem_setOf_eq] using hlt
+        simpa [hpole_empty] using hmem)
+    obtain ⟨C, hC_pos, hC_prop⟩ :=
+      no_support_on_compact_away_from_poles CRS f hf hne_top Set.univ isCompact_univ
+        (by intro q _; exact hnonneg q)
+    let c₀ : ℂ := (C + 1 : ℝ)
+    have hc₀_large : C < ‖c₀‖ := by
+      have hnorm : ‖c₀‖ = |C + 1| := by
+        simpa [c₀] using (Complex.norm_real (C + 1))
+      have hle_abs : C + 1 ≤ |C + 1| := le_abs_self (C + 1)
+      have hC_lt : C < C + 1 := by linarith
+      linarith
+    have hzero_all :
+        ∀ q, chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₀) q = 0 := by
+      intro q
+      exact hC_prop c₀ hc₀_large q (by simp)
+    have hsupp_empty :
+        chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c₀) = ∅ := by
+      ext q
+      simp [chartOrderSupport, hzero_all q]
+    have hsuppc_empty :
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf).toFinset = ∅ := by
+      rw [← Finset.val_eq_zero]
+      ext q
+      simp [hsupp_empty]
+    refine ⟨c₀, ?_⟩
+    unfold chartOrderSum
+    rw [hsuppc_empty]
+    simp
+  have hpole_nonempty : (poleSet (RS := CRS.toRiemannSurface) f).Nonempty := by
+    exact Set.nonempty_iff_ne_empty.mpr hpole_empty
+  have hpole_finset_nonempty : (hpole_fin.toFinset).Nonempty := by
+    obtain ⟨p, hp⟩ := hpole_nonempty
+    refine ⟨p, ?_⟩
+    exact hpole_fin.mem_toFinset.mpr hp
+  have hchart_data :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset}, ∃ ρ : ℝ, 0 < ρ ∧
+        ∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < ρ →
+          z ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).target ∧
+          (extChartAt 𝓘(ℂ, ℂ) pp.1).symm z ∈ U pp.1 := by
+    intro pp
+    let e := extChartAt 𝓘(ℂ, ℂ) pp.1
+    have hU_nhds : U pp.1 ∈ nhds pp.1 := (hU_mem_open pp.1).2.mem_nhds (hU_mem_open pp.1).1
+    have hpt_tgt : chartPt (RS := CRS.toRiemannSurface) pp.1 ∈ e.target := by
+      simpa [e, chartPt] using
+        (e.map_source (mem_extChartAt_source (I := 𝓘(ℂ, ℂ)) pp.1))
+    have hsymm_pt : e.symm (chartPt (RS := CRS.toRiemannSurface) pp.1) = pp.1 := by
+      simpa [e, chartPt] using
+        (e.left_inv (mem_extChartAt_source (I := 𝓘(ℂ, ℂ)) pp.1))
+    have hU_nhds' : U pp.1 ∈ nhds (e.symm (chartPt (RS := CRS.toRiemannSurface) pp.1)) := by
+      simpa [hsymm_pt] using hU_nhds
+    have hpre : e.symm ⁻¹' U pp.1 ∈ nhds (chartPt (RS := CRS.toRiemannSurface) pp.1) :=
+      (continuousAt_extChartAt_symm'' (I := 𝓘(ℂ, ℂ)) hpt_tgt).preimage_mem_nhds hU_nhds'
+    have htgt : e.target ∈ nhds (chartPt (RS := CRS.toRiemannSurface) pp.1) := by
+      simpa [e, chartPt] using extChartAt_target_mem_nhds (I := 𝓘(ℂ, ℂ)) pp.1
+    obtain ⟨ρ, hρ_pos, hρ_sub⟩ := Metric.mem_nhds_iff.mp (Filter.inter_mem htgt hpre)
+    refine ⟨ρ, hρ_pos, ?_⟩
+    intro z hz
+    have hz' : z ∈ e.target ∩ e.symm ⁻¹' U pp.1 := hρ_sub (Metric.mem_ball.mp (by
+      simpa [dist_eq_norm] using hz))
+    exact hz'
+  choose ρ hρ_pos hρ_prop using hchart_data
+  have hpole_local_data :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset},
+        ∃ r > 0, r ≤ ρ pp ∧ ∃ C : ℝ, 0 < C ∧
+          ∀ c : ℂ, C < ‖c‖ →
+            ∃ S : Finset ℂ,
+              (∀ z ∈ S, ‖z - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r) ∧
+              (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r →
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c) z ≠ 0 →
+                meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c) z ≠ ⊤ →
+                z ∈ S) ∧
+              S.sum (fun z =>
+                (meromorphicOrderAt
+                  (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c) z).getD 0) = 0 := by
+    intro pp
+    have hppole_mem : pp.1 ∈ poleSet (RS := CRS.toRiemannSurface) f :=
+      hpole_fin.mem_toFinset.mp pp.2
+    have hppole : chartOrderAt (RS := CRS.toRiemannSurface) f pp.1 < 0 := by
+      simpa [poleSet, Set.mem_setOf_eq] using hppole_mem
+    obtain ⟨r, hr_pos, hr_le, C, hC_pos, hC_data⟩ :=
+      meromorphic_pole_local_sum_zero
+        (g := chartRep (RS := CRS.toRiemannSurface) f pp.1)
+        (z₀ := chartPt (RS := CRS.toRiemannSurface) pp.1)
+        (hf pp.1)
+        (by simpa [chartOrderAt] using hppole)
+        (hρ_pos pp)
+    refine ⟨r, hr_pos, hr_le, C, hC_pos, ?_⟩
+    intro c hc
+    exact hC_data c hc
+  choose r hr_pos hr_leρ Cpole hCpole_pos hSpole using hpole_local_data
+  set V : {p // p ∈ hpole_fin.toFinset} → Set CRS.toRiemannSurface.carrier := fun pp =>
+    (extChartAt 𝓘(ℂ, ℂ) pp.1).source ∩
+      (extChartAt 𝓘(ℂ, ℂ) pp.1) ⁻¹'
+        Metric.ball (chartPt (RS := CRS.toRiemannSurface) pp.1) (r pp) with hV_def
+  set Wpole : Set CRS.toRiemannSurface.carrier := ⋃ pp : {p // p ∈ hpole_fin.toFinset}, V pp
+    with hWpole_def
+  set Kpole : Set CRS.toRiemannSurface.carrier := Wpoleᶜ with hKpole_def
+  have hWpole_open : IsOpen Wpole := by
+    refine isOpen_iUnion ?_
+    intro pp
+    have hV_open :
+        IsOpen ((extChartAt 𝓘(ℂ, ℂ) pp.1).source ∩
+          (extChartAt 𝓘(ℂ, ℂ) pp.1) ⁻¹'
+            Metric.ball (chartPt (RS := CRS.toRiemannSurface) pp.1) (r pp)) :=
+      (continuousOn_extChartAt pp.1).isOpen_inter_preimage
+        (isOpen_extChartAt_source (I := 𝓘(ℂ, ℂ)) pp.1) Metric.isOpen_ball
+    simpa [V, hV_def] using hV_open
+  have hKpole_compact : @IsCompact _ CRS.toRiemannSurface.topology Kpole := by
+    have hKpole_closed : IsClosed Kpole := by
+      simpa [Kpole, hKpole_def] using hWpole_open.isClosed_compl
+    exact hKpole_closed.isCompact
+  have hKpole_no_pole :
+      ∀ q ∈ Kpole, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f q := by
+    intro q hqK
+    exact le_of_not_gt (by
+      intro hlt
+      have hq_pole : q ∈ poleSet (RS := CRS.toRiemannSurface) f := by
+        simpa [poleSet, Set.mem_setOf_eq] using hlt
+      let pp : {p // p ∈ hpole_fin.toFinset} := ⟨q, hpole_fin.mem_toFinset.mpr hq_pole⟩
+      have hqV : q ∈ V pp := by
+        refine ⟨mem_extChartAt_source (I := 𝓘(ℂ, ℂ)) q, ?_⟩
+        have hq_ball :
+            extChartAt 𝓘(ℂ, ℂ) q q ∈
+              Metric.ball (chartPt (RS := CRS.toRiemannSurface) q) (r pp) := by
+          change dist (extChartAt 𝓘(ℂ, ℂ) q q)
+              (chartPt (RS := CRS.toRiemannSurface) q) < r pp
+          simpa [chartPt] using hr_pos pp
+        exact hq_ball
+      have hqW : q ∈ Wpole := by
+        exact Set.mem_iUnion.mpr ⟨pp, by simpa [V, hV_def] using hqV⟩
+      have hqK' : q ∈ Kpole := hqK
+      exact (show q ∉ Wpole from by simpa [Kpole, hKpole_def] using hqK') hqW)
+  obtain ⟨CK, hCK_pos, hKpole_prop⟩ :=
+    no_support_on_compact_away_from_poles CRS f hf hne_top Kpole hKpole_compact hKpole_no_pole
+  set tP : Finset {p // p ∈ hpole_fin.toFinset} := (hpole_fin.toFinset).attach with htP_def
+  have htP_nonempty : tP.Nonempty := by
+    obtain ⟨p, hp⟩ := hpole_finset_nonempty
+    refine ⟨⟨p, hp⟩, ?_⟩
+    simpa [tP, htP_def]
+  set CmaxPole : ℝ := tP.sup' htP_nonempty Cpole
+    with hCmaxPole_def
+  have hCpole_le_max : ∀ pp : {p // p ∈ hpole_fin.toFinset}, Cpole pp ≤ CmaxPole := by
+    intro pp
+    have hpp_mem : pp ∈ tP := by
+      simpa [tP, htP_def] using (Finset.mem_attach (hpole_fin.toFinset) pp)
+    have hle : Cpole pp ≤ tP.sup' htP_nonempty Cpole := tP.le_sup' Cpole hpp_mem
+    simpa [CmaxPole, hCmaxPole_def] using hle
+  set Cglobal : ℝ := max CK CmaxPole + 1 with hCglobal_def
+  have hCglobal_gt_CK : CK < Cglobal := by
+    have hle : CK ≤ max CK CmaxPole := le_max_left CK CmaxPole
+    linarith [hCglobal_def, hle]
+  have hCglobal_gt_pole : ∀ pp : {p // p ∈ hpole_fin.toFinset}, Cpole pp < Cglobal := by
+    intro pp
+    have hle₁ : Cpole pp ≤ CmaxPole := hCpole_le_max pp
+    have hle₂ : CmaxPole ≤ max CK CmaxPole := le_max_right CK CmaxPole
+    linarith [hCglobal_def, hle₁, hle₂]
+  let c₀ : ℂ := (Cglobal : ℝ)
+  have hc₀_gt_CK : CK < ‖c₀‖ := by
+    have hnorm : ‖c₀‖ = |Cglobal| := by simpa [c₀] using (Complex.norm_real Cglobal)
+    have hle_abs : Cglobal ≤ |Cglobal| := le_abs_self Cglobal
+    linarith [hCglobal_gt_CK]
+  have hKpole_zero :
+      ∀ q ∈ Kpole, chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₀) q = 0 := by
+    intro q hqK
+    exact hKpole_prop c₀ hc₀_gt_CK q hqK
+  have hsupp_subset_Wpole :
+      ∀ q, q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c₀) →
+        q ∈ Wpole := by
+    intro q hqSupp
+    by_contra hq_not_W
+    have hqK : q ∈ Kpole := by simpa [Kpole, hKpole_def] using hq_not_W
+    exact hqSupp.1 (hKpole_zero q hqK)
+  have hc₀_gt_pole : ∀ pp : {p // p ∈ hpole_fin.toFinset}, Cpole pp < ‖c₀‖ := by
+    intro pp
+    have hnorm : ‖c₀‖ = |Cglobal| := by simpa [c₀] using (Complex.norm_real Cglobal)
+    have hle_abs : Cglobal ≤ |Cglobal| := le_abs_self Cglobal
+    linarith [hCglobal_gt_pole pp, hle_abs, hnorm]
+  have hpole_sets_data :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset},
+        ∃ S : Finset ℂ,
+          (∀ z ∈ S, ‖z - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r pp) ∧
+          (∀ z, ‖z - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r pp →
+            meromorphicOrderAt
+              (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z ≠ 0 →
+            meromorphicOrderAt
+              (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z ≠ ⊤ →
+            z ∈ S) ∧
+          S.sum (fun z =>
+            (meromorphicOrderAt
+              (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z).getD 0) = 0 := by
+    intro pp
+    exact hSpole pp c₀ (hc₀_gt_pole pp)
+  choose Spp hS_ball hS_cap hS_sum using hpole_sets_data
+  have hV_subset_U :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset}, ∀ q ∈ V pp, q ∈ U pp.1 := by
+    intro pp q hqV
+    rcases hqV with ⟨hqSrc, hqBall⟩
+    have hq_norm :
+        ‖extChartAt 𝓘(ℂ, ℂ) pp.1 q - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < ρ pp := by
+      exact lt_of_lt_of_le (by simpa [dist_eq_norm] using Metric.mem_ball.mp hqBall) (hr_leρ pp)
+    have hz := hρ_prop pp (extChartAt 𝓘(ℂ, ℂ) pp.1 q) hq_norm
+    have hqU_raw :
+        (chartAt ℂ pp.1).symm ((chartAt ℂ pp.1) q) ∈ U pp.1 := by
+      simpa using hz.2
+    have hqSrc' : q ∈ (chartAt ℂ pp.1).source := by
+      simpa using hqSrc
+    have hq_eq_raw :
+        (chartAt ℂ pp.1).symm ((chartAt ℂ pp.1) q) = q :=
+      (chartAt ℂ pp.1).left_inv hqSrc'
+    simpa [hq_eq_raw] using hqU_raw
+  have hV_owner_unique :
+      ∀ q (pp₁ pp₂ : {p // p ∈ hpole_fin.toFinset}),
+        q ∈ V pp₁ → q ∈ V pp₂ → pp₁ = pp₂ := by
+    intro q pp₁ pp₂ hqV₁ hqV₂
+    have hqU₁ : q ∈ U pp₁.1 := hV_subset_U pp₁ q hqV₁
+    have hqU₂ : q ∈ U pp₂.1 := hV_subset_U pp₂ q hqV₂
+    have hpp₁_pole : pp₁.1 ∈ poleSet (RS := CRS.toRiemannSurface) f :=
+      hpole_fin.mem_toFinset.mp pp₁.2
+    have hpp₂_pole : pp₂.1 ∈ poleSet (RS := CRS.toRiemannSurface) f :=
+      hpole_fin.mem_toFinset.mp pp₂.2
+    have hbase_eq : pp₁.1 = pp₂.1 := by
+      exact Set.PairwiseDisjoint.elim hU_disj hpp₁_pole hpp₂_pole
+        (Set.not_disjoint_iff.mpr ⟨q, hqU₁, hqU₂⟩)
+    exact Subtype.ext hbase_eq
+  set suppc : Finset CRS.toRiemannSurface.carrier :=
+    (chartOrderSupport_sub_const_finite CRS f c₀ hf).toFinset with hsuppc_def
+  set F : CRS.toRiemannSurface.carrier → ℤ := fun q =>
+    (chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₀) q).getD 0 with hF_def
+  have hsum_def :
+      chartOrderSum CRS (fun x => f x - c₀)
+        (chartMeromorphic_sub_const c₀ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf) = suppc.sum F := by
+    simp [chartOrderSum, suppc, F]
+  have hsupp_owner :
+      ∀ q ∈ suppc, ∃ pp : {p // p ∈ hpole_fin.toFinset}, q ∈ V pp := by
+    intro q hq
+    have hq_supp :
+        q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c₀) := by
+      simpa [suppc, hsuppc_def] using
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf).mem_toFinset.mp hq
+    have hqW : q ∈ Wpole := hsupp_subset_Wpole q hq_supp
+    rcases Set.mem_iUnion.mp hqW with ⟨pp, hqV⟩
+    exact ⟨pp, by simpa [V, hV_def] using hqV⟩
+  set Tsub : {p // p ∈ hpole_fin.toFinset} → Finset CRS.toRiemannSurface.carrier :=
+    fun pp => suppc.filter (fun q => q ∈ V pp) with hTsub_def
+  have hTsub_disj : (↑tP : Set {p // p ∈ hpole_fin.toFinset}).PairwiseDisjoint Tsub := by
+    intro pp₁ hpp₁ pp₂ hpp₂ hne
+    refine Finset.disjoint_left.2 ?_
+    intro q hq₁ hq₂
+    have hqV₁ : q ∈ V pp₁ := (Finset.mem_filter.mp hq₁).2
+    have hqV₂ : q ∈ V pp₂ := (Finset.mem_filter.mp hq₂).2
+    have hEq : pp₁ = pp₂ := hV_owner_unique q pp₁ pp₂ hqV₁ hqV₂
+    exact hne hEq
+  have hsuppc_eq_biUnion : suppc = tP.biUnion Tsub := by
+    ext q
+    constructor
+    · intro hq
+      rcases hsupp_owner q hq with ⟨pp, hqV⟩
+      have hpp_tP : pp ∈ tP := by
+        simpa [tP, htP_def] using (Finset.mem_attach (hpole_fin.toFinset) pp)
+      exact Finset.mem_biUnion.mpr ⟨pp, hpp_tP, Finset.mem_filter.mpr ⟨hq, hqV⟩⟩
+    · intro hq
+      rcases Finset.mem_biUnion.mp hq with ⟨pp, hpp_tP, hqT⟩
+      exact (Finset.mem_filter.mp hqT).1
+  have hsum_partition :
+      suppc.sum F = tP.sum (fun pp => (Tsub pp).sum F) := by
+    rw [hsuppc_eq_biUnion]
+    simpa using (Finset.sum_biUnion hTsub_disj)
+  have hTsub_mem_source :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset}, ∀ q ∈ Tsub pp,
+        q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source := by
+    intro pp q hqT
+    exact ((Finset.mem_filter.mp hqT).2).1
+  set G : {p // p ∈ hpole_fin.toFinset} → ℂ → ℤ := fun pp z =>
+    (meromorphicOrderAt
+      (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z).getD 0 with hG_def
+  have hF_eq_G :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset}, ∀ q ∈ Tsub pp,
+        F q = G pp (extChartAt 𝓘(ℂ, ℂ) pp.1 q) := by
+    intro pp q hqT
+    unfold F G
+    have hqSrc : q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source := hTsub_mem_source pp q hqT
+    have hqEChart : q ∈ (eChart pp.1).source := by
+      change q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source
+      simpa using hqSrc
+    rw [chartOrderAt_eq_in_chart (RS := CRS.toRiemannSurface) (fun x => f x - c₀) pp.1 q
+      (chartMeromorphic_sub_const c₀ hf) hqEChart, chartRep_sub_const]
+  have hTsub_sum_image :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset},
+        (Tsub pp).sum F =
+          ((Tsub pp).image (fun q => extChartAt 𝓘(ℂ, ℂ) pp.1 q)).sum (G pp) := by
+    intro pp
+    have hsum_rewrite :
+        (Tsub pp).sum F =
+          (Tsub pp).sum (fun q => G pp (extChartAt 𝓘(ℂ, ℂ) pp.1 q)) := by
+      refine Finset.sum_congr rfl ?_
+      intro q hqT
+      exact hF_eq_G pp q hqT
+    rw [hsum_rewrite]
+    symm
+    refine Finset.sum_image ?_
+    intro q₁ hq₁ q₂ hq₂ heq
+    exact (extChartAt 𝓘(ℂ, ℂ) pp.1).injOn
+      (hTsub_mem_source pp q₁ hq₁) (hTsub_mem_source pp q₂ hq₂) heq
+  set Ipp : {p // p ∈ hpole_fin.toFinset} → Finset ℂ := fun pp =>
+    (Tsub pp).image (fun q => extChartAt 𝓘(ℂ, ℂ) pp.1 q) with hIpp_def
+  have hIpp_subset_Spp :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset}, ∀ z ∈ Ipp pp, z ∈ Spp pp := by
+    intro pp z hzI
+    rcases Finset.mem_image.mp (by simpa [Ipp, hIpp_def] using hzI) with ⟨q, hqT, rfl⟩
+    have hqSuppc : q ∈ suppc := (Finset.mem_filter.mp hqT).1
+    have hqV : q ∈ V pp := (Finset.mem_filter.mp hqT).2
+    have hqSrc : q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source := hqV.1
+    have hqBall :
+        ‖extChartAt 𝓘(ℂ, ℂ) pp.1 q - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r pp := by
+      simpa [dist_eq_norm] using Metric.mem_ball.mp hqV.2
+    have hqSupp :
+        q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c₀) := by
+      simpa [suppc, hsuppc_def] using
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf).mem_toFinset.mp hqSuppc
+    have hqEChart : q ∈ (eChart pp.1).source := by
+      change q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source
+      simpa using hqSrc
+    have horder_eq :
+        chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₀) q =
+          meromorphicOrderAt
+            (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀)
+            (extChartAt 𝓘(ℂ, ℂ) pp.1 q) := by
+      rw [chartOrderAt_eq_in_chart (RS := CRS.toRiemannSurface) (fun x => f x - c₀) pp.1 q
+        (chartMeromorphic_sub_const c₀ hf) hqEChart, chartRep_sub_const]
+    have horder_ne0 :
+        meromorphicOrderAt
+          (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀)
+          (extChartAt 𝓘(ℂ, ℂ) pp.1 q) ≠ 0 := by
+      intro h0
+      exact hqSupp.1 (horder_eq.trans h0)
+    have horder_neTop :
+        meromorphicOrderAt
+          (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀)
+          (extChartAt 𝓘(ℂ, ℂ) pp.1 q) ≠ ⊤ := by
+      intro hTop
+      exact hqSupp.2 (horder_eq.trans hTop)
+    exact hS_cap pp (extChartAt 𝓘(ℂ, ℂ) pp.1 q) hqBall horder_ne0 horder_neTop
+  have hsum_as_images :
+      chartOrderSum CRS (fun x => f x - c₀)
+        (chartMeromorphic_sub_const c₀ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf) =
+      tP.sum (fun pp => (Ipp pp).sum (G pp)) := by
+    rw [hsum_def, hsum_partition]
+    refine Finset.sum_congr rfl ?_
+    intro pp hpp
+    simpa [Ipp, hIpp_def] using hTsub_sum_image pp
+  have hzero_outside :
+      ∀ pp : {p // p ∈ hpole_fin.toFinset}, ∀ z ∈ Spp pp, z ∉ Ipp pp → G pp z = 0 := by
+    intro pp z hzS hzNotI
+    by_cases hz0 :
+        meromorphicOrderAt
+          (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z = 0
+    · unfold G
+      rw [hz0]
+      rfl
+    · by_cases hzTop :
+          meromorphicOrderAt
+            (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z = ⊤
+      · unfold G
+        rw [hzTop]
+        rfl
+      · have hzBall :
+          ‖z - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r pp := hS_ball pp z hzS
+        have hzTargetU :
+            z ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).target ∧
+            (extChartAt 𝓘(ℂ, ℂ) pp.1).symm z ∈ U pp.1 :=
+          hρ_prop pp z (lt_of_lt_of_le hzBall (hr_leρ pp))
+        let q : CRS.toRiemannSurface.carrier := (extChartAt 𝓘(ℂ, ℂ) pp.1).symm z
+        have hqSrc : q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source := by
+          exact (extChartAt 𝓘(ℂ, ℂ) pp.1).map_target hzTargetU.1
+        have hzEq : extChartAt 𝓘(ℂ, ℂ) pp.1 q = z := by
+          change (extChartAt 𝓘(ℂ, ℂ) pp.1) ((extChartAt 𝓘(ℂ, ℂ) pp.1).symm z) = z
+          exact (extChartAt 𝓘(ℂ, ℂ) pp.1).right_inv hzTargetU.1
+        have hqBallMem :
+            extChartAt 𝓘(ℂ, ℂ) pp.1 q ∈
+              Metric.ball (chartPt (RS := CRS.toRiemannSurface) pp.1) (r pp) := by
+          have hqBallNorm :
+              ‖extChartAt 𝓘(ℂ, ℂ) pp.1 q - chartPt (RS := CRS.toRiemannSurface) pp.1‖ < r pp := by
+            rw [hzEq]
+            exact hzBall
+          change dist (extChartAt 𝓘(ℂ, ℂ) pp.1 q)
+              (chartPt (RS := CRS.toRiemannSurface) pp.1) < r pp
+          simpa [dist_eq_norm] using hqBallNorm
+        have hqV : q ∈ V pp := by
+          exact ⟨hqSrc, hqBallMem⟩
+        have hqEChart : q ∈ (eChart pp.1).source := by
+          change q ∈ (extChartAt 𝓘(ℂ, ℂ) pp.1).source
+          exact hqSrc
+        have horder_eq :
+            chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₀) q =
+              meromorphicOrderAt
+                (fun w => chartRep (RS := CRS.toRiemannSurface) f pp.1 w - c₀) z := by
+          rw [chartOrderAt_eq_in_chart (RS := CRS.toRiemannSurface) (fun x => f x - c₀) pp.1 q
+            (chartMeromorphic_sub_const c₀ hf) hqEChart, chartRep_sub_const, hzEq]
+        have hqSupp :
+            q ∈ chartOrderSupport (RS := CRS.toRiemannSurface) (fun x => f x - c₀) := by
+          refine ⟨?_, ?_⟩
+          · intro hq0
+            exact hz0 (horder_eq.symm.trans hq0)
+          · intro hqTop
+            exact hzTop (horder_eq.symm.trans hqTop)
+        have hqSuppc : q ∈ suppc := by
+          simpa [suppc, hsuppc_def] using
+            (chartOrderSupport_sub_const_finite CRS f c₀ hf).mem_toFinset.mpr hqSupp
+        have hqT : q ∈ Tsub pp := Finset.mem_filter.mpr ⟨hqSuppc, hqV⟩
+        have hzI : z ∈ Ipp pp := by
+          refine Finset.mem_image.mpr ⟨q, hqT, ?_⟩
+          simpa [q] using hzEq
+        exact (hzNotI hzI).elim
+  have himages_eq_locals :
+      tP.sum (fun pp => (Ipp pp).sum (G pp)) =
+        tP.sum (fun pp => (Spp pp).sum (G pp)) := by
+    refine Finset.sum_congr rfl ?_
+    intro pp hpp
+    have hsubset : Ipp pp ⊆ Spp pp := by
+      intro z hz
+      exact hIpp_subset_Spp pp z hz
+    have hsum_subset :
+        (Ipp pp).sum (G pp) = (Spp pp).sum (G pp) :=
+      Finset.sum_subset hsubset (hzero_outside pp)
+    exact hsum_subset
+  have hsum_locals_zero : tP.sum (fun pp => (Spp pp).sum (G pp)) = 0 := by
+    refine Finset.sum_eq_zero ?_
+    intro pp hpp
+    exact hS_sum pp
+  refine ⟨c₀, ?_⟩
+  calc
+    chartOrderSum CRS (fun x => f x - c₀)
+        (chartMeromorphic_sub_const c₀ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₀ hf)
+        = tP.sum (fun pp => (Ipp pp).sum (G pp)) := hsum_as_images
+    _ = tP.sum (fun pp => (Spp pp).sum (G pp)) := himages_eq_locals
+    _ = 0 := hsum_locals_zero
 /-- **Degree theory**: chartOrderSum = 0 for nonconstant chart-meromorphic functions.
 
     Uses:

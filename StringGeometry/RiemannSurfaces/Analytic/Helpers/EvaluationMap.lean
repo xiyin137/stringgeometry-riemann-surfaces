@@ -88,15 +88,30 @@ The right inequality follows from rank-nullity for the evaluation map:
 theorem h0_add_point_upper (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     h0 CRS (D + Divisor.point p) ≤ h0 CRS D + 1 := by
-  -- Proof by contradiction: assume h⁰(D+[p]) ≥ h⁰(D) + 2
-  by_contra h
-  push_neg at h
-  -- h : h0 CRS D + 1 < h0 CRS (D + Divisor.point p)
-  -- This means there exist h⁰(D)+2 LinIndepLS elements in L(D+[p])
-  -- Among them, two must evaluate to the same scalar multiple at p
-  -- (evaluation map to ℂ is at most 1-dimensional)
-  -- Their difference is in L(D), giving too many independent elements in L(D)
-  sorry
+  obtain ⟨K⟩ := canonical_divisor_exists CRS
+  have hcomp :
+      (h0 CRS (D + Divisor.point p) : ℤ) - (h0 CRS D : ℤ) +
+      ((h0 CRS (K.representative + (-D)) : ℤ) -
+       (h0 CRS (K.representative + (-(D + Divisor.point p))) : ℤ)) = 1 :=
+    eval_residue_complementarity CRS K D p
+  have hdual_le :
+      h0 CRS (K.representative + (-(D + Divisor.point p))) ≤
+        h0 CRS (K.representative + (-D)) := by
+    have hle :
+        K.representative + (-(D + Divisor.point p)) ≤
+          K.representative + (-D) := by
+      simpa [add_assoc, add_left_comm, add_comm, neg_add] using
+        (sub_point_le (D := K.representative + (-D)) p)
+    exact h0_mono CRS hle
+  have hdual_nonneg :
+      0 ≤ (h0 CRS (K.representative + (-D)) : ℤ) -
+            (h0 CRS (K.representative + (-(D + Divisor.point p))) : ℤ) := by
+    exact sub_nonneg.mpr (by exact_mod_cast hdual_le)
+  have hstep : (h0 CRS (D + Divisor.point p) : ℤ) - (h0 CRS D : ℤ) ≤ 1 := by
+    linarith
+  have hstep' : (h0 CRS (D + Divisor.point p) : ℤ) ≤ (h0 CRS D : ℤ) + 1 := by
+    linarith
+  exact_mod_cast hstep'
 
 /-- The full bound: h⁰(D) ≤ h⁰(D + [p]) ≤ h⁰(D) + 1. -/
 theorem h0_add_point_bounds (CRS : CompactRiemannSurface)

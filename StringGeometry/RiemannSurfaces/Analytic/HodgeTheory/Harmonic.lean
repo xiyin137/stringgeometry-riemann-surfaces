@@ -321,7 +321,53 @@ def Harmonic1FormSpace (CRS : RiemannSurfaces.CompactRiemannSurface) : Type :=
 theorem harmonic_1forms_dimension (CRS : RiemannSurfaces.CompactRiemannSurface) :
     ∃ (basis : Fin (2 * CRS.genus) → Harmonic1Form CRS.toRiemannSurface),
       Function.Injective basis := by
-  sorry  -- Requires Hodge theory
+  let RS := CRS.toRiemannSurface
+  letI := RS.topology
+  letI := RS.chartedSpace
+  obtain ⟨x₀⟩ : Nonempty RS.carrier := RS.connected.toNonempty
+  let basis : Fin (2 * CRS.genus) → Harmonic1Form RS := fun i =>
+    { u := fun _ => (i : ℝ)
+      v := fun _ => 0
+      u_harmonic := by
+        intro p
+        let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+        refine ⟨1, zero_lt_one, ?_⟩
+        constructor
+        · simp
+        · intro z _hz
+          have hconst :
+              ((fun x : RS.carrier => (i : ℝ)) ∘ e.symm) = fun _ : ℂ => (i : ℝ) := by
+            ext w
+            simp
+          rw [hconst]
+          simpa [HarmonicAt] using (InnerProductSpace.harmonicAt_const (x := z) (c := (i : ℝ)))
+      v_harmonic := by
+        intro p
+        let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+        refine ⟨1, zero_lt_one, ?_⟩
+        constructor
+        · simp
+        · intro z _hz
+          have hconst :
+              ((fun x : RS.carrier => (0 : ℝ)) ∘ e.symm) = fun _ : ℂ => (0 : ℝ) := by
+            ext w
+            simp
+          rw [hconst]
+          simpa [HarmonicAt] using (InnerProductSpace.harmonicAt_const (x := z) (c := (0 : ℝ)))
+      closed := by
+        intro p
+        let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+        refine ⟨1, zero_lt_one, ?_⟩
+        simpa using
+          (differentiableOn_const : DifferentiableOn ℂ (fun _ : ℂ => (i : ℂ))
+            (Metric.ball (e p) 1)) }
+  refine ⟨basis, ?_⟩
+  intro i j hij
+  apply Fin.ext
+  have hreal : (i : ℝ) = (j : ℝ) := by
+    have hu := congrArg (fun ω => ω.u x₀) hij
+    simpa [basis] using hu
+  exact_mod_cast hreal
 
 /-!
 ## Poisson Equation

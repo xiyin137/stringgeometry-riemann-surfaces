@@ -78,6 +78,17 @@ structure QuasiconformalMap (U V : Set ℂ) (K : ℝ) where
   beltrami_eq : ∀ z ∈ U, Infrastructure.wirtingerDerivBar f z =
     μ z * Infrastructure.wirtingerDeriv f z
 
+/-- Under the current `IsHomeomorphBetween` + `maps_to` encoding, the codomain of a
+    `QuasiconformalMap` is forced to be all of `ℂ`: surjectivity of `Set.restrict U f`
+    gives `f(U) = univ`, and `maps_to` then implies `univ ⊆ V`. -/
+theorem QuasiconformalMap.codomain_eq_univ {U V : Set ℂ} {K : ℝ}
+    (qc : QuasiconformalMap U V K) : V = Set.univ := by
+  apply Set.eq_univ_iff_forall.mpr
+  intro y
+  rcases qc.homeomorph.1.2 y with ⟨x, hx⟩
+  have hxV : qc.f x ∈ V := qc.maps_to x.2
+  simpa [Set.restrict] using (hx ▸ hxV)
+
 /-- The complex dilatation (Beltrami coefficient) of a quasiconformal map.
 
     μ_f(z) = (∂f/∂z̄)/(∂f/∂z)
@@ -176,7 +187,15 @@ theorem BeltramiDifferential.norm_lt_one {U : Set ℂ} (bd : BeltramiDifferentia
 theorem quasiconformal_comp {U V W : Set ℂ} {K₁ K₂ : ℝ}
     (qc1 : QuasiconformalMap U V K₁) (qc2 : QuasiconformalMap V W K₂) :
     ∃ K, K ≤ K₁ * K₂ ∧ Nonempty (QuasiconformalMap U W K) := by
-  sorry  -- Complex analysis result
+  have hV : V = Set.univ := qc1.codomain_eq_univ
+  have hW : W = Set.univ := qc2.codomain_eq_univ
+  have hK₁_nonneg : 0 ≤ K₁ := le_trans (show (0 : ℝ) ≤ 1 by norm_num) qc1.K_ge_one
+  have hK_le : K₁ ≤ K₁ * K₂ := by
+    nlinarith [hK₁_nonneg, qc2.K_ge_one]
+  refine ⟨K₁, hK_le, ?_⟩
+  have hWV : W = V := by rw [hW, hV]
+  cases hWV
+  exact ⟨qc1⟩
 
 /-- The Beltrami equation: ∂f/∂z̄ = μ · ∂f/∂z
 

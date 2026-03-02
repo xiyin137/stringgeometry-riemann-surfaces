@@ -361,7 +361,61 @@ theorem abelJacobi_homomorphism (CRS : RiemannSurfaces.CompactRiemannSurface)
     (h₁ : D₁.degree = 0) (h₂ : D₂.degree = 0) :
     abelJacobiMap CRS J ajData (D₁ + D₂) (by simp [Divisor.degree_add, h₁, h₂]) =
     abelJacobiMap CRS J ajData D₁ h₁ + abelJacobiMap CRS J ajData D₂ h₂ := by
-  sorry  -- Requires: linearity of integration
+  classical
+  let S := (D₁ + D₂).finiteSupport.toFinset
+  let S₁ := D₁.finiteSupport.toFinset
+  let S₂ := D₂.finiteSupport.toFinset
+  let U := S₁ ∪ S₂
+  have hS_sub : S ⊆ U := by
+    intro p hp
+    rw [Set.Finite.mem_toFinset] at hp
+    rw [Finset.mem_union, Set.Finite.mem_toFinset, Set.Finite.mem_toFinset]
+    simp only [Set.mem_setOf_eq] at hp ⊢
+    by_contra h
+    push_neg at h
+    rw [show (D₁ + D₂).coeff p = D₁.coeff p + D₂.coeff p from rfl, h.1, h.2, add_zero] at hp
+    exact hp rfl
+  have hsum_eq :
+      S.sum (fun p => (D₁ + D₂).coeff p • ajData.pointMap p) =
+      U.sum (fun p => (D₁ + D₂).coeff p • ajData.pointMap p) := by
+    apply Finset.sum_subset hS_sub
+    intro p _ hpS
+    rw [Set.Finite.mem_toFinset, Set.mem_setOf_eq, not_not] at hpS
+    simp [hpS]
+  have hsplit :
+      U.sum (fun p => (D₁ + D₂).coeff p • ajData.pointMap p) =
+      U.sum (fun p => D₁.coeff p • ajData.pointMap p) +
+      U.sum (fun p => D₂.coeff p • ajData.pointMap p) := by
+    rw [← Finset.sum_add_distrib]
+    apply Finset.sum_congr rfl
+    intro p _
+    change (D₁.coeff p + D₂.coeff p) • ajData.pointMap p =
+      D₁.coeff p • ajData.pointMap p + D₂.coeff p • ajData.pointMap p
+    exact add_zsmul (ajData.pointMap p) (D₁.coeff p) (D₂.coeff p)
+  have hD₁_eq :
+      U.sum (fun p => D₁.coeff p • ajData.pointMap p) =
+      S₁.sum (fun p => D₁.coeff p • ajData.pointMap p) := by
+    symm
+    apply Finset.sum_subset Finset.subset_union_left
+    intro p _ hp
+    rw [Set.Finite.mem_toFinset, Set.mem_setOf_eq, not_not] at hp
+    simp [hp]
+  have hD₂_eq :
+      U.sum (fun p => D₂.coeff p • ajData.pointMap p) =
+      S₂.sum (fun p => D₂.coeff p • ajData.pointMap p) := by
+    symm
+    apply Finset.sum_subset Finset.subset_union_right
+    intro p _ hp
+    rw [Set.Finite.mem_toFinset, Set.mem_setOf_eq, not_not] at hp
+    simp [hp]
+  unfold abelJacobiMap
+  calc
+    S.sum (fun p => (D₁ + D₂).coeff p • ajData.pointMap p)
+        = U.sum (fun p => (D₁ + D₂).coeff p • ajData.pointMap p) := hsum_eq
+    _ = U.sum (fun p => D₁.coeff p • ajData.pointMap p) +
+        U.sum (fun p => D₂.coeff p • ajData.pointMap p) := hsplit
+    _ = S₁.sum (fun p => D₁.coeff p • ajData.pointMap p) +
+        S₂.sum (fun p => D₂.coeff p • ajData.pointMap p) := by rw [hD₁_eq, hD₂_eq]
 
 /-!
 ## Abel's Theorem

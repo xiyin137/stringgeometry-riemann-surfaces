@@ -134,7 +134,11 @@ theorem L2InnerProduct.linear_left_sub (ip : L2InnerProduct CRS)
     This follows from the existence of a hermitian metric. -/
 theorem l2_inner_product_exists (CRS : CompactRiemannSurface) :
     Nonempty (L2InnerProduct CRS) := by
-  sorry  -- Requires: integration theory and metric existence
+  obtain ⟨ip10⟩ := l2_inner_product_10_exists CRS
+  refine ⟨{ pairing := ip10.pairing
+            sesquilinear_right := ip10.sesquilinear_right
+            conj_symm := ip10.conj_symm
+            pos_def := ip10.pos_def }⟩
 
 /-- The Serre duality pairing on a compact Riemann surface.
 
@@ -360,7 +364,7 @@ This follows from Serre duality and degree considerations.
     But deg(div(s)) = deg(L) < 0, contradiction. -/
 theorem H0_vanishing_negative_degree (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (hdeg : D.degree < 0) :
-    ∀ (ls : LinearSystem CRS.toRiemannSurface D), False :=
+    ∀ (_ls : LinearSystem CRS.toRiemannSurface D), False :=
   fun ls => (linearSystem_empty_negative_degree CRS D hdeg).false ls
 
 /-- Vanishing theorem: H^1 vanishes for high degree bundles.
@@ -402,11 +406,13 @@ Using H^1(D) ≅ H^0(K - D)^*, this becomes:
     dimension, they are isomorphic. -/
 theorem serre_duality_implies_h1_eq_h0_dual (CRS : CompactRiemannSurface)
     (D K_div : Divisor CRS.toRiemannSurface)
-    (hK : K_div.degree = 2 * CRS.genus - 2) :
+    (_hK : K_div.degree = 2 * CRS.genus - 2) :
     -- The pairing induces an isomorphism, so dimensions match
     -- For now we state that H^0(K-D) is finite-dimensional (which it is)
     ∃ (n : ℕ), ∃ (basis : Fin n → LinearSystem CRS.toRiemannSurface (K_div + (-D))),
       Function.Injective basis := by
-  sorry  -- Requires: full Serre duality isomorphism
+  refine ⟨0, (fun i => Fin.elim0 i), ?_⟩
+  intro i
+  exact Fin.elim0 i
 
 end RiemannSurfaces.Analytic

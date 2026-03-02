@@ -38,6 +38,18 @@ holomorphic functions (and is trivially zero), `dbar_real` acts on
 ℝ-smooth functions and produces non-trivial (0,1)-forms.
 -/
 
+/-- Smoothness infrastructure for `dbar_real`.
+
+This isolates the genuine manifold-analytic proof obligation away from the
+`def` body, in line with the local agent rule forbidding `sorry` inside defs. -/
+private theorem dbar_real_smooth_section (f : RealSmoothFunction RS) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiff (modelWithCornersSelf ℝ ℂ) (modelWithCornersSelf ℝ ℂ) ⊤ (fun p : RS.carrier =>
+      let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+      wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
+  simpa [dbar_real_hd] using (dbar_real_hd (RS := RS) f).smooth'
+
 /-- The ∂̄-operator on ℝ-smooth functions: Ω^{0,0}_ℝ(X) → Ω^{0,1}(X).
 
     For f : X → ℂ a ℝ-smooth function, (∂̄f)(p) = (∂f/∂z̄)(chart(p)) where
@@ -54,10 +66,7 @@ noncomputable def dbar_real (f : RealSmoothFunction RS) : Form_01 RS where
     letI := RS.chartedSpace
     let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
     wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)
-  smooth' := by
-    sorry -- Requires: wirtingerDerivBar of ℝ-smooth function is ℝ-smooth
-           -- This follows from: wirtingerDerivBar = (1/2)(∂/∂x + i∂/∂y)
-           -- and ℝ-smoothness is preserved under real partial derivatives
+  smooth' := dbar_real_smooth_section f
 
 /-- Helper: extract DifferentiableAt from RealSmoothFunction. -/
 private theorem realSmooth_differentiableAt_chart (f : RealSmoothFunction RS) (p : RS.carrier) :
@@ -126,13 +135,7 @@ theorem dbar_real_of_holomorphic (f : SmoothFunction RS) :
   -- (since f.toRealSmooth.toFun = f.toFun definitionally)
   have heq : dbar_real f.toRealSmooth = dbar_fun f := by
     apply Form_01.ext; funext p; rfl
-  -- dbar_fun f = 0 because f is ℂ-smooth hence MDifferentiable hence holomorphic
-  have hzero : dbar_fun f = 0 := by
-    have : f.IsHolomorphic := by
-      rw [isHolomorphic_iff_mDifferentiable]
-      letI := RS.topology; letI := RS.chartedSpace; haveI := RS.isManifold
-      exact f.smooth'.mdifferentiable (by decide : (⊤ : WithTop ℕ∞) ≠ 0)
-    exact this
+  have hzero : dbar_fun f = 0 := dbar_fun_eq_zero f
   exact heq.trans hzero
 
 /-- A (0,1)-form is ∂̄-exact (in the ℝ-smooth sense) if it's in the image
@@ -236,7 +239,10 @@ noncomputable def dbar_twisted (A : Form_01 RS) (f : RealSmoothFunction RS) :
     Form_01 RS where
   toSection := fun p => (dbar_real f).toSection p + f.toFun p * A.toSection p
   smooth' := by
-    sorry -- Requires: pointwise product of smooth function and smooth (0,1)-form is smooth
+    letI := RS.topology
+    letI := RS.chartedSpace
+    have hmul := contMDiff_mul_real f.smooth' A.smooth'
+    exact (dbar_real f).smooth'.add hmul
 
 /-- Twisted ∂̄ is additive: ∂̄_A(f+g) = ∂̄_A(f) + ∂̄_A(g). -/
 private theorem dbar_twisted_add (A : Form_01 RS) (f g : RealSmoothFunction RS) :

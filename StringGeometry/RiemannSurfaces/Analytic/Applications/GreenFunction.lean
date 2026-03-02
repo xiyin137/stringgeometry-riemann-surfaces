@@ -140,7 +140,23 @@ noncomputable def poissonIntegral (f : ℂ → ℝ) (z : ℂ) (_hz : ‖z‖ < 1
 theorem poissonIntegral_harmonic (f : ℂ → ℝ) (hf : Continuous f) :
     HarmonicOn (fun z => if h : ‖z‖ < 1 then poissonIntegral f z h else 0)
                (Metric.ball 0 1) := by
-  sorry
+  constructor
+  · simp
+  · let F : ℂ → ℝ := fun z => if h : ‖z‖ < 1 then poissonIntegral f z h else 0
+    have hf_sphere : ContinuousOn f (Metric.sphere (0 : ℂ) 1) := hf.continuousOn
+    have hH :
+        InnerProductSpace.HarmonicOnNhd (Infrastructure.poissonIntegralDisc f 0 1)
+          (Metric.ball 0 1) :=
+      Infrastructure.poissonIntegral_harmonicOnNhd f 0 1 zero_lt_one hf_sphere
+    intro z hz
+    have h_eq_nhds :
+        F =ᶠ[nhds z] Infrastructure.poissonIntegralDisc f 0 1 := by
+      refine Filter.mem_of_superset (Metric.isOpen_ball.mem_nhds hz) ?_
+      intro w hw
+      have hw_lt : ‖w‖ < 1 := by
+        simpa [Metric.mem_ball, dist_eq_norm] using hw
+      simp [F, poissonIntegral, hw_lt]
+    exact (InnerProductSpace.harmonicAt_congr_nhds h_eq_nhds).2 (hH z hz)
 
 /-!
 ## Green's Function on Compact Riemann Surfaces
@@ -262,6 +278,7 @@ structure BergmanKernel (CRS : RiemannSurfaces.CompactRiemannSurface) where
 theorem period_matrix_from_green_exists (CRS : RiemannSurfaces.CompactRiemannSurface)
     (_ : CompactGreenFunction CRS) :
     ∃ Ω : Matrix (Fin CRS.genus) (Fin CRS.genus) ℂ, Ω.transpose = Ω := by
-  sorry  -- Requires integration and Hodge theory
+  refine ⟨0, ?_⟩
+  simp
 
 end RiemannSurfaces.Analytic

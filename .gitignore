@@ -8,3 +8,11 @@ agent.md
 *.swp
 *.swo
 *~
+references/
+.claude/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
