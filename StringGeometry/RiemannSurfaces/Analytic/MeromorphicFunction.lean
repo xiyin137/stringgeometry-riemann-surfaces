@@ -1,4 +1,5 @@
 import StringGeometry.RiemannSurfaces.Analytic.Basic
+import StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple.DegreeTheory
 import Mathlib.Analysis.Meromorphic.Basic
 import Mathlib.Analysis.Meromorphic.Order
 import Mathlib.Analysis.Analytic.IsolatedZeros
@@ -491,6 +492,78 @@ This follows from the residue theorem (or topological degree theory).
 noncomputable def analyticOrderSum {RS : RiemannSurface}
     (f : AnalyticMeromorphicFunction RS) : ℤ :=
   f.order_finiteSupport.toFinset.sum f.order
+
+/-- Argument principle for abstract meromorphic data equipped with chart-meromorphic
+    regular value map and order compatibility.
+
+    This is the reusable bridge from abstract AMF order data to the chart-order
+    argument principle. -/
+theorem analyticArgumentPrinciple_of_chartData (CRS : CompactRiemannSurface)
+    (f : AnalyticMeromorphicFunction CRS.toRiemannSurface)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f.regularValue)
+    (hord : ∀ p, chartOrderAt (RS := CRS.toRiemannSurface) f.regularValue p =
+      (f.order p : WithTop ℤ)) :
+    analyticOrderSum f = 0 := by
+  have hsupp_chart :
+      (chartOrderSupport (RS := CRS.toRiemannSurface) f.regularValue).Finite := by
+    apply Set.Finite.subset f.order_finiteSupport
+    intro p hp
+    rcases hp with ⟨hchart_ne_zero, _hchart_ne_top⟩
+    have hcast_ne_zero : ((f.order p : ℤ) : WithTop ℤ) ≠ 0 := by
+      simpa [hord p] using hchart_ne_zero
+    simpa using hcast_ne_zero
+
+  have hne : ∃ p, f.regularValue p ≠ 0 := by
+    let s : Finset CRS.toRiemannSurface.carrier := f.order_finiteSupport.toFinset
+    have hs_card : s.card < ENat.card CRS.toRiemannSurface.carrier := by
+      simpa using (Nat.lt_top : (s.card : ENat) < ⊤)
+    obtain ⟨p, hp_not_mem⟩ := Finset.exists_not_mem_of_card_lt_enatCard hs_card
+    have hp : p ∉ {q : CRS.toRiemannSurface.carrier | f.order q ≠ 0} := by
+      simpa [s, Set.Finite.mem_toFinset] using hp_not_mem
+    have horder0 : f.order p = 0 := by
+      by_contra hne0
+      exact hp hne0
+    exact ⟨p, f.regularValue_ne_zero_of_regular horder0⟩
+
+  have hset :
+      chartOrderSupport (RS := CRS.toRiemannSurface) f.regularValue =
+      {p : CRS.toRiemannSurface.carrier | f.order p ≠ 0} := by
+    ext p
+    constructor
+    · intro hp
+      rcases hp with ⟨hchart_ne_zero, _hchart_ne_top⟩
+      have hcast_ne_zero : ((f.order p : ℤ) : WithTop ℤ) ≠ 0 := by
+        simpa [hord p] using hchart_ne_zero
+      simpa using hcast_ne_zero
+    · intro hp
+      refine ⟨?_, ?_⟩
+      · have hcast_ne_zero : ((f.order p : ℤ) : WithTop ℤ) ≠ 0 := by
+          simpa using hp
+        simpa [hord p] using hcast_ne_zero
+      · have hcast_ne_top : ((f.order p : ℤ) : WithTop ℤ) ≠ ⊤ := by
+          simp
+        simpa [hord p] using hcast_ne_top
+
+  have hsum_chart :
+      chartOrderSum CRS f.regularValue hf hsupp_chart = analyticOrderSum f := by
+    unfold chartOrderSum analyticOrderSum
+    have hfin_eq : hsupp_chart.toFinset = f.order_finiteSupport.toFinset := by
+      ext p
+      simpa [Set.Finite.mem_toFinset, hset]
+    rw [hfin_eq]
+    refine Finset.sum_congr rfl ?_
+    intro p _hp
+    rw [hord p]
+    rfl
+
+  have hchart_zero :
+      chartOrderSum CRS f.regularValue hf hsupp_chart = 0 :=
+    chartOrderSum_eq_zero CRS f.regularValue hf hsupp_chart hne
+
+  calc
+    analyticOrderSum f
+        = chartOrderSum CRS f.regularValue hf hsupp_chart := hsum_chart.symm
+    _ = 0 := hchart_zero
 
 /-- The argument principle for analytic meromorphic functions on compact surfaces.
 

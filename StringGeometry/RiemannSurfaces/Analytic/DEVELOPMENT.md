@@ -35,11 +35,18 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - continuity-based variant is now available:
      `fiberMultiplicity_constant_of_continuous_regular`;
      remaining gap is removing/justifying this extra regularity assumption.
-2. Hodge/duality infrastructure theorem gaps in:
+2. AMF/global-argument-principle interface
+   - bridge now available:
+     `MeromorphicFunction.analyticArgumentPrinciple_of_chartData`
+     (chart-meromorphic regularValue + chart/order compatibility).
+   - practical impact:
+     `LineBundles.linearSystem_empty_negative_degree` now uses this chart-data
+     bridge directly, reducing dependence on underdetermined abstract AMF claims.
+3. Hodge/duality infrastructure theorem gaps in:
    - `HodgeTheory/DolbeaultCohomology.lean`
    - `HodgeTheory/HodgeDecomposition.lean`
    - `HodgeTheory/SerreDuality.lean`
-3. RR endpoint theorem gaps in `RiemannRoch.lean`.
+4. RR endpoint theorem gaps in `RiemannRoch.lean`.
 
 ## Working method
 

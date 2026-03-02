@@ -166,12 +166,17 @@ theorem linearSystem_empty_negative_degree (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (hdeg : D.degree < 0) :
     IsEmpty (LinearSystem CRS.toRiemannSurface D) := by
   constructor
-  intro ⟨f, heff, _, _, _⟩
+  intro ls
   -- div(f) + D ≥ 0 means deg(div(f) + D) ≥ 0
-  have hdeg_sum : (divisorOf f + D).degree ≥ 0 := Divisor.degree_nonneg_of_effective heff
+  have hdeg_sum : (divisorOf ls.fn + D).degree ≥ 0 :=
+    Divisor.degree_nonneg_of_effective ls.effective
   rw [Divisor.degree_add] at hdeg_sum
-  -- deg(div(f)) = 0 by argument principle
-  have hdiv_zero := principal_degree_zero_compact CRS f
+  -- deg(div(f)) = 0 from chart-order argument principle + order compatibility
+  have hsum_zero : analyticOrderSum ls.fn = 0 :=
+    analyticArgumentPrinciple_of_chartData CRS ls.fn
+      (fun p => ls.chartMeromorphic p) (fun p => ls.chartOrderAt_eq p)
+  have hdiv_zero : (divisorOf ls.fn).degree = 0 :=
+    (principal_divisor_degree_zero CRS ls.fn).trans hsum_zero
   rw [hdiv_zero] at hdeg_sum
   simp at hdeg_sum
   omega

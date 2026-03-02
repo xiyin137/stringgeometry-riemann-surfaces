@@ -33,6 +33,29 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: AMF chart-data argument-principle bridge)
+- `Analytic/MeromorphicFunction.lean`:
+  - added `analyticArgumentPrinciple_of_chartData`:
+    for `AnalyticMeromorphicFunction` data equipped with
+    `IsChartMeromorphic` on `regularValue` plus pointwise order compatibility
+    (`chartOrderAt = order`), proved `analyticOrderSum f = 0` by reduction to
+    `chartOrderSum_eq_zero`.
+  - this provides a reusable bridge from abstract AMF order fields to the chart-level
+    argument-principle infrastructure without changing existing theorem statements.
+- `Analytic/LineBundles.lean`:
+  - rewired `linearSystem_empty_negative_degree` to use the new bridge directly
+    from `LinearSystem.chartMeromorphic` and `LinearSystem.chartOrderAt_eq`,
+    instead of depending on the abstract `principal_degree_zero_compact` path.
+  - effect: RR-chain infrastructure now depends on explicit chart-meromorphic
+    compatibility data at this step.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/MeromorphicFunction.lean`
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/LineBundles.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.MeromorphicFunction`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic`
+  - status: pass (warnings only; theorem-level `sorry` warnings remain).
+
 ### Incremental Update (latest pass: regular-value compatibility chain repair)
 - `Helpers/ArgumentPrinciple.lean`:
   - repaired the new regular-value compatibility chain so it compiles:
