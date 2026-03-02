@@ -18,6 +18,7 @@
 - Development guide: `StringGeometry/RiemannSurfaces/Analytic/DEVELOPMENT.md`
 - Proof ideas:
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/ArgumentPrincipleRoadmap.md`
+  - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/FiberMultiplicityBridge.md`
 
 ## Reference Baseline (Griffiths-Harris style)
 - Priority references for the current analytic path:
