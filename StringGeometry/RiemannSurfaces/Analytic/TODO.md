@@ -47,6 +47,17 @@
   - added local bridge ingredient
     `eq_const_of_shift_pos_of_continuousAt`:
     under chart continuity, positive order of `f - c` at `p` implies `f p = c`.
+  - added reverse/local-global bridge chain under regular-point continuity:
+    - `shift_pos_of_eq_const_of_continuousAt`
+    - `shift_pos_iff_eq_const_of_continuousAt`
+    - `fiberSet_eq_zeroSet_sub_const_of_continuous_regular`
+    - `fiberMultiplicity_eq_zeroSum_of_continuous_regular`
+    - `totalPoleOrder_sub_const_eq_of_chartMeromorphic`
+    - `fiberMultiplicity_eq_totalPoleOrder_sub_const_of_continuous_regular`
+    - `fiberMultiplicity_constant_of_continuous_regular`
+  - added helper
+    `exists_regular_ne_value_of_nonconstant_regularLocus`
+    to extract regular witnesses for nonconstancy.
 - `Helpers/AnalyticExtension.lean`:
   - added
     `correctedValue_eq_of_continuousAt`:

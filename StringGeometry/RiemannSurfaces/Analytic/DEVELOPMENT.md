@@ -32,6 +32,9 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - missing bridge target: connect point-value fibers
      `{p | f p = c ∧ 0 ≤ ord_p(f)}`
      to the germ-level zero multiplicity of `f - c` (likely via corrected-value infrastructure).
+   - continuity-based variant is now available:
+     `fiberMultiplicity_constant_of_continuous_regular`;
+     remaining gap is removing/justifying this extra regularity assumption.
 2. Hodge/duality infrastructure theorem gaps in:
    - `HodgeTheory/DolbeaultCohomology.lean`
    - `HodgeTheory/HodgeDecomposition.lean`

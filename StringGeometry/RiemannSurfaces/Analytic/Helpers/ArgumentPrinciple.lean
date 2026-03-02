@@ -290,6 +290,21 @@ private theorem exists_ne_value_of_nonconstant_regularLocus {RS : RiemannSurface
     exact hpq (hpc.trans hqc.symm)
   · exact ⟨p, hpc⟩
 
+/-- If `f` is nonconstant on its regular locus, then for every `c` there is a
+    regular point with value not equal to `c`. -/
+private theorem exists_regular_ne_value_of_nonconstant_regularLocus {RS : RiemannSurface}
+    (f : RS.carrier → ℂ)
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := RS) f →
+      q ∈ regularLocus (RS := RS) f → f p = f q)
+    (c : ℂ) :
+    ∃ p : RS.carrier, p ∈ regularLocus (RS := RS) f ∧ f p ≠ c := by
+  obtain ⟨p, q, hp, hq, hpq⟩ := exists_distinct_values_on_regularLocus (RS := RS) f hnc
+  by_cases hpc : f p = c
+  · refine ⟨q, hq, ?_⟩
+    intro hqc
+    exact hpq (hpc.trans hqc.symm)
+  · exact ⟨p, hp, hpc⟩
+
 /-- **Fiber multiplicity**: the sum of chart orders of f - c over all preimages
     of c in the regular locus. -/
 noncomputable def fiberMultiplicity (CRS : CompactRiemannSurface)
@@ -894,6 +909,39 @@ private theorem eq_const_of_shift_pos_of_continuousAt {RS : RiemannSurface}
   have hg_p_zero : g p = 0 := by
     exact hcv_eq.symm.trans hcv_zero
   simpa [g, sub_eq_zero] using hg_p_zero
+
+/-- Under chart-level continuity, point-value equality `f p = c` forces positive order of `f - c`. -/
+private theorem shift_pos_of_eq_const_of_continuousAt {RS : RiemannSurface}
+    {f : RS.carrier → ℂ} {p : RS.carrier} {c : ℂ}
+    (hf : IsChartMeromorphic (RS := RS) f)
+    (hcont : ContinuousAt (chartRep (RS := RS) f p) (chartPt (RS := RS) p))
+    (hEq : f p = c) :
+    (0 : WithTop ℤ) < chartOrderAt (RS := RS) (fun x => f x - c) p := by
+  let g : RS.carrier → ℂ := fun x => f x - c
+  have hg : IsChartMeromorphic (RS := RS) g :=
+    chartMeromorphic_sub_const (RS := RS) c hf
+  have hrep_sub : chartRep (RS := RS) g p = fun z => chartRep (RS := RS) f p z - c := by
+    ext z
+    simp [g, chartRep, Function.comp]
+  have hcont_g : ContinuousAt (chartRep (RS := RS) g p) (chartPt (RS := RS) p) := by
+    have hcont_sub : ContinuousAt (fun z => chartRep (RS := RS) f p z - c)
+        (chartPt (RS := RS) p) := hcont.sub continuousAt_const
+    simpa [hrep_sub] using hcont_sub
+  have hgp0 : g p = 0 := by
+    simpa [g, sub_eq_zero] using hEq
+  exact chartOrderAt_pos_of_zero (RS := RS) hg p hgp0 hcont_g
+
+/-- Under chart-level continuity, positive order of `f - c` is equivalent to `f p = c`. -/
+private theorem shift_pos_iff_eq_const_of_continuousAt {RS : RiemannSurface}
+    {f : RS.carrier → ℂ} {p : RS.carrier} {c : ℂ}
+    (hf : IsChartMeromorphic (RS := RS) f)
+    (hcont : ContinuousAt (chartRep (RS := RS) f p) (chartPt (RS := RS) p)) :
+    ((0 : WithTop ℤ) < chartOrderAt (RS := RS) (fun x => f x - c) p) ↔ f p = c := by
+  constructor
+  · intro hpos
+    exact eq_const_of_shift_pos_of_continuousAt (RS := RS) hf hcont hpos
+  · intro hEq
+    exact shift_pos_of_eq_const_of_continuousAt (RS := RS) hf hcont hEq
 
 /-!
 ## Local Pole Preimage Lemma
@@ -3402,5 +3450,276 @@ theorem fiberMultiplicity_constant_of_chartOrderSum_bridge
           (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
           (chartOrderSupport_sub_const_finite CRS f c₂ hf) := hsum₂.symm
     _ = fiberMultiplicity CRS f c₂ hfib₂ := (hbridge c₂ hfib₂).symm
+
+/-- Under regular-point chart continuity, the point-value regular fiber set at `c`
+    coincides with the zero set of `f - c`. -/
+theorem fiberSet_eq_zeroSet_sub_const_of_continuous_regular
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hcont_reg : ∀ p, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p →
+      ContinuousAt (chartRep (RS := CRS.toRiemannSurface) f p)
+        (chartPt (RS := CRS.toRiemannSurface) p))
+    (c : ℂ)
+    (hne_top_shift : ∀ p,
+      chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p ≠ ⊤)
+    :
+    {p : CRS.toRiemannSurface.carrier |
+      f p = c ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p} =
+      zeroSet (RS := CRS.toRiemannSurface) (fun x => f x - c) := by
+  ext p
+  constructor
+  · intro hp
+    rcases hp with ⟨hpEq, hnonneg_f⟩
+    have hcont_p : ContinuousAt
+        (chartRep (RS := CRS.toRiemannSurface) f p)
+        (chartPt (RS := CRS.toRiemannSurface) p) :=
+      hcont_reg p hnonneg_f
+    have hpos_shift :
+        (0 : WithTop ℤ) < chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p :=
+      shift_pos_of_eq_const_of_continuousAt (RS := CRS.toRiemannSurface) hf hcont_p hpEq
+    exact ⟨hpos_shift, hne_top_shift p⟩
+  · intro hp
+    rcases hp with ⟨hpos_shift, _hne_top_shift⟩
+    have hnonneg_shift :
+        (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p :=
+      le_of_lt hpos_shift
+    have hnonneg_f :
+        (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p :=
+      (chartOrderAt_sub_const_nonneg_iff (RS := CRS.toRiemannSurface) (f := f) (p := p) c).1
+        hnonneg_shift
+    have hcont_p : ContinuousAt
+        (chartRep (RS := CRS.toRiemannSurface) f p)
+        (chartPt (RS := CRS.toRiemannSurface) p) :=
+      hcont_reg p hnonneg_f
+    have hpEq : f p = c :=
+      eq_const_of_shift_pos_of_continuousAt (RS := CRS.toRiemannSurface) hf hcont_p hpos_shift
+    exact ⟨hpEq, hnonneg_f⟩
+
+/-- Under regular-point chart continuity, fiber multiplicity equals the shifted zero-order sum. -/
+theorem fiberMultiplicity_eq_zeroSum_of_continuous_regular
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hcont_reg : ∀ p, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p →
+      ContinuousAt (chartRep (RS := CRS.toRiemannSurface) f p)
+        (chartPt (RS := CRS.toRiemannSurface) p))
+    (c : ℂ)
+    (hne_top_shift : ∀ p,
+      chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p ≠ ⊤)
+    (hfib : {p : CRS.toRiemannSurface.carrier |
+      f p = c ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite) :
+    fiberMultiplicity CRS f c hfib =
+      (zeroSet_finite CRS (fun x => f x - c)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+        (chartOrderSupport_sub_const_finite CRS f c hf)).toFinset.sum
+          (fun p => (chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p).getD 0) := by
+  unfold fiberMultiplicity
+  have hset :
+      {p : CRS.toRiemannSurface.carrier |
+        f p = c ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p} =
+      zeroSet (RS := CRS.toRiemannSurface) (fun x => f x - c) :=
+    fiberSet_eq_zeroSet_sub_const_of_continuous_regular CRS f hf hcont_reg c hne_top_shift
+  have hfin_eq :
+      hfib.toFinset =
+        (zeroSet_finite CRS (fun x => f x - c)
+          (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+          (chartOrderSupport_sub_const_finite CRS f c hf)).toFinset := by
+    ext p
+    simp [Set.Finite.mem_toFinset, hset]
+  rw [hfin_eq]
+
+/-- Total pole order of `f - c` is independent of `c`. -/
+theorem totalPoleOrder_sub_const_eq_of_chartMeromorphic
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (c₁ c₂ : ℂ) :
+    totalPoleOrder CRS (fun x => f x - c₁)
+      (poleSet_finite CRS (fun x => f x - c₁)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₁ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₁ hf)) =
+    totalPoleOrder CRS (fun x => f x - c₂)
+      (poleSet_finite CRS (fun x => f x - c₂)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
+        (chartOrderSupport_sub_const_finite CRS f c₂ hf)) := by
+  set hpole₁ : (poleSet (RS := CRS.toRiemannSurface) (fun x => f x - c₁)).Finite :=
+    poleSet_finite CRS (fun x => f x - c₁)
+      (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₁ hf)
+      (chartOrderSupport_sub_const_finite CRS f c₁ hf)
+  set hpole₂ : (poleSet (RS := CRS.toRiemannSurface) (fun x => f x - c₂)).Finite :=
+    poleSet_finite CRS (fun x => f x - c₂)
+      (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
+      (chartOrderSupport_sub_const_finite CRS f c₂ hf)
+  have hset :
+      poleSet (RS := CRS.toRiemannSurface) (fun x => f x - c₁) =
+      poleSet (RS := CRS.toRiemannSurface) (fun x => f x - c₂) := by
+    ext p
+    exact Iff.trans
+      (chartOrderAt_sub_const_lt_zero_iff (RS := CRS.toRiemannSurface)
+        (f := f) (p := p) c₁)
+      (chartOrderAt_sub_const_lt_zero_iff (RS := CRS.toRiemannSurface)
+        (f := f) (p := p) c₂).symm
+  have hfin_eq : hpole₁.toFinset = hpole₂.toFinset := by
+    ext p
+    simp [Set.Finite.mem_toFinset, hset]
+  unfold totalPoleOrder
+  rw [← hfin_eq]
+  refine Finset.sum_congr rfl ?_
+  intro p hp
+  have hpole_shift₁ :
+      chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₁) p < 0 := by
+    have hp_mem :
+        p ∈ poleSet (RS := CRS.toRiemannSurface) (fun x => f x - c₁) := by
+      exact (hpole₁.mem_toFinset.mp hp)
+    simpa [poleSet, Set.mem_setOf_eq] using hp_mem
+  have hpole_f : chartOrderAt (RS := CRS.toRiemannSurface) f p < 0 :=
+    (chartOrderAt_sub_const_lt_zero_iff (RS := CRS.toRiemannSurface)
+      (f := f) (p := p) c₁).1 hpole_shift₁
+  have hord₁ :
+      chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₁) p =
+        chartOrderAt (RS := CRS.toRiemannSurface) f p :=
+    chartOrderAt_sub_const_at_pole (RS := CRS.toRiemannSurface) (f := f) (p := p) c₁ hpole_f
+  have horder₂ :
+      chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c₂) p =
+        chartOrderAt (RS := CRS.toRiemannSurface) f p :=
+    chartOrderAt_sub_const_at_pole (RS := CRS.toRiemannSurface) (f := f) (p := p) c₂ hpole_f
+  rw [hord₁, horder₂]
+
+/-- Under regular-point chart continuity, fiber multiplicity equals total pole order of `f - c`. -/
+theorem fiberMultiplicity_eq_totalPoleOrder_sub_const_of_continuous_regular
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hcont_reg : ∀ p, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p →
+      ContinuousAt (chartRep (RS := CRS.toRiemannSurface) f p)
+        (chartPt (RS := CRS.toRiemannSurface) p))
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q)
+    (c : ℂ)
+    (hfib : {p : CRS.toRiemannSurface.carrier |
+      f p = c ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite) :
+    fiberMultiplicity CRS f c hfib =
+      totalPoleOrder CRS (fun x => f x - c)
+        (poleSet_finite CRS (fun x => f x - c)
+          (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+          (chartOrderSupport_sub_const_finite CRS f c hf)) := by
+  set Zsum : ℤ :=
+    (zeroSet_finite CRS (fun x => f x - c)
+      (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+      (chartOrderSupport_sub_const_finite CRS f c hf)).toFinset.sum
+        (fun p => (chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p).getD 0)
+  set Psum : ℤ :=
+    totalPoleOrder CRS (fun x => f x - c)
+      (poleSet_finite CRS (fun x => f x - c)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+        (chartOrderSupport_sub_const_finite CRS f c hf))
+  have hne_top_shift : ∀ p,
+      chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p ≠ ⊤ := by
+    obtain ⟨p₀, hp₀reg, hp₀ne⟩ := exists_regular_ne_value_of_nonconstant_regularLocus
+      (RS := CRS.toRiemannSurface) f hnc c
+    have hnonneg₀ :
+        (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p₀ := hp₀reg
+    have hcont₀ : ContinuousAt
+        (chartRep (RS := CRS.toRiemannSurface) f p₀)
+        (chartPt (RS := CRS.toRiemannSurface) p₀) :=
+      hcont_reg p₀ hnonneg₀
+    have hfc : IsChartMeromorphic (RS := CRS.toRiemannSurface) (fun x => f x - c) :=
+      chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf
+    have hrep_sub₀ : chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ =
+        fun z => chartRep (RS := CRS.toRiemannSurface) f p₀ z - c := by
+      ext z
+      simp [chartRep, Function.comp]
+    have hcont_shift₀ : ContinuousAt
+        (chartRep (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀)
+        (chartPt (RS := CRS.toRiemannSurface) p₀) := by
+      have hcont_sub₀ : ContinuousAt
+          (fun z => chartRep (RS := CRS.toRiemannSurface) f p₀ z - c)
+          (chartPt (RS := CRS.toRiemannSurface) p₀) := hcont₀.sub continuousAt_const
+      simpa [hrep_sub₀] using hcont_sub₀
+    have hne_shift₀ : (fun x => f x - c) p₀ ≠ 0 := by
+      simpa [sub_eq_zero] using hp₀ne
+    have hzero₀ :
+        chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ = 0 :=
+      chartOrderAt_eq_zero_of_continuousAt_ne_zero (RS := CRS.toRiemannSurface)
+        hfc p₀ hcont_shift₀ hne_shift₀
+    have hp₀_ne_top :
+        chartOrderAt (RS := CRS.toRiemannSurface) (fun x => f x - c) p₀ ≠ ⊤ := by
+      rw [hzero₀]
+      exact WithTop.zero_ne_top
+    intro p
+    exact chartOrderAt_ne_top_of_ne_top_somewhere (RS := CRS.toRiemannSurface)
+      (fun x => f x - c) hfc p₀ hp₀_ne_top p
+  have hfib_eq_Zsum : fiberMultiplicity CRS f c hfib = Zsum := by
+    simpa [Zsum] using
+      fiberMultiplicity_eq_zeroSum_of_continuous_regular CRS f hf hcont_reg c
+        hne_top_shift hfib
+  have hsplit :
+      chartOrderSum CRS (fun x => f x - c)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+        (chartOrderSupport_sub_const_finite CRS f c hf) = Zsum - Psum := by
+    simp [Zsum, Psum, chartOrderSum_split]
+  have hsum_zero :
+      chartOrderSum CRS (fun x => f x - c)
+        (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+        (chartOrderSupport_sub_const_finite CRS f c hf) = 0 :=
+    chartOrderSum_sub_const_eq_zero_of_nonconstant_regularLocus CRS f hf hnc c
+  have hZ_eq_P : Zsum = Psum := by
+    linarith [hsplit, hsum_zero]
+  calc
+    fiberMultiplicity CRS f c hfib = Zsum := hfib_eq_Zsum
+    _ = Psum := hZ_eq_P
+    _ = totalPoleOrder CRS (fun x => f x - c)
+          (poleSet_finite CRS (fun x => f x - c)
+            (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c hf)
+            (chartOrderSupport_sub_const_finite CRS f c hf)) := by
+          rfl
+
+/-- Continuity-based fiber multiplicity constancy.
+    This is the chart-continuous regular-locus variant of `fiberMultiplicity_constant`. -/
+theorem fiberMultiplicity_constant_of_continuous_regular
+    (CRS : CompactRiemannSurface)
+    (f : CRS.toRiemannSurface.carrier → ℂ)
+    (hf : IsChartMeromorphic (RS := CRS.toRiemannSurface) f)
+    (hcont_reg : ∀ p, (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p →
+      ContinuousAt (chartRep (RS := CRS.toRiemannSurface) f p)
+        (chartPt (RS := CRS.toRiemannSurface) p))
+    (hnc : ¬ ∀ p q, p ∈ regularLocus (RS := CRS.toRiemannSurface) f →
+      q ∈ regularLocus (RS := CRS.toRiemannSurface) f → f p = f q) :
+    ∀ (c₁ c₂ : ℂ)
+      (hfib₁ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₁ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite)
+      (hfib₂ : {p : CRS.toRiemannSurface.carrier |
+        f p = c₂ ∧ (0 : WithTop ℤ) ≤ chartOrderAt (RS := CRS.toRiemannSurface) f p}.Finite),
+      fiberMultiplicity CRS f c₁ hfib₁ = fiberMultiplicity CRS f c₂ hfib₂ := by
+  intro c₁ c₂ hfib₁ hfib₂
+  have hfib₁_eq :
+      fiberMultiplicity CRS f c₁ hfib₁ =
+        totalPoleOrder CRS (fun x => f x - c₁)
+          (poleSet_finite CRS (fun x => f x - c₁)
+            (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₁ hf)
+            (chartOrderSupport_sub_const_finite CRS f c₁ hf)) :=
+    fiberMultiplicity_eq_totalPoleOrder_sub_const_of_continuous_regular
+      CRS f hf hcont_reg hnc c₁ hfib₁
+  have hfib₂_eq :
+      fiberMultiplicity CRS f c₂ hfib₂ =
+        totalPoleOrder CRS (fun x => f x - c₂)
+          (poleSet_finite CRS (fun x => f x - c₂)
+            (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
+            (chartOrderSupport_sub_const_finite CRS f c₂ hf)) :=
+    fiberMultiplicity_eq_totalPoleOrder_sub_const_of_continuous_regular
+      CRS f hf hcont_reg hnc c₂ hfib₂
+  calc
+    fiberMultiplicity CRS f c₁ hfib₁
+        = totalPoleOrder CRS (fun x => f x - c₁)
+            (poleSet_finite CRS (fun x => f x - c₁)
+              (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₁ hf)
+              (chartOrderSupport_sub_const_finite CRS f c₁ hf)) := hfib₁_eq
+    _ = totalPoleOrder CRS (fun x => f x - c₂)
+          (poleSet_finite CRS (fun x => f x - c₂)
+            (chartMeromorphic_sub_const (RS := CRS.toRiemannSurface) c₂ hf)
+            (chartOrderSupport_sub_const_finite CRS f c₂ hf)) :=
+      totalPoleOrder_sub_const_eq_of_chartMeromorphic CRS f hf c₁ c₂
+    _ = fiberMultiplicity CRS f c₂ hfib₂ := hfib₂_eq.symm
 
 end RiemannSurfaces.Analytic

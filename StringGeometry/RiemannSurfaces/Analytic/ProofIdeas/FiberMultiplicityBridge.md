@@ -45,8 +45,16 @@ under explicit regularity assumptions.
    `correctedValue_eq_of_continuousAt` in `Helpers/AnalyticExtension.lean`.
 2. Added:
    `eq_const_of_shift_pos_of_continuousAt` in `Helpers/ArgumentPrinciple.lean`.
-3. Next:
-   prove the reverse local direction needed for fiber equality
-   (value fiber -> positive shift order under regularity assumptions).
-4. Finish the chartOrderSum/fiber equality lemma and use
-   `fiberMultiplicity_constant_of_chartOrderSum_bridge`.
+3. Added:
+   reverse/local-global continuity bridge chain in `Helpers/ArgumentPrinciple.lean`:
+   - `shift_pos_of_eq_const_of_continuousAt`
+   - `shift_pos_iff_eq_const_of_continuousAt`
+   - `fiberSet_eq_zeroSet_sub_const_of_continuous_regular`
+   - `fiberMultiplicity_eq_zeroSum_of_continuous_regular`
+   - `totalPoleOrder_sub_const_eq_of_chartMeromorphic`
+   - `fiberMultiplicity_eq_totalPoleOrder_sub_const_of_continuous_regular`
+   - `fiberMultiplicity_constant_of_continuous_regular`
+4. Remaining high-priority gap:
+   upgrade from continuity-based variant to the original
+   `fiberMultiplicity_constant` statement (currently no continuity/regularity assumption),
+   or refactor statement/definition to a germ-compatible formulation.
