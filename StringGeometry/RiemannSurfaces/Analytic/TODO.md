@@ -33,6 +33,27 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: removed `del_real_smooth_section` blocker)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - removed theorem-level `sorry` `del_real_smooth_section` by refactoring
+    `del_real` to the mathematically equivalent conjugation form
+    `del_real f := (dbar_real_hd f.conj).conj`.
+  - rewrote `del_real_add`, `del_real_zero`, and `del_real_const_mul` to derive
+    from `dbar_real_hd_*` linearity plus conjugation identities
+    (`RealSmoothFunction.conj_*`, `Form_01.conj_*`).
+  - net effect: one deep theorem-level `sorry` closed in the core Hodge file
+    without weakening statements or introducing wrappers.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - `scripts/check_lean_file_length.sh 2000`
+  - status: pass (warnings only).
+- Next 3 concrete targets:
+  1. close `HodgeDecomposition.dbar_real_hd_smooth_section`;
+  2. close `HodgeDecomposition.hodge_isomorphism`;
+  3. close `DolbeaultCohomology.dolbeault_hodge_iso` using the stabilized Hodge layer.
+
 ### Incremental Update (latest pass: closed `l2_inner_product_10_exists`)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - closed `l2_inner_product_10_exists` with a concrete algebraic construction:

@@ -25,6 +25,20 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 5. `Helpers/ArgumentPrinciple.lean`
 6. `RiemannRoch.lean`
 
+## Recent progress (2026-03-02)
+
+1. `HodgeDecomposition.del_real` was refactored to
+   `del_real f := (dbar_real_hd f.conj).conj`.
+2. This removed the separate `del_real_smooth_section` proof obligation and closed
+   one theorem-level `sorry` in the Hodge core.
+3. `del_real_add`, `del_real_zero`, `del_real_const_mul` now derive from
+   `dbar_real_hd_*` linearity plus conjugation lemmas.
+4. Compile frontier checked:
+   - `HodgeTheory/HodgeDecomposition.lean`
+   - `HodgeTheory/SerreDuality`
+   - `Analytic/RiemannRoch`
+   (all passing with warnings only).
+
 ## Current blocker clusters
 
 1. Fiber-multiplicity bridge in `Helpers/ArgumentPrinciple.lean`
@@ -48,8 +62,9 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/DolbeaultCohomology.lean`
    - `HodgeTheory/HodgeDecomposition.lean`
    - `HodgeTheory/SerreDuality.lean`
-   - note: `HodgeDecomposition.l2_inner_product_10_exists` is now closed; remaining
-     Hodge infrastructure blockers are primarily decomposition/isomorphism/smoothness lemmas.
+   - note: `HodgeDecomposition.l2_inner_product_10_exists` and
+     `del_real_smooth_section` are now closed; the primary remaining low-level
+     Hodge infrastructure blocker is `dbar_real_hd_smooth_section`.
 4. RR endpoint theorem gaps in `RiemannRoch.lean`.
 
 ## Working method
