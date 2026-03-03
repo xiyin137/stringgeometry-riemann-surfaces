@@ -137,6 +137,24 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `RiemannRoch`
     - `Analytic/Analytic`
     (pass with warnings only).
+30. Added reusable RR-dimension infrastructure in `RiemannRoch.lean`:
+    - `h0_le_of_no_linIndep_succ`,
+    - `h0_has_upper_bound`,
+    - `h0_eq_zero_iff_no_linIndep_one`,
+    - `h0_pos_of_exists_linIndep_one`,
+    - `h0_eq_zero_of_linearSystem_empty`.
+31. Refactored `h0_vanishes_negative_degree` to use
+    `h0_eq_zero_of_linearSystem_empty` instead of a duplicated local `Nat.find_eq_zero`
+    argument.
+32. Refactored `h0_trivial` lower-bound branch to use
+    `h0_pos_of_exists_linIndep_one`, reducing local `Nat.find` proof boilerplate.
+33. Why this infrastructure matters:
+    it turns ad-hoc `h0` arguments into reusable transfer principles around the
+    `Nat.find` characterization, which is the current RR-core dimension framework.
+34. Compile frontier re-checked after this infrastructure pass:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/RiemannRoch.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
 
 ## Current blocker clusters
 
@@ -166,6 +184,9 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - note: `HodgeDecomposition.l2_inner_product_10_exists` and
      `del_real_smooth_section` are now closed; the primary remaining low-level
      Hodge infrastructure blocker is `dbar_real_hd_smooth_section`.
+   - next infrastructure target for that blocker:
+     formulate/prove a fixed-chart local bridge for `∂̄` coefficients and then
+     lift to global smoothness without relying on chart-at-point variation heuristics.
    - decomposition theorem statements are now corrected to ℝ-smooth `dbar_real_hd`/`del_real`
      forms; the remaining work is proof closure, not statement repair.
    - `hodge_decomposition_10` is now closed by reduction to the `(0,1)` case; the

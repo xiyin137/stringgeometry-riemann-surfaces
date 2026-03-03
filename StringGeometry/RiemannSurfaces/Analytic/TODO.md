@@ -19,6 +19,7 @@
 - Proof ideas:
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/ArgumentPrincipleRoadmap.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/FiberMultiplicityBridge.md`
+  - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/DbarRealSmoothnessPlan.md`
 
 ## Reference Baseline (Griffiths-Harris style)
 - Priority references for the current analytic path:
@@ -32,6 +33,30 @@
   - RR correction-term steps via divisor/cohomology exact sequences.
 
 ## Development Snapshot (2026-03-02)
+
+### Incremental Update (latest pass: strengthened `h0` infrastructure in RR core)
+- `Analytic/RiemannRoch.lean`:
+  - added `h0_le_of_no_linIndep_succ`:
+    a generic transfer lemma from "no `(N+1)`-independent family exists" to `h0 ≤ N`.
+  - added `h0_has_upper_bound`:
+    packages `h0_bounded` into an explicit existential bound `∃ N, h0 ≤ N`.
+  - added `h0_eq_zero_iff_no_linIndep_one`:
+    explicit zero-characterization at the singleton-independence level.
+  - added `h0_pos_of_exists_linIndep_one`:
+    singleton-independence gives strict positivity of `h0`.
+  - added `h0_eq_zero_of_linearSystem_empty`:
+    a reusable emptiness-to-dimension lemma (`L(D)=∅ ⇒ h0(D)=0`).
+  - refactored the lower-bound half of `h0_trivial` to use
+    `h0_pos_of_exists_linIndep_one` instead of inlined `Nat.find` plumbing.
+  - refactored `h0_vanishes_negative_degree` to use the new generic emptiness lemma.
+- Why this matters:
+  - deepens reusable RR infrastructure around the `Nat.find`-based `h0` definition.
+  - removes local duplication and gives a canonical upper-bound interface for downstream
+    canonical/divisor dimension arguments.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/RiemannRoch.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
 
 ### Incremental Update (latest pass: closed `deg_canonical_eq_2g_minus_2` as a RR corollary)
 - `Analytic/RiemannRoch.lean`:

@@ -419,6 +419,54 @@ theorem h0_spec (CRS : CompactRiemannSurface)
   unfold h0
   exact Nat.find_spec (h0_find_pred CRS D)
 
+/-- Generic upper bound transfer for `h0`.
+
+    If there are no `N+1` linearly independent sections, then `h⁰(D) ≤ N`. -/
+theorem h0_le_of_no_linIndep_succ (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) (N : ℕ)
+    (hN : ¬ ∃ (basis : Fin (N + 1) → LinearSystem CRS.toRiemannSurface D),
+      IsLinIndepLS CRS D basis) :
+    h0 CRS D ≤ N := by
+  unfold h0
+  exact Nat.find_min' (h0_find_pred CRS D) hN
+
+/-- The `h0` dimension is finite: there exists an explicit natural upper bound. -/
+theorem h0_has_upper_bound (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) :
+    ∃ N : ℕ, h0 CRS D ≤ N := by
+  obtain ⟨N, hN⟩ := h0_bounded CRS D
+  refine ⟨N, h0_le_of_no_linIndep_succ CRS D N ?_⟩
+  exact hN (N + 1) (Nat.lt_succ_self N)
+
+/-- `h⁰(D) = 0` iff there is no linearly independent singleton in `L(D)`. -/
+theorem h0_eq_zero_iff_no_linIndep_one (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) :
+    h0 CRS D = 0 ↔
+      ¬ ∃ (basis : Fin 1 → LinearSystem CRS.toRiemannSurface D),
+        IsLinIndepLS CRS D basis := by
+  unfold h0
+  exact Nat.find_eq_zero (h0_find_pred CRS D)
+
+/-- Existence of a linearly independent singleton implies `h⁰(D) > 0`. -/
+theorem h0_pos_of_exists_linIndep_one (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface)
+    (h1 : ∃ (basis : Fin 1 → LinearSystem CRS.toRiemannSurface D),
+      IsLinIndepLS CRS D basis) :
+    0 < h0 CRS D := by
+  by_contra h0_not_pos
+  have h0_zero : h0 CRS D = 0 := Nat.eq_zero_of_not_pos h0_not_pos
+  exact (h0_eq_zero_iff_no_linIndep_one CRS D).mp h0_zero h1
+
+/-- If the linear system `L(D)` is empty, then `h⁰(D) = 0`. -/
+theorem h0_eq_zero_of_linearSystem_empty (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface)
+    (hempty : IsEmpty (LinearSystem CRS.toRiemannSurface D)) :
+    h0 CRS D = 0 := by
+  unfold h0
+  rw [Nat.find_eq_zero]
+  intro ⟨basis, _⟩
+  exact hempty.false (basis ⟨0, Nat.zero_lt_one⟩)
+
 /-- h⁰ vanishes for divisors of negative degree.
 
     When deg(D) < 0, L(D) is empty: no meromorphic function f satisfies
@@ -428,13 +476,7 @@ theorem h0_vanishes_negative_degree (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (hdeg : D.degree < 0) :
     h0 CRS D = 0 := by
   have hempty := linearSystem_empty_negative_degree CRS D hdeg
-  -- h0 = Nat.find (...), and we need to show the predicate holds at 0
-  unfold h0
-  rw [Nat.find_eq_zero]
-  -- Need: ¬ ∃ basis : Fin 1 → LinearSystem, IsLinIndepLS
-  intro ⟨basis, _⟩
-  -- LinearSystem is empty, so Fin 1 → LinearSystem is impossible
-  exact hempty.false (basis ⟨0, Nat.zero_lt_one⟩)
+  exact h0_eq_zero_of_linearSystem_empty CRS D hempty
 
 /-!
 ## The Canonical Bundle
@@ -633,11 +675,11 @@ theorem h0_trivial (CRS : CompactRiemannSurface) :
   show Nat.find (h0_find_pred CRS 0) = 1
   apply le_antisymm
   · exact Nat.find_le (linearSystem_zero_no_two_indep CRS)
-  · have h0ne : Nat.find (h0_find_pred CRS 0) ≠ 0 := by
-      intro heq
-      rw [Nat.find_eq_zero] at heq
-      exact heq ⟨fun _ => one_linearSystem CRS.toRiemannSurface,
-             one_linIndep_in_L0 CRS⟩
+  · have h0pos : 0 < h0 CRS (0 : Divisor CRS.toRiemannSurface) := by
+      exact h0_pos_of_exists_linIndep_one CRS (0 : Divisor CRS.toRiemannSurface)
+        ⟨fun _ => one_linearSystem CRS.toRiemannSurface, one_linIndep_in_L0 CRS⟩
+    have h0ne : Nat.find (h0_find_pred CRS 0) ≠ 0 := by
+      exact Nat.ne_zero_of_lt h0pos
     omega
 
 /-!

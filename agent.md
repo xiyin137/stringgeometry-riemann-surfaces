@@ -28,6 +28,10 @@ This file is the working guidance for Codex in this repository.
    - a closed deep theorem, or
    - a new reusable infrastructure lemma that unblocks deep theorems, or
    - a precise blocker report with failed attempts and next concrete bridge lemma.
+6. Do not hesitate to expand and deepen infrastructure when core proofs are blocked:
+   - prefer adding robust bridge lemmas/definitions over repeatedly forcing the same stuck goal,
+   - invest in reusable abstractions that shorten multiple downstream proofs,
+   - treat "infrastructure debt" payoff as first-class progress.
 
 ## Core rigor rules
 
@@ -54,15 +58,16 @@ This file is the working guidance for Codex in this repository.
 4. For complex goals, split proofs into helper lemmas with explicit names and purposes.
 5. For hard proofs, build helper lemmas and infrastructure instead of forcing brittle one-shot scripts.
 6. When infrastructure is broadly useful, move it into reusable helper files/subfolders.
-7. Keep unfinished but promising strategies documented in local proof-notes files:
+7. Prefer one solid infrastructure pass over many shallow retries on the same terminal goal.
+8. Keep unfinished but promising strategies documented in local proof-notes files:
    - module `TODO.md` files (for example in `StringGeometry/RiemannSurfaces/`, `StringGeometry/Supermanifolds/`, `StringGeometry/Topology/`)
    - `ProofIdeas/` notes where available (especially `StringGeometry/Supermanifolds/ProofIdeas/`)
    - relevant `PLAN.md` / status notes near active files
-8. Keep module TODO/status tracking updated as obligations move.
-9. Re-check nearby definitions whenever a theorem is unexpectedly difficult.
-10. Always re-check soundness after progress; successful compilation is necessary but not sufficient.
-11. After 2 distinct failed in-file proof attempts, move to scratch/test files, get a compiling micro-lemma, then port back.
-12. If backing out of an approach, record the failed route and concrete blocker in local TODO/proof notes.
+9. Keep module TODO/status tracking updated as obligations move.
+10. Re-check nearby definitions whenever a theorem is unexpectedly difficult.
+11. Always re-check soundness after progress; successful compilation is necessary but not sufficient.
+12. After 2 distinct failed in-file proof attempts, move to scratch/test files, get a compiling micro-lemma, then port back.
+13. If backing out of an approach, record the failed route and concrete blocker in local TODO/proof notes.
 
 ## Build and tooling rules
 
