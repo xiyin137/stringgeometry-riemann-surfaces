@@ -622,6 +622,81 @@ noncomputable def del_01 (ω : Form_01 RS) : Form_11 RS := by
     wirtingerDeriv_z (ω.toSection ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p))
 
 /-- Smoothness infrastructure for `dbar_real_hd`. -/
+private theorem realSmooth_comp_chart_symm_contDiffOn_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) (n : ℕ∞) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContDiffOn ℝ (n : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
+  haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
+  have hfOn :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f.toFun Set.univ := f.smooth'.contMDiffOn
+  have hchart :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (chartAt ℂ p0).symm (chartAt ℂ p0).target := by
+    simpa using (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (H := ℂ) (x := p0))
+  have hcompMDiffTop :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤
+        (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+    refine hfOn.comp hchart ?_
+    intro z hz
+    simp
+  have hcompMDiff :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (n : WithTop ℕ∞)
+        (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target :=
+    by
+      have hle : (n : WithTop ℕ∞) ≤ (⊤ : WithTop ℕ∞) := by
+        exact (WithTop.le_def).2 (Or.inl rfl)
+      exact hcompMDiffTop.of_le hle
+  exact (contMDiffOn_iff_contDiffOn.mp hcompMDiff)
+
+private theorem wirtingerDerivBar_chart_comp_contDiffOn_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) (n : ℕ∞) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContDiffOn ℝ (n : WithTop ℕ∞) (wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm))
+      (chartAt ℂ p0).target := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hcomp :
+      ContDiffOn ℝ ((n + 1 : ℕ∞) : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm)
+        (chartAt ℂ p0).target := by
+    simpa using realSmooth_comp_chart_symm_contDiffOn_hd (RS := RS) f p0 (n + 1)
+  simpa [wirtingerDeriv_zbar] using
+    (Infrastructure.wirtingerDerivBar_contDiffOn
+      (f := f.toFun ∘ (chartAt ℂ p0).symm)
+      (s := (chartAt ℂ p0).target) (n := n)
+      hcomp (chartAt ℂ p0).open_target)
+
+private theorem realSmooth_comp_chart_symm_contDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) (n : ℕ∞) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContDiffAt ℝ (n : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p0) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hOn :
+      ContDiffOn ℝ (n : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+    exact realSmooth_comp_chart_symm_contDiffOn_hd (RS := RS) f p0 n
+  have hTargetNhds := chart_target_mem_nhds (H := ℂ) p0
+  exact hOn.contDiffAt hTargetNhds
+
+private theorem wirtingerDerivBar_chart_comp_contDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) (n : ℕ∞) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContDiffAt ℝ (n : WithTop ℕ∞)
+      (wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm)) ((chartAt ℂ p0) p0) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hOn :
+      ContDiffOn ℝ (n : WithTop ℕ∞) (wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm))
+        (chartAt ℂ p0).target := by
+    exact wirtingerDerivBar_chart_comp_contDiffOn_hd (RS := RS) f p0 n
+  have hTargetNhds := chart_target_mem_nhds (H := ℂ) p0
+  exact hOn.contDiffAt hTargetNhds
+
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace

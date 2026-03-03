@@ -34,6 +34,27 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: fixed Hodge local-regularity compile blocker + added pointwise chart lemmas)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - fixed the local regularity proof in
+    `realSmooth_comp_chart_symm_contDiffOn_hd` by replacing the problematic
+    `le_top` step (stuck `OrderTop ?m` elaboration for `WithTop ℕ∞`) with an
+    explicit `WithTop.le_def` witness.
+  - added pointwise fixed-chart consequences:
+    - `realSmooth_comp_chart_symm_contDiffAt_hd`,
+    - `wirtingerDerivBar_chart_comp_contDiffAt_hd`.
+  - these are direct `ContDiffAt` corollaries at `((chartAt ℂ p0) p0)` from the
+    existing `ContDiffOn` chart-target lemmas.
+- Why this matters:
+  - restores compile stability on the Hodge local-regularity infrastructure path.
+  - shrinks the remaining `dbar_real_hd_smooth_section` gap to the global
+    chart-variation lift, rather than local fixed-chart regularity.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: strengthened `h0` infrastructure in RR core)
 - `Analytic/RiemannRoch.lean`:
   - added `h0_le_of_no_linIndep_succ`:
@@ -44,6 +65,13 @@
     explicit zero-characterization at the singleton-independence level.
   - added `h0_pos_of_exists_linIndep_one`:
     singleton-independence gives strict positivity of `h0`.
+  - added restriction infrastructure:
+    - `isLinIndepLS_restrict_castAdd`,
+    - `isLinIndepLS_restrict_castLE`.
+    This formalizes that independence survives index restriction.
+  - added `h0_ge_of_exists_linIndep`:
+    a generic lower-bound transfer lemma
+    (`∃ n-independent family in L(D) ⇒ n ≤ h0(D)`).
   - added `h0_eq_zero_of_linearSystem_empty`:
     a reusable emptiness-to-dimension lemma (`L(D)=∅ ⇒ h0(D)=0`).
   - refactored the lower-bound half of `h0_trivial` to use

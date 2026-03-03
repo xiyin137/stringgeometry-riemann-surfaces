@@ -610,6 +610,67 @@ theorem wirtingerDeriv_contDiff {f : ℂ → ℂ} {n : ℕ∞}
     heval1.sub (contDiff_const.mul hevalI)
   exact contDiff_const.mul hdiff
 
+private lemma withTopNatInf_add_one_ne_zero (n : ℕ∞) :
+    ((n : WithTop ℕ∞) + 1) ≠ 0 := by
+  cases n with
+  | top =>
+      simp
+  | coe a =>
+      intro h
+      have h' : ((a : ℕ∞) + 1) = (0 : ℕ∞) := by
+        exact WithTop.coe_eq_coe.mp h
+      cases a with
+      | zero =>
+          simp at h'
+      | succ b =>
+          simp at h'
+
+/-- Open-set version: if `f` is `C^(n+1)` on an open set, then `∂f/∂z̄` is `C^n` there. -/
+theorem wirtingerDerivBar_contDiffOn {f : ℂ → ℂ} {s : Set ℂ} {n : ℕ∞}
+    (hf : ContDiffOn ℝ (n + 1) f s) (hs : IsOpen s) :
+    ContDiffOn ℝ n (wirtingerDerivBar f) s := by
+  unfold wirtingerDerivBar
+  have hsUnique : UniqueDiffOn ℝ s := hs.uniqueDiffOn
+  have hfderivWithin : ContDiffOn ℝ n (fderivWithin ℝ f s) s :=
+    hf.fderivWithin hsUnique le_rfl
+  have hn1_ne_zero : ((n : WithTop ℕ∞) + 1) ≠ 0 := withTopNatInf_add_one_ne_zero n
+  have hfderiv : ContDiffOn ℝ n (fun z => fderiv ℝ f z) s := by
+    refine hfderivWithin.congr ?_
+    intro z hz
+    have hcontAt : ContDiffAt ℝ (n + 1) f z := hf.contDiffAt (hs.mem_nhds hz)
+    have hdiff : DifferentiableAt ℝ f z := hcontAt.differentiableAt hn1_ne_zero
+    exact (fderivWithin_eq_fderiv (hs.uniqueDiffWithinAt hz) hdiff).symm
+  have heval1 : ContDiffOn ℝ n (fun z => fderiv ℝ f z 1) s :=
+    hfderiv.clm_apply contDiffOn_const
+  have hevalI : ContDiffOn ℝ n (fun z => fderiv ℝ f z Complex.I) s :=
+    hfderiv.clm_apply contDiffOn_const
+  have hsum : ContDiffOn ℝ n (fun z => fderiv ℝ f z 1 + Complex.I * fderiv ℝ f z Complex.I) s :=
+    heval1.add (contDiffOn_const.mul hevalI)
+  exact contDiffOn_const.mul hsum
+
+/-- Open-set version: if `f` is `C^(n+1)` on an open set, then `∂f/∂z` is `C^n` there. -/
+theorem wirtingerDeriv_contDiffOn {f : ℂ → ℂ} {s : Set ℂ} {n : ℕ∞}
+    (hf : ContDiffOn ℝ (n + 1) f s) (hs : IsOpen s) :
+    ContDiffOn ℝ n (wirtingerDeriv f) s := by
+  unfold wirtingerDeriv
+  have hsUnique : UniqueDiffOn ℝ s := hs.uniqueDiffOn
+  have hfderivWithin : ContDiffOn ℝ n (fderivWithin ℝ f s) s :=
+    hf.fderivWithin hsUnique le_rfl
+  have hn1_ne_zero : ((n : WithTop ℕ∞) + 1) ≠ 0 := withTopNatInf_add_one_ne_zero n
+  have hfderiv : ContDiffOn ℝ n (fun z => fderiv ℝ f z) s := by
+    refine hfderivWithin.congr ?_
+    intro z hz
+    have hcontAt : ContDiffAt ℝ (n + 1) f z := hf.contDiffAt (hs.mem_nhds hz)
+    have hdiff : DifferentiableAt ℝ f z := hcontAt.differentiableAt hn1_ne_zero
+    exact (fderivWithin_eq_fderiv (hs.uniqueDiffWithinAt hz) hdiff).symm
+  have heval1 : ContDiffOn ℝ n (fun z => fderiv ℝ f z 1) s :=
+    hfderiv.clm_apply contDiffOn_const
+  have hevalI : ContDiffOn ℝ n (fun z => fderiv ℝ f z Complex.I) s :=
+    hfderiv.clm_apply contDiffOn_const
+  have hdiff : ContDiffOn ℝ n (fun z => fderiv ℝ f z 1 - Complex.I * fderiv ℝ f z Complex.I) s :=
+    heval1.sub (contDiffOn_const.mul hevalI)
+  exact contDiffOn_const.mul hdiff
+
 /-- wirtingerDerivBar of a C^∞ function is C^∞. -/
 theorem wirtingerDerivBar_smooth {f : ℂ → ℂ}
     (hf : ∀ n : ℕ, ContDiff ℝ n f) : ∀ n : ℕ, ContDiff ℝ n (wirtingerDerivBar f) := by

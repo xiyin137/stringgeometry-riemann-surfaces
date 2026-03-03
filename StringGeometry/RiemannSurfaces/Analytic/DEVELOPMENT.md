@@ -143,16 +143,38 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `h0_eq_zero_iff_no_linIndep_one`,
     - `h0_pos_of_exists_linIndep_one`,
     - `h0_eq_zero_of_linearSystem_empty`.
-31. Refactored `h0_vanishes_negative_degree` to use
+31. Added index-restriction independence bridges:
+    - `isLinIndepLS_restrict_castAdd`,
+    - `isLinIndepLS_restrict_castLE`.
+32. Added lower-bound transfer theorem:
+    `h0_ge_of_exists_linIndep` (`∃ n-independent family ⇒ n ≤ h0`).
+33. Refactored `h0_vanishes_negative_degree` to use
     `h0_eq_zero_of_linearSystem_empty` instead of a duplicated local `Nat.find_eq_zero`
     argument.
-32. Refactored `h0_trivial` lower-bound branch to use
+34. Refactored `h0_trivial` lower-bound branch to use
     `h0_pos_of_exists_linIndep_one`, reducing local `Nat.find` proof boilerplate.
-33. Why this infrastructure matters:
+35. Why this infrastructure matters:
     it turns ad-hoc `h0` arguments into reusable transfer principles around the
     `Nat.find` characterization, which is the current RR-core dimension framework.
-34. Compile frontier re-checked after this infrastructure pass:
+36. Compile frontier re-checked after this infrastructure pass:
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/RiemannRoch.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
+37. `HodgeTheory/HodgeDecomposition.lean`:
+    fixed a local regularity elaboration blocker in
+    `realSmooth_comp_chart_symm_contDiffOn_hd` by replacing a stuck polymorphic
+    `le_top` proof with an explicit `WithTop.le_def` witness.
+38. Added pointwise fixed-chart regularity lemmas:
+    - `realSmooth_comp_chart_symm_contDiffAt_hd`,
+    - `wirtingerDerivBar_chart_comp_contDiffAt_hd`.
+    Both derive `ContDiffAt` at `((chartAt ℂ p0) p0)` from the previously added
+    `ContDiffOn` chart-target lemmas.
+39. Technical note:
+    this pass confirms the index-order subtlety for manifold smoothness levels
+    (`WithTop ℕ∞`) and keeps conversions explicit where needed.
+40. Compile frontier re-checked after this Hodge infrastructure pass:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
     (pass with warnings only).
 

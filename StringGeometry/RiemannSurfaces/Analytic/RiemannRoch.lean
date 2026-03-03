@@ -115,6 +115,57 @@ theorem isLinIndepLS_empty (CRS : CompactRiemannSurface)
     IsLinIndepLS CRS D basis := by
   intro c _ i; exact Fin.elim0 i
 
+/-- Restricting an independent family along `Fin.castAdd` preserves independence. -/
+private theorem isLinIndepLS_restrict_castAdd (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) {m k : ℕ}
+    {basis : Fin (m + k) → LinearSystem CRS.toRiemannSurface D}
+    (hlin : IsLinIndepLS CRS D basis) :
+    IsLinIndepLS CRS D (fun i : Fin m => basis (Fin.castAdd k i)) := by
+  intro c hc i
+  let cExt : Fin (m + k) → ℂ := Fin.append c (fun _ => 0)
+  have hsumExt : ∀ p : CRS.toRiemannSurface.carrier,
+      (∀ j : Fin (m + k), (basis j).fn.order p ≥ 0) →
+      Finset.univ.sum (fun j => cExt j * (basis j).fn.regularValue p) = 0 := by
+    intro p hreg
+    have hregSmall : ∀ j : Fin m, (basis (Fin.castAdd k j)).fn.order p ≥ 0 := by
+      intro j
+      exact hreg (Fin.castAdd k j)
+    have hsmall := hc p hregSmall
+    rw [Fin.sum_univ_add]
+    have hleft :
+        (∑ j : Fin m, cExt (Fin.castAdd k j) * (basis (Fin.castAdd k j)).fn.regularValue p) =
+          ∑ j : Fin m, c j * (basis (Fin.castAdd k j)).fn.regularValue p := by
+      apply Finset.sum_congr rfl
+      intro j hj
+      simp [cExt]
+    have hright :
+        (∑ j : Fin k, cExt (Fin.natAdd m j) * (basis (Fin.natAdd m j)).fn.regularValue p) = 0 := by
+      apply Finset.sum_eq_zero
+      intro j hj
+      simp [cExt]
+    rw [hleft, hright, add_zero]
+    exact hsmall
+  have hall := hlin cExt hsumExt
+  have hci : cExt (Fin.castAdd k i) = 0 := hall (Fin.castAdd k i)
+  simpa [cExt] using hci
+
+/-- Restricting an independent family along `Fin.castLE` preserves independence. -/
+private theorem isLinIndepLS_restrict_castLE (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) {m n : ℕ} (hmn : m ≤ n)
+    {basis : Fin n → LinearSystem CRS.toRiemannSurface D}
+    (hlin : IsLinIndepLS CRS D basis) :
+    IsLinIndepLS CRS D (fun i : Fin m => basis (Fin.castLE hmn i)) := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hmn
+  have hfun :
+      (fun i : Fin m => basis (Fin.castLE hmn i)) =
+        (fun i : Fin m => basis (Fin.castAdd k i)) := by
+    funext i
+    apply congrArg basis
+    apply Fin.ext
+    simp
+  rw [hfun]
+  exact isLinIndepLS_restrict_castAdd CRS D hlin
+
 /-- Zero-counting principle for linear combinations in L(D).
 
     A ℂ-linear combination of elements of L(D) that vanishes at
@@ -438,6 +489,23 @@ theorem h0_has_upper_bound (CRS : CompactRiemannSurface)
   refine ⟨N, h0_le_of_no_linIndep_succ CRS D N ?_⟩
   exact hN (N + 1) (Nat.lt_succ_self N)
 
+/-- Lower bound transfer for `h0`.
+
+    If there exists a linearly independent family of size `n` in `L(D)`, then `n ≤ h⁰(D)`. -/
+theorem h0_ge_of_exists_linIndep (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) {n : ℕ}
+    (h : ∃ (basis : Fin n → LinearSystem CRS.toRiemannSurface D),
+      IsLinIndepLS CRS D basis) :
+    n ≤ h0 CRS D := by
+  by_contra hle
+  have hlt : h0 CRS D < n := Nat.lt_of_not_ge hle
+  obtain ⟨basis, hbasis⟩ := h
+  have hmn : h0 CRS D + 1 ≤ n := Nat.succ_le_of_lt hlt
+  have hrestrict : IsLinIndepLS CRS D
+      (fun i : Fin (h0 CRS D + 1) => basis (Fin.castLE hmn i)) :=
+    isLinIndepLS_restrict_castLE CRS D hmn hbasis
+  exact (h0_spec CRS D) ⟨(fun i : Fin (h0 CRS D + 1) => basis (Fin.castLE hmn i)), hrestrict⟩
+
 /-- `h⁰(D) = 0` iff there is no linearly independent singleton in `L(D)`. -/
 theorem h0_eq_zero_iff_no_linIndep_one (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) :
@@ -453,9 +521,7 @@ theorem h0_pos_of_exists_linIndep_one (CRS : CompactRiemannSurface)
     (h1 : ∃ (basis : Fin 1 → LinearSystem CRS.toRiemannSurface D),
       IsLinIndepLS CRS D basis) :
     0 < h0 CRS D := by
-  by_contra h0_not_pos
-  have h0_zero : h0 CRS D = 0 := Nat.eq_zero_of_not_pos h0_not_pos
-  exact (h0_eq_zero_iff_no_linIndep_one CRS D).mp h0_zero h1
+  exact Nat.succ_le_iff.mp (h0_ge_of_exists_linIndep CRS D h1)
 
 /-- If the linear system `L(D)` is empty, then `h⁰(D) = 0`. -/
 theorem h0_eq_zero_of_linearSystem_empty (CRS : CompactRiemannSurface)
