@@ -38,10 +38,19 @@
 - `Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`:
   - added algebraic CLM identity:
     `clm_eval_add_I_eval_I_mul_conj`.
+  - added algebraic CLM identity for the holomorphic part:
+    `clm_eval_sub_I_eval_I_mul`.
   - added chain-rule theorem:
     `wirtingerDerivBar_comp_holomorphic`.
   - added `AnalyticAt` specialization:
     `wirtingerDerivBar_comp_analyticAt`.
+  - added chain-rule theorem for `∂`:
+    `wirtingerDeriv_comp_holomorphic`.
+  - added `AnalyticAt` specialization:
+    `wirtingerDeriv_comp_analyticAt`.
+  - added neighborhood congruence lemmas:
+    `wirtingerDerivBar_congr_of_eventuallyEq`,
+    `wirtingerDeriv_congr_of_eventuallyEq`.
 - New theorem statement:
   - if `g` is holomorphic at `z`, then
     `wirtingerDerivBar (f ∘ g) z =

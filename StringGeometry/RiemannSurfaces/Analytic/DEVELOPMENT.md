@@ -184,11 +184,20 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     `clm_eval_add_I_eval_I_mul_conj`.
 43. Added `AnalyticAt` convenience specialization:
     `wirtingerDerivBar_comp_analyticAt`.
-44. Infrastructure impact:
+44. Extended the same infrastructure to `wirtingerDeriv`:
+    - `clm_eval_sub_I_eval_I_mul`,
+    - `wirtingerDeriv_comp_holomorphic`,
+    - `wirtingerDeriv_comp_analyticAt`.
+45. Added neighborhood congruence bridges:
+    - `wirtingerDerivBar_congr_of_eventuallyEq`,
+    - `wirtingerDeriv_congr_of_eventuallyEq`.
+46. Infrastructure impact:
     this captures the chart-transition core formula
     `∂̄(f ∘ g) = (∂̄f ∘ g) · conj(g')` for holomorphic `g`, which is a direct
-    building block for the remaining `dbar_real_hd_smooth_section` gluing proof.
-45. Compile frontier re-checked after this addition:
+    building block for the remaining `dbar_real_hd_smooth_section` gluing proof,
+    while the `∂` analogue and eventual-equality lemmas reduce coercion/rewriting
+    friction in local chart-change proofs.
+47. Compile frontier re-checked after this addition:
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
