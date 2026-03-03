@@ -34,6 +34,28 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: added pointwise chart-change identity for `dbar` candidate)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - imported `Analytic/Helpers/ChartTransition`.
+  - added reusable bridge lemma:
+    - `dbarRealSectionCandidate_chartChange_hd`.
+  - statement shape:
+    for `p ∈ (chartAt ℂ p0).source`, rewrite the chart-varying candidate
+    value at `p` as
+    fixed-chart `∂̄` coefficient at `p` times the antiholomorphic Jacobian
+    factor of `chartTransition p0 p`.
+- Why this matters:
+  - provides the exact pointwise overlap identity needed to separate the
+    remaining blocker into two factors:
+    1. fixed-chart smooth part (already proved), and
+    2. transition-derivative factor smoothness in `p` (still missing).
+  - makes the remaining gap explicit as a transition-factor regularity problem,
+    rather than a raw chart-varying expression problem.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: added point-based overlap formulas for local Wirtinger coefficients)
 - `Analytic/Helpers/ChartTransition.lean`:
   - added point-specialized overlap lemmas for `RealSmoothFunction`:

@@ -1,6 +1,7 @@
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Dolbeault
+import StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartTransition
 
 /-!
 # Hodge Decomposition on Riemann Surfaces
@@ -742,12 +743,108 @@ private theorem dbar_real_local_fixedChart_contMDiffAt_hd
   have hOn := dbar_real_local_fixedChart_contMDiffOn_hd (RS := RS) f p0
   exact hOn.contMDiffAt (chart_source_mem_nhds (H := ℂ) p0)
 
+/-- Global section candidate used in `dbar_real_hd`. -/
+private noncomputable def dbarRealSectionCandidate_hd (f : RealSmoothFunction RS) :
+    RS.carrier → ℂ := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  exact fun p =>
+    let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+    wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)
+
+/-- Pointwise chart-change formula for the `dbarRealSectionCandidate_hd` coefficient. -/
+private theorem dbarRealSectionCandidate_chartChange_hd
+    (f : RealSmoothFunction RS) (p0 p : RS.carrier)
+    (hp0 :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      p ∈ (chartAt ℂ p0).source) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    dbarRealSectionCandidate_hd (RS := RS) f p =
+      wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p) *
+        starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((chartAt ℂ p) p)) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hp : p ∈ (eChart (RS := RS) p).source := by
+    simpa [eChart] using (mem_chart_source ℂ p)
+  have hp0' : p ∈ (eChart (RS := RS) p0).source := by
+    simpa [eChart] using hp0
+  have hchange :=
+    wirtingerDerivBar_extChart_symm_change_at_point_of_realSmooth
+      (RS := RS) (f := f) (q := p0) (r := p) (p := p) hp hp0'
+  simpa [dbarRealSectionCandidate_hd, wirtingerDeriv_zbar, eChart, chartTransition,
+    Function.comp_apply, hp] using hchange
+
+/-- Same section candidate but computed in one fixed chart `chartAt p0`. -/
+private noncomputable def dbarRealSectionInChart_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) : RS.carrier → ℂ := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  exact fun p =>
+    let e0 := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0
+    wirtingerDeriv_zbar (f.toFun ∘ e0.symm) (e0 p)
+
+private theorem dbarRealSectionInChart_contMDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (dbarRealSectionInChart_hd (RS := RS) f p0) p0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  simpa [dbarRealSectionInChart_hd] using
+    dbar_real_local_fixedChart_contMDiffAt_hd (RS := RS) f p0
+
+private theorem dbarRealSectionCandidate_contMDiffAt_of_eventuallyEq_chart_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier)
+    (hchart :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      (fun p : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p)
+        =ᶠ[nhds p0]
+      (fun _ : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0)) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (dbarRealSectionCandidate_hd (RS := RS) f) p0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hloc :
+      dbarRealSectionCandidate_hd (RS := RS) f =ᶠ[nhds p0]
+        dbarRealSectionInChart_hd (RS := RS) f p0 := by
+    refine hchart.mono ?_
+    intro p hp
+    simp [dbarRealSectionCandidate_hd, dbarRealSectionInChart_hd, hp]
+  exact (dbarRealSectionInChart_contMDiffAt_hd (RS := RS) f p0).congr_of_eventuallyEq hloc
+
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
     ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun p : RS.carrier =>
       let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
       wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  intro p0
+  set fixedPart : RS.carrier → ℂ := fun p =>
+    wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p)
+  set transFactor : RS.carrier → ℂ := fun p =>
+    starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((chartAt ℂ p) p))
+  have hloc :
+      dbarRealSectionCandidate_hd (RS := RS) f =ᶠ[nhds p0]
+        fun p => fixedPart p * transFactor p := by
+    have hsrc : ∀ᶠ p in nhds p0, p ∈ (chartAt ℂ p0).source :=
+      (chartAt ℂ p0).open_source.mem_nhds (mem_chart_source ℂ p0)
+    refine hsrc.mono ?_
+    intro p hp
+    have hchange := dbarRealSectionCandidate_chartChange_hd (RS := RS) f p0 p hp
+    simpa [fixedPart, transFactor] using hchange
+  have hfixed : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞) fixedPart p0 := by
+    simpa [fixedPart] using dbar_real_local_fixedChart_contMDiffAt_hd (RS := RS) f p0
+  -- Remaining global blocker:
+  -- establish `ContMDiffAt` for `transFactor` at `p0`, then conclude via
+  -- product smoothness and `congr_of_eventuallyEq` using `hloc`.
   sorry
 
 /-- The ∂̄ operator on ℝ-smooth functions: ∂̄f = (∂f/∂z̄) dz̄.

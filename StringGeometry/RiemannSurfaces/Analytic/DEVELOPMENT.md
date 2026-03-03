@@ -258,6 +258,25 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+58. `HodgeTheory/HodgeDecomposition.lean`:
+    imported `Analytic/Helpers/ChartTransition` and added
+    `dbarRealSectionCandidate_chartChange_hd`.
+59. New lemma role:
+    it rewrites the pointwise chart-varying `dbar` coefficient into
+    fixed-chart coefficient `*` transition Jacobian factor on overlaps
+    (`p ∈ (chartAt ℂ p0).source`).
+60. Proof reuse:
+    built directly from
+    `wirtingerDerivBar_extChart_symm_change_at_point_of_realSmooth`,
+    so no local theorem weakening or wrapper assumptions were introduced.
+61. Blocker refinement:
+    after this pass, `dbar_real_hd_smooth_section` is now isolated to
+    regularity of the transition-derivative factor as a function of the
+    moving point `p` (fixed-chart regularity is already established).
+62. Compile frontier re-checked after this addition:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
     (pass with warnings only).
 58. `Helpers/ChartTransition.lean`:
     added manifold-point overlap specializations of the real-smooth chart-change

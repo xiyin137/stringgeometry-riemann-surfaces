@@ -38,9 +38,13 @@ Current issue:
     - `wirtingerDerivBar_extChart_symm_change`
     - `wirtingerDerivBar_extChart_symm_change_of_realSmooth`
     - `wirtingerDeriv_extChart_symm_change_of_realSmooth`
+    - `wirtingerDerivBar_extChart_symm_change_at_point_of_realSmooth`
+    - `dbarRealSectionCandidate_chartChange_hd`
   - remaining gap:
     - promote overlap compatibility to a chart-local `ContMDiffWithinAt`/`ContDiffWithinAt`
       transport lemma directly usable by `contMDiff_iff` local-to-global assembly.
+    - control regularity in the moving-point factor
+      `p ↦ starRingEnd ℂ (deriv (chartTransition p0 p) ((chartAt ℂ p) p))`.
 
 4. Lift local regularity to global section smoothness.
 - Use manifold-local-to-global `ContMDiff` criteria:
@@ -52,9 +56,13 @@ Current issue:
 1. `dbar_real_local_overlap_contDiffWithinAt`:
    overlap-transport lemma in the exact `ContDiffWithinAt` shape expected by
    `contMDiffWithinAt_iff_of_mem_source`.
-2. `dbar_real_chart_local_contMDiffAt`:
+2. `chartTransition_self_derivFactor_contMDiffAt` (new bridge target):
+   local regularity of
+   `p ↦ starRingEnd ℂ (deriv (chartTransition p0 p) ((chartAt ℂ p) p))`
+   near `p0`.
+3. `dbar_real_chart_local_contMDiffAt`:
    chart-local `ContMDiffAt` statement for the section candidate at an arbitrary point.
-3. `dbar_real_hd_smooth_section` via local-to-global assembly.
+4. `dbar_real_hd_smooth_section` via local-to-global assembly.
 
 ## Constraints
 
