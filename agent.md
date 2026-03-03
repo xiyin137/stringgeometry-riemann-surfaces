@@ -18,6 +18,23 @@ This file is the working guidance for Codex in this repository.
    - one active TODO flow per major track (`SchemeTheoretic`, `Analytic`, `GAGA`),
    - each TODO should include dependency order of key theorems in that track.
 
+## Analytic chart-transition policy (critical)
+
+1. `chartTransition (q r)` is selector-based shorthand for
+   `(extChartAt q) ∘ (extChartAt r).symm` under the current `chartAt`/`extChartAt`
+   choices; it is not an intrinsic transition determined only by center points.
+2. Expressions involving the moving selector `p ↦ chartAt ℂ p`
+   (for example derivatives evaluated at `((chartAt ℂ p) p)`) are selector-dependent
+   diagnostics, not canonical geometric objects.
+3. Never infer manifold non-smoothness from non-regularity of selector-dependent
+   expressions; such results only diagnose the current encoding/selection route.
+4. For universal/intrinsic theorems, prefer explicit chart-indexed overlap statements
+   (`e, e' ∈ atlas`) or chart-free bundle-section formulations, then prove invariance
+   under chart change.
+5. On `RiemannSphere`, use the explicit two-chart model (`z` and `z' = 1 / z`) for
+   concrete computations, and keep this separate from selector-dependent convenience
+   definitions.
+
 ## Execution priority (current phase)
 
 1. Focus first on deep theorem closure and reusable infrastructure development.

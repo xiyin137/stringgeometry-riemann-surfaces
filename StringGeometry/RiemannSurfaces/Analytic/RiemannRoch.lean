@@ -579,9 +579,49 @@ structure CanonicalDivisor (CRS : CompactRiemannSurface) where
     **Proof path:**
     1. H⁰(K) ≅ Harmonic10Forms (via harmonic_10_are_canonical_sections)
     2. dim Harmonic10Forms = g (via dim_harmonic_10_eq_genus — Hodge theorem) -/
+theorem h0_canonical_eq_genus_of_h0_eq_harmonic_finrank
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (h0_eq_finrank :
+      h0 CRS K.representative =
+        Module.finrank ℂ (Harmonic10Forms CRS.toRiemannSurface))
+    (hfin_harm :
+      Module.finrank ℂ (Harmonic10Forms CRS.toRiemannSurface) = CRS.genus) :
+    h0 CRS K.representative = CRS.genus := by
+  rw [h0_eq_finrank, hfin_harm]
+
+/-- Canonical-section bridge criterion:
+`h⁰(K)` equals the harmonic `(1,0)` finrank.
+
+This isolates the deep identification step between the combinatorial `h0`
+definition (maximal `IsLinIndepLS` size) and the harmonic/canonical-section
+finite-dimensional package. -/
+theorem h0_canonical_eq_harmonic_finrank
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS) :
+    h0 CRS K.representative =
+      Module.finrank ℂ (Harmonic10Forms CRS.toRiemannSurface) := by
+  -- Deep remaining requirement:
+  -- bridge combinatorial `h0` on `L(K)` to canonical-section/harmonic finrank.
+  sorry
+
+/-- h⁰(K) = g: holomorphic 1-forms have dimension equal to the topological genus.
+
+    This is the Hodge theorem connecting analytic and topological data:
+    H⁰(K) ≅ H^{1,0}(X) (holomorphic 1-forms) and dim H^{1,0} = g (topological genus).
+    Here g = CRS.genus is the TOPOLOGICAL genus of the surface.
+
+    **Proof path:**
+    1. H⁰(K) ≅ Harmonic10Forms (via harmonic_10_are_canonical_sections)
+    2. dim Harmonic10Forms = g (via dim_harmonic_10_eq_genus — Hodge theorem) -/
 theorem h0_canonical_eq_genus (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS) :
     h0 CRS K.representative = CRS.genus := by
-  sorry
+  have h0_eq_finrank :
+      h0 CRS K.representative =
+        Module.finrank ℂ (Harmonic10Forms CRS.toRiemannSurface) :=
+    h0_canonical_eq_harmonic_finrank CRS K
+  have hfin_harm :
+      Module.finrank ℂ (Harmonic10Forms CRS.toRiemannSurface) = CRS.genus :=
+    finrank_harmonic10_eq_genus CRS
+  exact h0_canonical_eq_genus_of_h0_eq_harmonic_finrank CRS K h0_eq_finrank hfin_harm
 
 /-- Existence of a canonical divisor on any compact Riemann surface.
     This follows from the existence of non-zero meromorphic 1-forms

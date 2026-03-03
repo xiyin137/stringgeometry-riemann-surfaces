@@ -20,6 +20,7 @@
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/ArgumentPrincipleRoadmap.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/FiberMultiplicityBridge.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/DbarRealSmoothnessPlan.md`
+  - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/HodgeCoreDeepBlockersPlan.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/TransitionFactorStrategy.md`
 
 ## Reference Baseline (Griffiths-Harris style)
@@ -33,7 +34,417 @@
   - argument principle and degree-zero of principal divisors,
   - RR correction-term steps via divisor/cohomology exact sequences.
 
+## RR Critical-Path Status (2026-03-03)
+- Build check:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch` passes (warning-only).
+  - `lake build StringGeometry.RiemannSurfaces` passes (warning-only, no new errors).
+  - `scripts/check_lean_file_length.sh 2000` passes;
+    `HodgeDecomposition/Core.lean` is 1845 lines after splitting
+    transition-factor glue and genus/finrank material.
+- Current blockers by gate:
+  - Gate A (`∂̄` global smoothness closure):
+    - `HodgeTheory/HodgeDecomposition/Core.lean`: `dbarRealTransitionFactor_contMDiffAt_hd`.
+  - Gate B (Hodge decomposition existence):
+    - `HodgeTheory/HodgeDecomposition/Core.lean`: `hodge_decomposition_01`.
+  - Gate C (harmonic-to-cohomology identifications):
+    - Bridge entry theorems are discharged; remaining deep obligations are centralized in
+      `HodgeTheory/HodgeDecomposition/Core.lean`:
+      `exact_harmonic01_vanishes`, `closed_exactPair_commonPotential`.
+  - Gate D (`h¹(O)=g` closure):
+    - `HodgeTheory/DolbeaultCohomology.lean`: `h1_trivial_eq_genus` is now
+      discharged from core-level criteria.
+    - Remaining deep obligations are split between:
+      - `HodgeTheory/HodgeDecomposition/Core.lean::exact_harmonic01_vanishes`.
+      - `HodgeTheory/HodgeDecomposition/DimensionGenus.lean::finrank_harmonic10_eq_genus`.
+  - Gate E (Serre pairing integration/Stokes):
+    - `HodgeTheory/SerreDuality.lean`: `residue_theorem`.
+  - Gate F (terminal RR theorems):
+    - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
+      `598`, `838`, `1137`, `1189`, `1212`.
+
+## Current Next 3 Concrete Targets (Authoritative)
+1. Gate A:
+   implement a selector-independent local-to-global smoothness bridge for
+   `dbarRealSectionCandidate_hd` from fixed-chart overlap lemmas
+   (`dbarRealLocalCoeff_*_fixedCharts_hd` family), avoiding new wrapper assumptions.
+2. Gate B:
+   decompose `hodge_decomposition_01` into reusable helper lemmas and close one
+   helper theorem with compile-checked proof (no statement weakening).
+3. Gate C/D:
+   add `DolbeaultH01` rank/finite-dimensional bridge lemmas that turn the current
+   injective-family lower-bound package into a finrank identity path for
+   `h1_trivial_eq_genus`.
+
+## Latest Compile-Checked Infrastructure (2026-03-03)
+- Added chart-local `WithinAt` smoothness bridges in
+  `HodgeTheory/HodgeDecomposition/Core.lean`:
+  - `dbarRealSectionCandidate_contMDiffWithinAt_of_chartAt_eventuallyEq_hd`
+  - `dbarRealSectionCandidate_contMDiffWithinAt_of_chartAtLocallyConstant_hd`
+- Added global `ContMDiffOn` assembly lemmas plus theorem rewiring:
+  - `dbarRealSectionCandidate_contMDiffOn_of_chartAt_eventuallyEq_hd`
+  - `dbarRealSectionCandidate_contMDiffOn_of_chartAtLocallyConstant_hd`
+  - `dbar_real_hd_smooth_section_of_chartAt_eventuallyEq`
+  - `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`
+  - Added C/D linear-functorial finrank bridge lemmas:
+  - `Harmonic10Forms.finrank_eq_submodule_finrank`
+  - `Harmonic01Forms.finrank_eq_submodule_finrank`
+    - exact-pair infrastructure split into
+    `HodgeTheory/HodgeDecomposition/ExactPair.lean`:
+    - `dbar_real_hd_neg`, `dbar_real_hd_sub`
+    - `del_real_neg`, `del_real_sub`
+    - `del_real_sub_eq_zero_iff`, `dbar_real_hd_sub_eq_zero_iff`
+    - `dbar_10_del_real_sub`, `del_01_dbar_real_hd_sub`
+    - `mem_closedForms1_iff`, `mem_exactForms1_iff`, `exactForms1_pair_mem`
+    - `exactPair_commonPotential_of_sub_derivatives_zero`
+    - `exactPair_commonPotential_of_equal_derivatives`
+    - `closed_exactPair_primitives_relation`
+    - `closed_exactPair_primitives_relation_eq_neg`
+    - `exactPair_commonPotential_of_closed_of_mixed_and_exact_harmonic01_vanishes`
+      (reduces common-potential compatibility to exact-harmonic `(0,1)` vanishing
+      plus mixed identity `dbar_10 (del_real f) + del_01 (dbar_real_hd f) = 0`).
+  - Added surjectivity criterion routed through the reduced common-potential bridge:
+    - `HodgeTheory/HodgeDecomposition/DeRhamBridge.lean`:
+      `harmonicPairToDeRham_surjective_of_hodgeDecomposition_and_mixed_and_exact_harmonic01_vanishes`.
+    - additional mixed+vanishing bridge packaging:
+      - `closed_exactPair_commonPotential_of_mixed_and_exact_harmonic01_vanishes`
+      - `harmonicPairToDeRham_bijective_of_hodgeDecomposition_and_mixed_and_exact_harmonic01_vanishes`
+      - `hodge_isomorphism_of_mixed_and_exact_harmonic01_vanishes`.
+  - Added local mixed-Wirtinger commutativity infrastructure:
+    - `Infrastructure/WirtingerDerivatives.lean`:
+      `laplacian_eq_four_wirtinger_mixed_at` (`ContDiffAt` form),
+      with global wrapper theorem preserved.
+  - Added chart-stabilized mixed identity in core:
+    - `Core.lean`:
+      `dbar_10_del_real_add_del_01_dbar_real_hd_eq_zero_of_chartAtLocallyConstant`.
+  - Added chart-stabilized common-potential and de Rham bridge packaging:
+    - `ExactPair.lean`:
+      `exactPair_commonPotential_of_closed_of_chartAtLocallyConstant_and_exact_harmonic01_vanishes`.
+    - `DeRhamBridge.lean`:
+      `harmonicPairToDeRham_surjective_of_hodgeDecomposition_and_chartAtLocallyConstant_and_exact_harmonic01_vanishes`,
+      `harmonicPairToDeRham_bijective_of_hodgeDecomposition_and_chartAtLocallyConstant_and_exact_harmonic01_vanishes`,
+      `hodge_isomorphism_of_chartAtLocallyConstant_and_exact_harmonic01_vanishes`.
+  - Added local nonzero-sphere chart selection stability:
+    - `Infrastructure/ChartSelection.lean`:
+      `chartAt_eventuallyEq_center_riemannSphere_coe_of_ne_zero`.
+  - Added pointwise mixed-identity localization module:
+    - `HodgeTheory/HodgeDecomposition/MixedIdentity.lean`:
+      `dbar_10_del_real_add_del_01_dbar_real_hd_toSection_eq_zero_of_chartAt_eventuallyEq`,
+      `dbar_10_del_real_add_del_01_dbar_real_hd_toSection_eq_zero_riemannSphere_coe_of_ne_zero`.
+    This isolates the remaining selector-sensitive gap to the `RiemannSphere` zero point
+    (and, abstractly, points lacking local chart-selector stabilization).
+- Added conjugation/Wirtinger infrastructure on the real-differentiable level in
+  `HodgeTheory/Infrastructure/WirtingerDerivatives.lean`:
+  - `wirtingerDerivBar_comp_conj_real`
+  - `wirtingerDeriv_comp_conj_real`
+  and rewired the complex-level conjugation lemmas through these.
+- Refactored downstream proofs to use the new bridge:
+  - `HodgeTheory/HodgeDecomposition/Core.lean::del_01_eq_zero_of_isHarmonic01`
+  - `HodgeTheory/Dolbeault.lean::dbar_conj_eq_conj_d_chart`
+  so chart-level conjugation identities now rely on real chart differentiability
+  rather than manual `MDifferentiableAt` unfolding.
+- Added core conjugation-compatibility lemmas for form operators:
+  - `dbar_10_conj`
+  - `del_01_conj`
+  and derived harmonic `(0,1)` closedness criteria:
+  - `isHarmonic01_of_del_01_eq_zero`
+  - `isHarmonic01_iff_del_01_eq_zero`.
+  This gives a reusable algebraic endpoint for reducing `(0,1)` harmonicity
+  goals to `del_01`-vanishing goals in later deep proofs.
+- Per file-size policy, split de Rham/additive packaging from
+  `HodgeTheory/HodgeDecomposition/Core.lean` into
+  `HodgeTheory/HodgeDecomposition/DeRhamCore.lean`:
+  - moved additive/linear operator packaging (`dbarRealAddHom_hd`,
+    `dbarRealLinearMap_hd`, `exactForms1AddHom`, `exactForms1LinearMap`);
+  - moved de Rham quotient layer (`closedForms1`, `exactForms1`, `DeRhamH1`,
+    `exactClosedForms1AddSubgroup`, class-membership criteria);
+  - rewired imports in `ExactPair`, `DeRhamBridge`, `InnerProductAndDolbeault`,
+    and umbrella `HodgeDecomposition.lean`.
+- `h1_trivial_eq_genus_of_linearEquiv` (`DolbeaultCohomology.lean`)
+- `h1_trivial_eq_genus_of_linearMap_bijective` (`DolbeaultCohomology.lean`)
+- `h0_canonical_eq_genus_of_h0_eq_harmonic_finrank` (`RiemannRoch.lean`)
+- Closed a duplicate Gate-C theorem-level gap:
+  - `DolbeaultCohomology.dolbeault_hodge_iso` is now proved by transport from
+    `dolbeault_isomorphism_01` via `SheafH1O_eq_DolbeaultH01`.
+- Added reusable equivalence packages derived from bijection theorems:
+  - `DolbeaultCohomology.dolbeaultHodgeEquiv`
+  - `HodgeDecomposition/DeRhamBridge.hodgeIsomorphismEquiv`
+- Generalized quotient codomain universes to avoid monomorphic `Type` bottlenecks:
+  - `HodgeTheory/HodgeDecomposition/InnerProductAndDolbeault.lean::SheafH1O : Type _`
+  - `HodgeTheory/HodgeDecomposition/Core.lean::DeRhamH1 : Type _`
+- Added harmonic/de Rham bridge infrastructure in `HodgeDecomposition/Core.lean`:
+  - `del_01_eq_zero_of_isHarmonic01`
+  - `harmonicPair_mem_closedForms1`
+  - `harmonicPairClosedRep`
+  - `harmonicPairToDeRham`
+  - `harmonicPairToDeRham_eq_iff`
+  - `hodge_isomorphism` now has explicit map construction and a reduced
+    remaining gap (bijectivity proof only).
+  - corrected harmonic-side domain modeling to
+    `Harmonic10Forms × Harmonic01Forms` (product/direct-sum data),
+    replacing a prior disjoint-union `⊕` encoding.
+- Added quotient-interface lemmas for `DeRhamH1` class reasoning:
+  - `exactClosedForms1AddSubgroup`
+  - `deRham_mk_eq_mk_iff`
+  - `deRham_mk_eq_zero_iff`
+  These are targeted infrastructure for the injectivity side of
+  `HodgeDecomposition/DeRhamBridge.hodge_isomorphism`.
+- Added reduction criteria for `harmonicPairToDeRham`:
+  - `harmonicPairToDeRham_surjective_of_cohomologous_harmonicPair`
+  - `harmonicPairToDeRham_surjective_of_hodgeDecomposition_and_commonPotential`
+  - `harmonicPairToDeRham_injective_of_exact_kernel`
+  - `harmonicPairToDeRham_injective_of_exact_kernel_exists`
+  - `harmonicPairToDeRham_injective_of_exact_harmonicPair_vanishes`
+  - `harmonicPairToDeRham_bijective_of_cohomologous_harmonicPair_of_exact_kernel`
+  - `harmonicPairToDeRham_bijective_of_hodgeDecomposition_and_commonPotential_and_exact_harmonicPair_vanishes`
+  - `hodge_isomorphism_of_commonPotential_and_exact_harmonicPair_vanishes`
+  So `hodge_isomorphism` is now reducible to two explicit deep obligations
+  (common-potential compatibility for closed componentwise-exact pairs +
+  exact-harmonic vanishing).
+- Added Dolbeault/sheaf bridge criteria in
+  `HodgeDecomposition/InnerProductAndDolbeault.lean`:
+  - `harmonic01ToSheafH1O`
+  - `harmonic01ToSheafH1O_eq_iff`
+  - `harmonic01ToSheafH1O_surjective_of_hodgeDecomposition`
+  - `harmonic01ToSheafH1O_surjective`
+  - `harmonic01ToSheafH1O_injective_of_exact_kernel`
+  - `harmonic01ToSheafH1O_injective_of_exact_harmonic01_vanishes`
+  - `harmonic01ToSheafH1O_bijective_of_hodgeDecomposition_and_exact_kernel`
+  - `harmonic01ToSheafH1OLinear`
+  - `harmonic01ToSheafH1OLinear_bijective_of_exact_harmonic01_vanishes`
+  - `exact_harmonic01_vanishes_of_harmonic01ToSheafH1O_injective`
+  - `harmonic01ToSheafH1O_injective_iff_exact_harmonic01_vanishes`
+  - `dolbeault_isomorphism_01_of_exact_kernel`
+  - `dolbeault_isomorphism_01_linear_of_exact_harmonic01_vanishes`
+  so `dolbeault_isomorphism_01` is now reduced to two explicit deep obligations
+  (`(0,1)` decomposition existence + exact-harmonic kernel vanishing).
+  Then further reduced: decomposition is now discharged via `hodge_decomposition_01`,
+  leaving exact-harmonic kernel vanishing as the active deep blocker in
+  `dolbeault_isomorphism_01`.
+- Added Dolbeault linear transport bridge in `DolbeaultCohomology.lean`:
+  - `dolbeault_hodge_linear_bijective_of_exact_harmonic01_vanishes`
+  so `h1_trivial_eq_genus` now depends on:
+  - exact-harmonic `(0,1)` vanishing,
+  - harmonic `(0,1)` finrank identity.
+- Consolidated repeated exact-harmonic `(0,1)` obligations into one core theorem:
+  - `HodgeDecomposition/Core.lean::exact_harmonic01_vanishes`
+  - downstream users now call it directly:
+    - `DeRhamBridge.hodge_isomorphism`
+    - `InnerProductAndDolbeault.dolbeault_isomorphism_01`
+    - `DolbeaultCohomology.h1_trivial_eq_genus`.
+- Consolidated Gate C common-potential compatibility into one core theorem:
+  - `HodgeDecomposition/Core.lean::closed_exactPair_commonPotential`
+  - `DeRhamBridge.hodge_isomorphism` now imports this core theorem directly.
+- Consolidated harmonic finrank identities into dedicated decomposition module:
+  - `HodgeDecomposition/DimensionGenus.lean::finrank_harmonic01_eq_genus`
+  - `HodgeDecomposition/DimensionGenus.lean::finrank_harmonic10_eq_genus`
+  - downstream users:
+    - `DolbeaultCohomology.h1_trivial_eq_genus`
+    - `RiemannRoch.h0_canonical_eq_genus` (harmonic finrank branch).
+  - Added fixed-chart transition cocycle infrastructure
+  (`Helpers/ChartTransition.lean` +
+  `HodgeTheory/Infrastructure/TransitionFactor.lean`):
+  - `chartTransition_comp_eventuallyEq`
+  - `chartTransition_deriv_comp`
+  - `chartTransitionDerivInCharts_cocycle`
+  - `chartTransitionFactorInCharts_cocycle`
+  - `chartTransitionFactorByCharts_cocycle`
+  - `chartTransitionFactorInCharts_self`
+  - `chartTransitionFactorByCharts_self`
+  - `chartTransitionFactorByCharts_mul_reverse_eq_one`
+  - `chartTransitionFactorByCharts_eq_inv_reverse`
+  - `chartTransitionFactorByCharts_inv_continuousAt`
+  - `chartTransitionFactorByCharts_inv_contMDiffAt`
+  - `HodgeDecomposition/TransitionFactorGlue.lean` wrapper layer:
+    - `dbarRealTransitionFactorByCharts_cocycle_hd`
+    - `dbarRealTransitionFactorByCharts_self_hd`
+    - `dbarRealTransitionFactorByCharts_mul_reverse_eq_one_hd`
+    - `dbarRealTransitionFactorByCharts_eq_inv_reverse_hd`
+    - `dbarRealTransitionFactorByCharts_inv_continuousAt_hd`
+    - `dbarRealTransitionFactorByCharts_inv_contMDiffAt_hd`
+  - Added inverse-factor local `∂̄` overlap transport in
+    `HodgeDecomposition/TransitionFactorGlue.lean`:
+    - `dbarRealLocalCoeff_chartChange_fixedCharts_inv_hd`
+    - `dbarRealLocalCoeff_eventuallyEq_fixedCharts_inv_hd`
+    - `dbarRealLocalCoeff_rhs_inv_contMDiffAt_fixedCharts_hd`
+    - `dbarRealLocalCoeff_transferred_contMDiffAt_fixedCharts_hd`
+    - `dbarRealLocalCoeff_rhs_inv_contMDiffWithinAt_fixedCharts_hd`
+    - `dbarRealLocalCoeff_transferred_contMDiffWithinAt_fixedCharts_hd`
+    - `dbarRealLocalCoeff_transferred_contMDiffOn_overlap_fixedCharts_hd`
+    - `dbarRealLocalCoeff_rhs_inv_contMDiffOn_overlap_fixedCharts_hd`
+  This packages triple-overlap transition identities at derivative and Jacobian-factor
+  level for Gate A chart-local gluing work.
+- Why:
+  these are reusable local gluing interfaces for the Gate A global smoothness path,
+  and explicit linear-structure bridges for Gate C/D finrank closure.
+- Build checks:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition.Core`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.DolbeaultCohomology`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warning-only).
+
 ## Development Snapshot (2026-03-02)
+
+### Incremental Update (latest pass: harmonic (0,1) algebra infrastructure symmetry)
+- Extended `Analytic/HodgeTheory/HodgeDecomposition/Core.lean` with reusable `(0,1)` harmonic
+  algebra package mirroring the existing `(1,0)` side:
+  - closure lemmas:
+    - `isHarmonic01_add`
+    - `isHarmonic01_zero`
+    - `isHarmonic01_smul`
+  - submodule packaging:
+    - `harmonicSubmodule01`
+    - `Harmonic01Forms.equivSubmodule`
+  - explicit conjugation equivalences:
+    - `conjugate_harmonic_equiv`
+    - `conjugate_harmonic_submodule_equiv`
+  - transported additive/module infrastructure and linear equivalences:
+    - instances:
+      - `AddCommMonoid (Harmonic10Forms RS)`
+      - `Module ℂ (Harmonic10Forms RS)`
+      - `AddCommMonoid (Harmonic01Forms RS)`
+      - `Module ℂ (Harmonic01Forms RS)`
+    - linear equivalences:
+      - `Harmonic10Forms.linearEquivSubmodule`
+      - `Harmonic01Forms.linearEquivSubmodule`
+  - genus-indexed family transport:
+    - `dim_harmonic_01_eq_genus`
+      (injective `Fin g → Harmonic01Forms` obtained via `conjugate_harmonic_iso` and
+      `dim_harmonic_10_eq_genus`).
+- Why this matters:
+  - removes asymmetry between `(1,0)` and `(0,1)` harmonic-space algebra APIs.
+  - provides explicit reusable targets for downstream Dolbeault/Hodge bridge steps that currently
+    rely on set-level bijections only.
+  - reduces future proof friction by exposing subtype↔submodule equivalences on both sides.
+  - unlocked a new Dolbeault bridge theorem in
+    `Analytic/HodgeTheory/DolbeaultCohomology.lean`:
+    - `dolbeault_has_genus_injective_family_of_bijective`
+    - `dolbeault_has_genus_injective_family`
+    giving a reusable genus lower-bound interface for `DolbeaultH01` from the
+    Hodge-bijection path (without requiring immediate finrank closure).
+  - refined `h1_trivial_eq_genus` from a bare placeholder into an explicit
+    blocker skeleton:
+    it now records the established genus-indexed injective-family bridge and isolates
+    the remaining step to exact `finrank` closure.
+  - refined `RiemannRoch.h0_canonical_eq_genus` from a bare placeholder into
+    an explicit dependency skeleton, isolating the remaining bridge from
+    combinatorial `h0` (`IsLinIndepLS`-based) to canonical-section/Hodge data.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition/Core.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.DolbeaultCohomology`
+  - status: pass (warnings only from existing theorem-level `sorry`s and two non-blocking
+    `unnecessarySimpa` lint suggestions).
+
+### Incremental Update (latest pass: HodgeDecomposition file-size split + compatibility import)
+- Structural refactor to satisfy the `< 2000` Lean file policy while preserving API path stability:
+  - added `Analytic/HodgeTheory/HodgeDecomposition/Core.lean` (core development up through
+    `hodge_isomorphism` placeholder).
+  - added `Analytic/HodgeTheory/HodgeDecomposition/InnerProductAndDolbeault.lean`
+    (L2 inner-product + Dolbeault-bridge tail section).
+  - converted `Analytic/HodgeTheory/HodgeDecomposition.lean` into a thin compatibility import:
+    - imports `...HodgeDecomposition.Core`
+    - imports `...HodgeDecomposition.InnerProductAndDolbeault`
+- Promoted fixed-chart overlap bridges from file-private to reusable public lemmas in
+  `HodgeDecomposition/Core.lean`:
+  - `dbarRealLocalCoeff_chartChange_fixedCharts_hd`
+  - `dbarRealLocalCoeff_eventuallyEq_fixedCharts_hd`
+  - `dbarRealTransitionFactorByCharts_contMDiffAt_hd`
+  - `dbarRealLocalCoeff_rhs_contMDiffAt_fixedCharts_hd`
+  - `dbarRealLocalCoeff_contMDiffAt_fixedCharts_hd`
+  - `dbarRealLocalCoeff_contMDiffWithinAt_fixedCharts_hd`
+  - `dbarRealLocalCoeff_contDiffWithinAt_chartOverlap_fixedCharts_hd`
+- Why this matters:
+  - removes immediate file-length policy violation (`HodgeDecomposition.lean` was 2027 lines).
+  - keeps downstream import sites stable (`import ...HodgeTheory.HodgeDecomposition` unchanged).
+  - creates a clean seam for future extraction of deep theorem infrastructure without re-growing
+    a monolithic file.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition.Core`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition.InnerProductAndDolbeault`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.DolbeaultCohomology`
+  - `scripts/check_lean_file_length.sh 2000`
+  - status: pass (warnings only from existing theorem-level `sorry`s).
+
+### Incremental Update (latest pass: real-smooth overlap bridge for chart-indexed transition factors)
+- Added stronger fixed-chart regularity infrastructure in
+  `Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`:
+  - `chartTransitionDerivInCharts_contDiffAt_real`
+    (fixed chart pair overlap derivative is `C^∞` over `ℝ` via scalar restriction).
+  - `chartTransitionFactorInCharts_contDiffAt_real`
+    (fixed chart pair starred derivative factor is `C^∞` over `ℝ`).
+  - `chartTransitionByCharts_contMDiffAt`
+    (surface fixed-chart transition map is `ContMDiffAt` at overlap points).
+  - `chartTransitionFactorByCharts_contMDiffAt`
+    (surface pullback is `ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder` on overlap points).
+- Added `HodgeDecomposition` consumer:
+  - `dbarRealTransitionFactorByCharts_contMDiffAt_hd`.
+  - `dbarRealLocalCoeff_rhs_contMDiffAt_fixedCharts_hd`.
+  - `dbarRealLocalCoeff_contMDiffAt_fixedCharts_hd`.
+  - `dbarRealLocalCoeff_contMDiffWithinAt_fixedCharts_hd`.
+  - `dbarRealLocalCoeff_contDiffWithinAt_chartOverlap_fixedCharts_hd`.
+  - additive operator packaging:
+    - `dbarRealAddHom_hd`,
+    - `exactForms1AddHom`,
+    - `dbarImage_hd_toAddSubgroup_eq_range`,
+    - `exactForms1_toAddSubgroup_eq_range`.
+  - linear operator packaging (after introducing `Module ℂ (RealSmoothFunction RS)`):
+    - `dbar_real_hd_smul`, `del_real_smul`,
+    - `dbarRealLinearMap_hd`,
+    - `exactForms1LinearMap`,
+    - `dbarImage_hd_eq_range_linearMap`,
+    - `exactForms1_eq_range_linearMap`.
+  - mirrored canonical Dolbeault packaging in
+    `Analytic/HodgeTheory/DolbeaultCohomology.lean`:
+    `dbar_real_smul`, `dbarRealAddHom`, `dbarRealLinearMap`,
+    `dbarImage_toAddSubgroup_eq_range`, `dbarImage_eq_range_linearMap`.
+  - twisted Dolbeault image packaging now also mirrored:
+    `dbar_twisted_smul`, `dbarTwistedAddHom`, `dbarTwistedLinearMap`,
+    `twistedDbarImage_toAddSubgroup_eq_range`, `twistedDbarImage_eq_range_linearMap`.
+- Why this matters:
+  - upgrades the chart-indexed layer from continuity/nonvanishing to local smoothness.
+  - adds overlap transport in both `ContMDiffAt` and `ContMDiffWithinAt` forms for
+    fixed-chart local `∂̄` coefficients.
+  - gives reusable range characterizations for image/exact submodules used in
+    Dolbeault/de Rham quotient interfaces.
+  - reduces pressure on the moving-selector theorem by moving more of the local analysis
+    into fixed chart-pair infrastructure.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Infrastructure.TransitionFactor`
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+  - status: pass (warnings only from existing theorem-level `sorry`s).
+
+### Incremental Update (latest pass: chart-indexed transition regularity infrastructure)
+- Added selector-free-at-chart-pair infrastructure in
+  `Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`:
+  - `chartTransitionDerivInCharts`
+  - `chartTransitionDerivInCharts_contDiffAt`
+    (fixed chart pair, overlap point: transition derivative is `C^∞` over `ℂ`)
+  - `chartTransitionFactorInCharts_continuousAt`
+    (fixed chart pair, overlap point: starred derivative factor is continuous)
+  - `chartTransitionFactorByCharts_continuousAt`
+  - `chartTransitionFactorByCharts_continuousOn_overlap`
+  - `chartTransitionFactorInCharts_ne_zero`
+  - `chartTransitionFactorByCharts_ne_zero`
+  - `chartTransitionFactorByCharts_eventually_ne_zero`
+  - `chartTransitionFactorByCharts` (surface-level pullback via fixed source chart).
+- Added `HodgeDecomposition` consumers:
+  - `dbarRealLocalCoeff_chartChange_fixedCharts_hd`
+  - `dbarRealLocalCoeff_eventuallyEq_fixedCharts_hd`
+  - `dbarRealTransitionFactorByCharts_continuousAt_hd`
+  - `dbarRealTransitionFactorByCharts_ne_zero_hd`
+  - `dbarRealTransitionFactorByCharts_eventually_ne_zero_hd`
+  - `dbarRealSectionCandidate_continuousAt_of_transitionFactor_continuousAt_hd`
+  - `dbarRealTransitionFactor_not_forall_contMDiffAt_riemannSphere_hd`
+- Why this matters:
+  - advances the universal-proof refactor toward explicit chart-indexed overlap data,
+    instead of moving-selector expressions.
+  - preserves the canonicality policy: transition objects are chart-pair indexed,
+    not implicitly center-canonical.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+  - status: pass (existing theorem-level `sorry` warnings remain).
 
 ### Incremental Update (latest pass: explicit `RiemannSphere` transition-factor diagnostic)
 - Added explicit diagnostic theorem in
@@ -46,6 +457,9 @@
 - Why this matters:
   - turns the abstract blocker around moving chart selection into a concrete formula
     on the canonical nontrivial model (`RiemannSphere`).
+  - documents explicitly that `chartTransition (q r)`/`chartTransitionFactor (p0, p)`
+    in this layer are selector-based convenience objects, not canonical maps determined
+    only by center points.
   - now formally proves the centered transition factor is not continuous/smooth at `0`
     for this selector, confirming the unconditional smoothness path cannot close as stated.
   - this concerns the selector-dependent transition-factor expression only;

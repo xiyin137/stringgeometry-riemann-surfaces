@@ -69,6 +69,12 @@ noncomputable def dbar_real (f : RealSmoothFunction RS) : Form_01 RS where
     wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)
   smooth' := dbar_real_smooth_section f
 
+/-- The canonical and local-copy `∂̄` operators coincide pointwise on coefficients. -/
+theorem dbar_real_eq_dbar_real_hd (f : RealSmoothFunction RS) :
+    dbar_real (RS := RS) f = dbar_real_hd (RS := RS) f := by
+  ext p
+  rfl
+
 /-- Helper: extract DifferentiableAt from RealSmoothFunction. -/
 private theorem realSmooth_differentiableAt_chart (f : RealSmoothFunction RS) (p : RS.carrier) :
     letI := RS.topology
@@ -129,6 +135,24 @@ theorem dbar_real_const_mul (c : ℂ) (f : RealSmoothFunction RS) :
   rw [hcomp]
   exact Infrastructure.wirtingerDerivBar_const_smul c (realSmooth_differentiableAt_chart f p)
 
+theorem dbar_real_smul (c : ℂ) (f : RealSmoothFunction RS) :
+    dbar_real (c • f) = c • dbar_real f := by
+  simpa [RealSmoothFunction.smul_def] using dbar_real_const_mul (RS := RS) c f
+
+/-- Additive homomorphism `f ↦ ∂̄f`. -/
+noncomputable def dbarRealAddHom (RS : RiemannSurface) :
+    RealSmoothFunction RS →+ Form_01 RS where
+  toFun := dbar_real
+  map_zero' := dbar_real_zero (RS := RS)
+  map_add' := dbar_real_add (RS := RS)
+
+/-- Linear map `f ↦ ∂̄f` over `ℂ`. -/
+noncomputable def dbarRealLinearMap (RS : RiemannSurface) :
+    RealSmoothFunction RS →ₗ[ℂ] Form_01 RS where
+  toFun := dbar_real
+  map_add' := dbar_real_add (RS := RS)
+  map_smul' := dbar_real_smul (RS := RS)
+
 /-- Holomorphic functions have ∂̄ = 0 (consistent with dbar_fun). -/
 theorem dbar_real_of_holomorphic (f : SmoothFunction RS) :
     dbar_real f.toRealSmooth = 0 := by
@@ -155,7 +179,45 @@ def dbarImage (RS : RiemannSurface) : Submodule ℂ (Form_01 RS) where
   zero_mem' := ⟨0, dbar_real_zero⟩
   smul_mem' := by
     intro c ω ⟨f, hf⟩
-    exact ⟨RealSmoothFunction.const c * f, by rw [dbar_real_const_mul, hf]⟩
+    exact ⟨c • f, by rw [dbar_real_smul, hf]⟩
+
+/-- Additive content of `dbarImage`: it is exactly the range of `dbarRealAddHom`. -/
+theorem dbarImage_toAddSubgroup_eq_range (RS : RiemannSurface) :
+    (dbarImage RS).toAddSubgroup = (dbarRealAddHom (RS := RS)).range := by
+  ext ω
+  constructor
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+
+/-- Linear content of `dbarImage`: it is exactly the range of `dbarRealLinearMap`. -/
+theorem dbarImage_eq_range_linearMap (RS : RiemannSurface) :
+    dbarImage RS = (dbarRealLinearMap (RS := RS)).range := by
+  ext ω
+  constructor
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+
+/-- The canonical and local-copy `∂̄` image submodules coincide. -/
+theorem dbarImage_eq_dbarImage_hd (RS : RiemannSurface) :
+    dbarImage RS = dbarImage_hd RS := by
+  ext ω
+  constructor
+  · intro hω
+    rcases hω with ⟨f, hf⟩
+    refine ⟨f, ?_⟩
+    simpa [dbar_real_eq_dbar_real_hd (RS := RS) f] using hf
+  · intro hω
+    rcases hω with ⟨f, hf⟩
+    refine ⟨f, ?_⟩
+    simpa [dbar_real_eq_dbar_real_hd (RS := RS) f] using hf
 
 /-- The Dolbeault cohomology group H^{0,1}(X, O) = Ω^{0,1}(X) / im(∂̄).
 
@@ -166,6 +228,16 @@ def dbarImage (RS : RiemannSurface) : Submodule ℂ (Form_01 RS) where
     **Note on the ∂̄ operator used:** We use `dbar_real` which acts on
     ℝ-smooth functions (not the trivially-zero `dbar_fun` on holomorphic functions). -/
 def DolbeaultH01 (RS : RiemannSurface) := Form_01 RS ⧸ dbarImage RS
+
+/-- Normal form of Dolbeault quotient using the linear-map image. -/
+theorem DolbeaultH01_eq_quotient_linearRange (RS : RiemannSurface) :
+    DolbeaultH01 RS = (Form_01 RS ⧸ (dbarRealLinearMap (RS := RS)).range) := by
+  simp [DolbeaultH01, dbarImage_eq_range_linearMap]
+
+/-- For compact surfaces, the local-copy and canonical Dolbeault quotients coincide. -/
+theorem SheafH1O_eq_DolbeaultH01 (CRS : CompactRiemannSurface) :
+    SheafH1O CRS = DolbeaultH01 CRS.toRiemannSurface := by
+  simp [SheafH1O, DolbeaultH01, dbarImage_eq_dbarImage_hd]
 
 /-- H^{0,1}(X, O) inherits an AddCommGroup structure from the quotient. -/
 noncomputable instance (RS : RiemannSurface) : AddCommGroup (DolbeaultH01 RS) :=
@@ -200,21 +272,125 @@ identifying each Dolbeault class with its unique harmonic representative.
 theorem dolbeault_hodge_iso (CRS : CompactRiemannSurface) :
     ∃ (f : DolbeaultH01 CRS.toRiemannSurface → Harmonic01Forms CRS.toRiemannSurface),
       Function.Bijective f := by
-  sorry -- Requires: Hodge decomposition (every ω = ω_harm + ∂̄f with f ℝ-smooth)
-         -- + uniqueness of harmonic representative
+  let RS := CRS.toRiemannSurface
+  obtain ⟨isoSheaf, hbijSheaf⟩ := dolbeault_isomorphism_01 CRS
+  let eSheafToDolbeault : SheafH1O CRS ≃ DolbeaultH01 RS :=
+    Equiv.cast (SheafH1O_eq_DolbeaultH01 CRS)
+  let harmonicToDolbeault : Harmonic01Forms RS → DolbeaultH01 RS :=
+    fun η => eSheafToDolbeault (isoSheaf η)
+  have hbij_harmonicToDolbeault : Function.Bijective harmonicToDolbeault := by
+    exact eSheafToDolbeault.bijective.comp hbijSheaf
+  let eDolbeault : Harmonic01Forms RS ≃ DolbeaultH01 RS :=
+    Equiv.ofBijective harmonicToDolbeault hbij_harmonicToDolbeault
+  refine ⟨eDolbeault.symm, ?_⟩
+  exact eDolbeault.symm.bijective
+
+/-- Canonical equivalence package extracted from `dolbeault_hodge_iso`. -/
+noncomputable def dolbeaultHodgeEquiv (CRS : CompactRiemannSurface) :
+    DolbeaultH01 CRS.toRiemannSurface ≃ Harmonic01Forms CRS.toRiemannSurface := by
+  classical
+  exact Equiv.ofBijective
+    (Classical.choose (dolbeault_hodge_iso CRS))
+    (Classical.choose_spec (dolbeault_hodge_iso CRS))
+
+/-- Linear-bijective Dolbeault/Hodge bridge from exact-harmonic vanishing. -/
+theorem dolbeault_hodge_linear_bijective_of_exact_harmonic01_vanishes
+    (CRS : CompactRiemannSurface)
+    (hvanish :
+      ∀ f : RealSmoothFunction CRS.toRiemannSurface,
+        (dbar_real_hd f).IsHarmonic →
+          dbar_real_hd f = 0) :
+    ∃ f : DolbeaultH01 CRS.toRiemannSurface →ₗ[ℂ]
+      Harmonic01Forms CRS.toRiemannSurface,
+      Function.Bijective f := by
+  let RS := CRS.toRiemannSurface
+  obtain ⟨fSheaf, hfSheaf⟩ :=
+    dolbeault_isomorphism_01_linear_of_exact_harmonic01_vanishes CRS hvanish
+  let hSheaf : SheafH1O CRS = DolbeaultH01 RS := SheafH1O_eq_DolbeaultH01 CRS
+  let eSheafToDolbeault : SheafH1O CRS ≃ₗ[ℂ] DolbeaultH01 RS :=
+    { toEquiv := Equiv.cast hSheaf
+      map_add' := by
+        intro x y
+        cases hSheaf
+        rfl
+      map_smul' := by
+        intro c x
+        cases hSheaf
+        rfl }
+  let eHarmToDolbeault : Harmonic01Forms RS ≃ₗ[ℂ] DolbeaultH01 RS :=
+    (LinearEquiv.ofBijective fSheaf hfSheaf).trans eSheafToDolbeault
+  refine ⟨eHarmToDolbeault.symm, ?_⟩
+  exact eHarmToDolbeault.symm.bijective
+
+/-- If `DolbeaultH01` is identified with `Harmonic01Forms` via a bijection, then
+there exists an injective genus-indexed family in `DolbeaultH01`.
+This is a reusable lower-bound bridge independent of finrank machinery. -/
+theorem dolbeault_has_genus_injective_family_of_bijective
+    (CRS : CompactRiemannSurface)
+    (f : DolbeaultH01 CRS.toRiemannSurface → Harmonic01Forms CRS.toRiemannSurface)
+    (hf : Function.Bijective f) :
+    ∃ (basis : Fin CRS.genus → DolbeaultH01 CRS.toRiemannSurface),
+      Function.Injective basis := by
+  obtain ⟨basisH, hbasisH⟩ := dim_harmonic_01_eq_genus CRS
+  let e : DolbeaultH01 CRS.toRiemannSurface ≃ Harmonic01Forms CRS.toRiemannSurface :=
+    Equiv.ofBijective f hf
+  refine ⟨fun i => e.symm (basisH i), ?_⟩
+  intro i j hij
+  apply hbasisH
+  simpa using congrArg e hij
+
+/-- `DolbeaultH01` carries an injective genus-indexed family.
+Obtained from `dolbeault_hodge_iso` and `dim_harmonic_01_eq_genus`. -/
+theorem dolbeault_has_genus_injective_family (CRS : CompactRiemannSurface) :
+    ∃ (basis : Fin CRS.genus → DolbeaultH01 CRS.toRiemannSurface),
+      Function.Injective basis := by
+  obtain ⟨f, hf⟩ := dolbeault_hodge_iso CRS
+  exact dolbeault_has_genus_injective_family_of_bijective CRS f hf
+
+/-- Linear-structure bridge for `h1_trivial_eq_genus`:
+if Dolbeault cohomology is linearly equivalent to harmonic `(0,1)` forms and
+the harmonic side has finrank `g`, then `h¹(O)=g`. -/
+theorem h1_trivial_eq_genus_of_linearEquiv
+    (CRS : CompactRiemannSurface)
+    (e : DolbeaultH01 CRS.toRiemannSurface ≃ₗ[ℂ]
+      Harmonic01Forms CRS.toRiemannSurface)
+    (hfin_harm : Module.finrank ℂ (Harmonic01Forms CRS.toRiemannSurface) = CRS.genus) :
+    h1_dolbeault_trivial CRS = CRS.genus := by
+  unfold h1_dolbeault_trivial
+  rw [LinearEquiv.finrank_eq e, hfin_harm]
+
+/-- Variant of `h1_trivial_eq_genus_of_linearEquiv` using a bijective linear map. -/
+theorem h1_trivial_eq_genus_of_linearMap_bijective
+    (CRS : CompactRiemannSurface)
+    (f : DolbeaultH01 CRS.toRiemannSurface →ₗ[ℂ]
+      Harmonic01Forms CRS.toRiemannSurface)
+    (hf : Function.Bijective f)
+    (hfin_harm : Module.finrank ℂ (Harmonic01Forms CRS.toRiemannSurface) = CRS.genus) :
+    h1_dolbeault_trivial CRS = CRS.genus := by
+  exact h1_trivial_eq_genus_of_linearEquiv CRS (LinearEquiv.ofBijective f hf) hfin_harm
 
 /-- h¹(O) = g (topological genus).
 
-    **Proof chain:**
-    1. H^{0,1}(X, O) ≅ Harmonic01Forms(X)  (Hodge decomposition: dolbeault_hodge_iso)
-    2. Harmonic01Forms(X) ≅ conj(Harmonic10Forms(X))  (conjugate_harmonic_iso, PROVEN)
-    3. dim Harmonic10Forms(X) = g  (Hodge theorem: dim_harmonic_10_eq_genus)
+    Here g = CRS.genus is the TOPOLOGICAL genus of the surface.
 
-    Here g = CRS.genus is the TOPOLOGICAL genus of the surface. This theorem
-    connects the analytic invariant dim H^{0,1} to the topological invariant g. -/
+    Current formal bridge status:
+    1. `dolbeault_hodge_iso` gives a bijection `DolbeaultH01 ≃ Harmonic01Forms`.
+    2. `dim_harmonic_01_eq_genus` gives an injective `Fin g → Harmonic01Forms`.
+    3. `dolbeault_has_genus_injective_family` transports this to `DolbeaultH01`.
+    4. Remaining gap: close the finrank equality (upper-bound / finite-dimensional closure). -/
 theorem h1_trivial_eq_genus (CRS : CompactRiemannSurface) :
     h1_dolbeault_trivial CRS = CRS.genus := by
-  sorry -- from dolbeault_hodge_iso + conjugate_harmonic_iso_bijective + dim_harmonic_10_eq_genus
+  have hvanish :
+      ∀ f : RealSmoothFunction CRS.toRiemannSurface,
+        (dbar_real_hd f).IsHarmonic →
+          dbar_real_hd f = 0 :=
+    exact_harmonic01_vanishes CRS
+  obtain ⟨f, hf⟩ :=
+    dolbeault_hodge_linear_bijective_of_exact_harmonic01_vanishes CRS hvanish
+  have hfin_harm :
+      Module.finrank ℂ (Harmonic01Forms CRS.toRiemannSurface) = CRS.genus :=
+    finrank_harmonic01_eq_genus CRS
+  exact h1_trivial_eq_genus_of_linearMap_bijective CRS f hf hfin_harm
 
 /-!
 ## Twisted Dolbeault Cohomology H^{0,1}(O(D))
@@ -279,6 +455,24 @@ private theorem dbar_twisted_const_mul (A : Form_01 RS) (c : ℂ) (f : RealSmoot
   rw [h, RealSmoothFunction.mul_toFun]
   simp only [RealSmoothFunction.const]; ring
 
+theorem dbar_twisted_smul (A : Form_01 RS) (c : ℂ) (f : RealSmoothFunction RS) :
+    dbar_twisted A (c • f) = c • dbar_twisted A f := by
+  simpa [RealSmoothFunction.smul_def] using dbar_twisted_const_mul (RS := RS) A c f
+
+/-- Additive homomorphism `f ↦ ∂̄_A f`. -/
+noncomputable def dbarTwistedAddHom (RS : RiemannSurface) (A : Form_01 RS) :
+    RealSmoothFunction RS →+ Form_01 RS where
+  toFun := dbar_twisted A
+  map_zero' := dbar_twisted_zero (RS := RS) A
+  map_add' := dbar_twisted_add (RS := RS) A
+
+/-- Linear map `f ↦ ∂̄_A f` over `ℂ`. -/
+noncomputable def dbarTwistedLinearMap (RS : RiemannSurface) (A : Form_01 RS) :
+    RealSmoothFunction RS →ₗ[ℂ] Form_01 RS where
+  toFun := dbar_twisted A
+  map_add' := dbar_twisted_add (RS := RS) A
+  map_smul' := dbar_twisted_smul (RS := RS) A
+
 /-- Image of the twisted ∂̄_A operator as a submodule of Ω^{0,1}. -/
 def twistedDbarImage (RS : RiemannSurface) (A : Form_01 RS) :
     Submodule ℂ (Form_01 RS) where
@@ -289,7 +483,31 @@ def twistedDbarImage (RS : RiemannSurface) (A : Form_01 RS) :
   zero_mem' := ⟨0, dbar_twisted_zero A⟩
   smul_mem' := by
     intro c ω ⟨f, hf⟩
-    exact ⟨RealSmoothFunction.const c * f, by rw [dbar_twisted_const_mul, hf]⟩
+    exact ⟨c • f, by rw [dbar_twisted_smul, hf]⟩
+
+/-- Additive content of `twistedDbarImage`: it is the range of `dbarTwistedAddHom`. -/
+theorem twistedDbarImage_toAddSubgroup_eq_range (RS : RiemannSurface) (A : Form_01 RS) :
+    (twistedDbarImage RS A).toAddSubgroup = (dbarTwistedAddHom (RS := RS) A).range := by
+  ext ω
+  constructor
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+
+/-- Linear content of `twistedDbarImage`: it is the range of `dbarTwistedLinearMap`. -/
+theorem twistedDbarImage_eq_range_linearMap (RS : RiemannSurface) (A : Form_01 RS) :
+    twistedDbarImage RS A = (dbarTwistedLinearMap (RS := RS) A).range := by
+  ext ω
+  constructor
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
+  · intro hω
+    rcases hω with ⟨f, rfl⟩
+    exact ⟨f, rfl⟩
 
 /-- Twisted Dolbeault cohomology H^{0,1}(O(D)) = Ω^{0,1} / im(∂̄_A).
 
@@ -297,6 +515,12 @@ def twistedDbarImage (RS : RiemannSurface) (A : Form_01 RS) :
     For general A (encoding a line bundle O(D)), this gives H^{0,1}(O(D)). -/
 noncomputable def TwistedDolbeaultH01 (RS : RiemannSurface) (A : Form_01 RS) :=
   Form_01 RS ⧸ twistedDbarImage RS A
+
+/-- Normal form of twisted Dolbeault quotient using the twisted linear-map image. -/
+theorem TwistedDolbeaultH01_eq_quotient_linearRange (RS : RiemannSurface) (A : Form_01 RS) :
+    TwistedDolbeaultH01 RS A =
+      (Form_01 RS ⧸ (dbarTwistedLinearMap (RS := RS) A).range) := by
+  simp [TwistedDolbeaultH01, twistedDbarImage_eq_range_linearMap]
 
 noncomputable instance twistedDolbeaultAddCommGroup (RS : RiemannSurface) (A : Form_01 RS) :
     AddCommGroup (TwistedDolbeaultH01 RS A) :=

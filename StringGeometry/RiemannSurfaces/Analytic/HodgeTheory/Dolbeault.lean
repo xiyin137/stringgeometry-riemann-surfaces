@@ -455,28 +455,13 @@ theorem dbar_conj_eq_conj_d_chart (f : SmoothFunction RS) (p : RS.carrier) :
       starRingEnd ℂ (Infrastructure.wirtingerDeriv (f.toFun ∘ e.symm) (e p)) := by
   letI := RS.topology; letI := RS.chartedSpace
   haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
+  haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
   let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
-  -- f is holomorphic, so f ∘ e.symm is ℂ-differentiable
-  have hmDiff : MDifferentiable 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) f.toFun :=
-    f.smooth'.mdifferentiable (by decide : (⊤ : WithTop ℕ∞) ≠ 0)
-  have hp := mem_chart_source ℂ p
-  have hfp := mem_chart_source ℂ (f.toFun p)
-  have hmdiffAt := hmDiff p
-  rw [mdifferentiableAt_iff_of_mem_source hp hfp] at hmdiffAt
-  simp only [modelWithCornersSelf_coe, Set.range_id] at hmdiffAt
-  have htarget : extChartAt 𝓘(ℂ, ℂ) (f.toFun p) = PartialEquiv.refl ℂ := by
-    simpa using (extChartAt_model_space_eq_id (𝕜 := ℂ) (E := ℂ) (x := f.toFun p))
-  simp only [htarget, PartialEquiv.refl_coe] at hmdiffAt
-  have hfun_eq : id ∘ f.toFun ∘ (extChartAt 𝓘(ℂ, ℂ) p).symm =
-      f.toFun ∘ (@chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p).symm := by
-    ext z
-    simp only [Function.comp_apply, id_eq, extChartAt, OpenPartialHomeomorph.extend_coe_symm,
-      modelWithCornersSelf_coe_symm]
-  rw [hfun_eq] at hmdiffAt
-  have hdiff : DifferentiableAt ℂ (f.toFun ∘ e.symm) (e p) :=
-    hmdiffAt.2.differentiableAt Filter.univ_mem
-  -- Apply the chain rule for wirtingerDerivBar with conjugation
-  exact Infrastructure.wirtingerDerivBar_comp_conj hdiff
+  have hf_real : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f.toFun :=
+    contMDiff_real_of_complex_rs f.smooth'
+  have hdiffR : DifferentiableAt ℝ (f.toFun ∘ e.symm) (e p) :=
+    Infrastructure.differentiableAt_chart_comp hf_real p
+  exact Infrastructure.wirtingerDerivBar_comp_conj_real hdiffR
 
 /-!
 ## Dolbeault-Grothendieck Lemma

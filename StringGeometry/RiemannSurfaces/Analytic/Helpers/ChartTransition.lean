@@ -74,7 +74,10 @@ theorem meromorphicOrderAt_eq_zero_near {h : ℂ → ℂ} {z₀ : ℂ}
 ## Chart Transition Maps
 -/
 
-/-- The chart transition map from chart at r to chart at q. -/
+/-- Selector-based chart transition from the selected chart at `r` to the selected
+chart at `q`, namely `(extChartAt q) ∘ (extChartAt r).symm`.
+This is a local computational helper, not an intrinsic canonical map determined only
+by center points. -/
 noncomputable def chartTransition (q r : RS.carrier) : ℂ → ℂ :=
   letI := RS.topology
   letI := RS.chartedSpace
@@ -101,6 +104,91 @@ theorem chartTransition_analyticAt (q r : RS.carrier) (z : ℂ)
     ModelWithCorners.range_eq_univ 𝓘(ℂ, ℂ)
   rw [hrange, contDiffWithinAt_univ] at hcd
   exact hcd.analyticAt
+
+/-- Near an overlap point, selector-based chart transitions compose as expected:
+`(a ← b) ∘ (b ← c) = (a ← c)` locally. -/
+theorem chartTransition_comp_eventuallyEq
+    (a b c : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart c).target)
+    (hovlp_bc : (eChart c).symm z ∈ (eChart b).source) :
+    (fun w : ℂ => chartTransition (RS := RS) a b (chartTransition (RS := RS) b c w))
+      =ᶠ[nhds z]
+    chartTransition (RS := RS) a c := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  change z ∈ (extChartAt 𝓘(ℂ, ℂ) c).target at hz_tgt
+  change (extChartAt 𝓘(ℂ, ℂ) c).symm z ∈ (extChartAt 𝓘(ℂ, ℂ) b).source at hovlp_bc
+  have hsrc_b_nhds :
+      (extChartAt 𝓘(ℂ, ℂ) b).source ∈
+        nhds ((extChartAt 𝓘(ℂ, ℂ) c).symm z) :=
+    (isOpen_extChartAt_source (I := 𝓘(ℂ, ℂ)) b).mem_nhds hovlp_bc
+  have hovlp_nhds :
+      ∀ᶠ w in nhds z,
+        (extChartAt 𝓘(ℂ, ℂ) c).symm w ∈ (extChartAt 𝓘(ℂ, ℂ) b).source := by
+    have hcont_symm :
+        ContinuousAt (fun w : ℂ => (extChartAt 𝓘(ℂ, ℂ) c).symm w) z := by
+      simpa using
+        (continuousAt_extChartAt_symm'' (I := 𝓘(ℂ, ℂ)) hz_tgt)
+    exact hcont_symm.eventually hsrc_b_nhds
+  refine hovlp_nhds.mono ?_
+  intro w hw_ovlp
+  change (extChartAt 𝓘(ℂ, ℂ) a)
+      ((extChartAt 𝓘(ℂ, ℂ) b).symm
+        ((extChartAt 𝓘(ℂ, ℂ) b) ((extChartAt 𝓘(ℂ, ℂ) c).symm w)))
+    = (extChartAt 𝓘(ℂ, ℂ) a) ((extChartAt 𝓘(ℂ, ℂ) c).symm w)
+  exact congrArg (extChartAt 𝓘(ℂ, ℂ) a) ((extChartAt 𝓘(ℂ, ℂ) b).left_inv hw_ovlp)
+
+/-- Derivative cocycle for selector-based chart transitions at an overlap point. -/
+theorem chartTransition_deriv_comp
+    (a b c : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart c).target)
+    (hovlp_bc : (eChart c).symm z ∈ (eChart b).source)
+    (hovlp_ac : (eChart c).symm z ∈ (eChart a).source) :
+    deriv (chartTransition (RS := RS) a c) z =
+      deriv (chartTransition (RS := RS) a b) (chartTransition (RS := RS) b c z) *
+        deriv (chartTransition (RS := RS) b c) z := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  change z ∈ (extChartAt 𝓘(ℂ, ℂ) c).target at hz_tgt
+  change (extChartAt 𝓘(ℂ, ℂ) c).symm z ∈ (extChartAt 𝓘(ℂ, ℂ) b).source at hovlp_bc
+  change (extChartAt 𝓘(ℂ, ℂ) c).symm z ∈ (extChartAt 𝓘(ℂ, ℂ) a).source at hovlp_ac
+  have hbc_ana : AnalyticAt ℂ (chartTransition (RS := RS) b c) z :=
+    chartTransition_analyticAt (RS := RS) b c z hz_tgt hovlp_bc
+  have hab_tgt :
+      chartTransition (RS := RS) b c z ∈ (eChart (RS := RS) b).target := by
+    simpa [chartTransition, Function.comp_apply] using
+      (eChart (RS := RS) b).map_source hovlp_bc
+  have hab_src :
+      (eChart (RS := RS) b).symm (chartTransition (RS := RS) b c z) ∈
+        (eChart (RS := RS) a).source := by
+    have hleft :
+        (extChartAt 𝓘(ℂ, ℂ) b).symm (chartTransition (RS := RS) b c z) =
+          (extChartAt 𝓘(ℂ, ℂ) c).symm z := by
+      change (extChartAt 𝓘(ℂ, ℂ) b).symm
+          ((extChartAt 𝓘(ℂ, ℂ) b) ((extChartAt 𝓘(ℂ, ℂ) c).symm z)) =
+        (extChartAt 𝓘(ℂ, ℂ) c).symm z
+      exact (extChartAt 𝓘(ℂ, ℂ) b).left_inv hovlp_bc
+    exact hleft ▸ hovlp_ac
+  have hab_ana :
+      AnalyticAt ℂ (chartTransition (RS := RS) a b)
+        (chartTransition (RS := RS) b c z) :=
+    chartTransition_analyticAt (RS := RS) a b
+      (chartTransition (RS := RS) b c z) hab_tgt hab_src
+  have hcomp :
+      HasDerivAt
+        (fun w : ℂ =>
+          chartTransition (RS := RS) a b (chartTransition (RS := RS) b c w))
+        (deriv (chartTransition (RS := RS) a b) (chartTransition (RS := RS) b c z) *
+          deriv (chartTransition (RS := RS) b c) z)
+        z :=
+    (hab_ana.differentiableAt.hasDerivAt).comp z (hbc_ana.differentiableAt.hasDerivAt)
+  have heq :
+      (fun w : ℂ =>
+        chartTransition (RS := RS) a b (chartTransition (RS := RS) b c w))
+        =ᶠ[nhds z]
+      chartTransition (RS := RS) a c :=
+    chartTransition_comp_eventuallyEq (RS := RS) a b c z hz_tgt hovlp_bc
+  exact (hcomp.congr_of_eventuallyEq heq.symm).deriv
 
 /-- Chain rule for `∂̄` composed with a chart transition map. -/
 theorem wirtingerDerivBar_comp_chartTransition (f : ℂ → ℂ) (q r : RS.carrier) (z : ℂ)

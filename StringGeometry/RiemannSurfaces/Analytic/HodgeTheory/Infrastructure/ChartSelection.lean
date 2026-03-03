@@ -62,6 +62,51 @@ theorem chartAtLocallyConstant_complexPlane : ChartAtLocallyConstant ComplexPlan
   intro p0
   simpa using chartAt_eventuallyEq_center_complexPlane p0
 
+/-- On `RiemannSphere`, `chartAt` is eventually constant at each nonzero finite point.
+
+This is a local chart-selection stability statement away from the pole-switch point `0`
+of the explicit selector. -/
+theorem chartAt_eventuallyEq_center_riemannSphere_coe_of_ne_zero
+    (a : ℂ) (ha : a ≠ 0) :
+    letI := RiemannSphere.topology
+    letI := RiemannSphere.chartedSpace
+    (fun p : RiemannSphere.carrier =>
+      @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace p)
+      =ᶠ[nhds ((a : ℂ) : OnePoint ℂ)]
+    (fun _ : RiemannSphere.carrier =>
+      @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+        ((a : ℂ) : OnePoint ℂ)) := by
+  letI := RiemannSphere.topology
+  letI := RiemannSphere.chartedSpace
+  have hε : 0 < ‖a‖ / 2 := by
+    exact half_pos (norm_pos_iff.mpr ha)
+  have hpre :
+      {z : ℂ |
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+          ((z : ℂ) : OnePoint ℂ) =
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+          ((a : ℂ) : OnePoint ℂ)} ∈ nhds a := by
+    refine Filter.mem_of_superset (Metric.ball_mem_nhds a hε) ?_
+    intro z hz
+    have hz_ne : z ≠ 0 := by
+      intro hz0
+      have hzlt : dist (0 : ℂ) a < ‖a‖ / 2 := by
+        simpa [hz0] using hz
+      have hlt : ‖a‖ < ‖a‖ / 2 := by
+        simpa [dist_eq_norm, norm_neg] using hzlt
+      linarith
+    change
+      (if z = 0 then riemannSphereFiniteChart else riemannSphereInftyChart) =
+        (if a = 0 then riemannSphereFiniteChart else riemannSphereInftyChart)
+    simp [hz_ne, ha]
+  have hset :
+      {p : OnePoint ℂ |
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace p =
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+          ((a : ℂ) : OnePoint ℂ)} ∈ nhds (((a : ℂ) : OnePoint ℂ)) := by
+    simpa [OnePoint.nhds_coe_eq] using hpre
+  exact hset
+
 /-!
 ## Negative Model Example
 

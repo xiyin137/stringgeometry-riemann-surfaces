@@ -352,6 +352,41 @@ noncomputable instance : CommRing (RealSmoothFunction RS) where
   nsmul := nsmulRec
   zsmul := zsmulRec
 
+/-- Scalar multiplication by `ℂ` via constant functions:
+`(c • f)(p) = c * f(p)`. -/
+noncomputable instance : SMul ℂ (RealSmoothFunction RS) where
+  smul c f := RealSmoothFunction.const c * f
+
+/-- Pointwise formula for complex scalar multiplication. -/
+@[simp] lemma smul_toFun (c : ℂ) (f : RealSmoothFunction RS) (p : RS.carrier) :
+    (c • f).toFun p = c * f.toFun p := by
+  rfl
+
+/-- Definitional scalar multiplication identity. -/
+theorem smul_def (c : ℂ) (f : RealSmoothFunction RS) :
+    c • f = RealSmoothFunction.const c * f := rfl
+
+/-- `RealSmoothFunction RS` is naturally a `ℂ`-module. -/
+noncomputable instance : Module ℂ (RealSmoothFunction RS) where
+  one_smul f := by
+    ext p
+    simp [smul_toFun]
+  mul_smul c d f := by
+    ext p
+    simp [smul_toFun, mul_assoc]
+  smul_zero c := by
+    ext p
+    simp [smul_toFun]
+  smul_add c f g := by
+    ext p
+    simp [smul_toFun, mul_add]
+  add_smul c d f := by
+    ext p
+    simp [smul_toFun, add_mul]
+  zero_smul f := by
+    ext p
+    simp [smul_toFun]
+
 /-- Conjugation of an ℝ-smooth function is ℝ-smooth. -/
 noncomputable def conj (f : RealSmoothFunction RS) : RealSmoothFunction RS where
   toFun := fun p => starRingEnd ℂ (f.toFun p)

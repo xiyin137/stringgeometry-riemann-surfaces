@@ -10,6 +10,9 @@ Current issue:
 - the section is defined pointwise using `chartAt` at the same point.
 - this creates a chart-varying expression with difficult global `ContMDiff` obligations.
 - structural friction in current encoding:
+  - `chartTransition (q r)` here is selector-based notation for
+    `(extChartAt q) ∘ (extChartAt r).symm`; it is not a canonical map determined only
+    by the center points.
   - `(1,0)` / `(0,1)` forms are represented as raw coefficient functions
     `RS.carrier → ℂ` rather than chart-free cotangent-bundle sections.
   - because `chartAt` is a choice function, moving-chart coefficient expressions
@@ -77,6 +80,81 @@ Resolved recently:
       `HodgeTheory/Infrastructure/TransitionFactor.lean`, and the
       duplicated local scripts in `HodgeDecomposition.lean` were removed.
       this keeps the obstruction visible at a single declaration boundary.
+    - chart-indexed infrastructure pass completed:
+      - `chartTransitionDerivInCharts` and
+        `chartTransitionDerivInCharts_contDiffAt` provide fixed-chart overlap
+        `C^∞` regularity for the transition derivative over `ℂ`.
+      - `chartTransitionDerivInCharts_contDiffAt_real` provides the same
+        fixed-chart overlap regularity over `ℝ` (scalar-restricted).
+      - chart-transition cocycle layer is now explicit:
+        `chartTransition_comp_eventuallyEq`, `chartTransition_deriv_comp`,
+        `chartTransitionDerivInCharts_cocycle`,
+        `chartTransitionFactorInCharts_cocycle`,
+        `chartTransitionFactorByCharts_cocycle`.
+      - inverse/normalization layer is now explicit:
+        `chartTransitionFactorInCharts_self`,
+        `chartTransitionFactorByCharts_self`,
+        `chartTransitionFactorByCharts_mul_reverse_eq_one`,
+        `chartTransitionFactorByCharts_eq_inv_reverse`.
+      - reciprocal regularity layer on overlaps:
+        `chartTransitionFactorByCharts_inv_continuousAt`,
+        `chartTransitionFactorByCharts_inv_contMDiffAt`.
+      - local `∂̄` overlap transport now has inverse-factor forms in core:
+        `dbarRealLocalCoeff_chartChange_fixedCharts_inv_hd`,
+        `dbarRealLocalCoeff_eventuallyEq_fixedCharts_inv_hd`,
+        `dbarRealLocalCoeff_rhs_inv_contMDiffAt_fixedCharts_hd`,
+        `dbarRealLocalCoeff_transferred_contMDiffAt_fixedCharts_hd`.
+      - overlap `WithinAt/On` smoothness packages for the inverse-factor branch
+        (in `HodgeDecomposition/TransitionFactorGlue.lean`):
+        `dbarRealLocalCoeff_rhs_inv_contMDiffWithinAt_fixedCharts_hd`,
+        `dbarRealLocalCoeff_transferred_contMDiffWithinAt_fixedCharts_hd`,
+        `dbarRealLocalCoeff_transferred_contMDiffOn_overlap_fixedCharts_hd`,
+        `dbarRealLocalCoeff_rhs_inv_contMDiffOn_overlap_fixedCharts_hd`.
+      - `chartTransitionFactorInCharts_continuousAt` provides fixed-chart overlap
+        continuity for the starred factor (selector-free at the chart-pair level).
+      - `chartTransitionFactorInCharts_contDiffAt_real` upgrades this to
+        fixed-chart overlap `C^∞` regularity over `ℝ`.
+      - surface pullback continuity now available:
+        `chartTransitionFactorByCharts_continuousAt` and
+        `chartTransitionFactorByCharts_continuousOn_overlap`.
+      - surface pullback smoothness now available:
+        `chartTransitionFactorByCharts_contMDiffAt` (`smoothOrder`, overlap points).
+      - fixed-chart transition-map smoothness now available:
+        `chartTransitionByCharts_contMDiffAt`.
+      - neighborhood-level overlap nonvanishing now available:
+        `chartTransitionFactorByCharts_eventually_ne_zero`.
+      - `HodgeDecomposition.lean` now has
+        `dbarRealLocalCoeff_chartChange_fixedCharts_hd` and
+        `dbarRealLocalCoeff_eventuallyEq_fixedCharts_hd` plus
+        `dbarRealLocalCoeff_rhs_contMDiffAt_fixedCharts_hd` /
+        `dbarRealLocalCoeff_contMDiffAt_fixedCharts_hd` /
+        `dbarRealLocalCoeff_contMDiffWithinAt_fixedCharts_hd` /
+        `dbarRealLocalCoeff_contDiffWithinAt_chartOverlap_fixedCharts_hd` /
+        `dbarRealTransitionFactorByCharts_contMDiffAt_hd` /
+        `dbarRealTransitionFactorByCharts_continuousAt_hd` /
+        `dbarRealTransitionFactorByCharts_ne_zero_hd` /
+        `dbarRealTransitionFactorByCharts_eventually_ne_zero_hd` to consume this
+        chart-indexed layer directly.
+      - additive operator packaging completed for quotient interfaces:
+        `dbarRealAddHom_hd`, `exactForms1AddHom`,
+        `dbarImage_hd_toAddSubgroup_eq_range`,
+        `exactForms1_toAddSubgroup_eq_range`.
+      - linear operator packaging completed after adding
+        `Module ℂ (RealSmoothFunction RS)` in `Infrastructure/RealSmoothness.lean`:
+        `dbar_real_hd_smul`, `del_real_smul`,
+        `dbarRealLinearMap_hd`, `exactForms1LinearMap`,
+        `dbarImage_hd_eq_range_linearMap`, `exactForms1_eq_range_linearMap`.
+      - canonical (non-local-copy) Dolbeault module now mirrors the same
+        image-as-range package:
+        `dbar_real_smul`, `dbarRealAddHom`, `dbarRealLinearMap`,
+        `dbarImage_toAddSubgroup_eq_range`, `dbarImage_eq_range_linearMap`.
+      - twisted Dolbeault image layer is now packaged identically:
+        `dbar_twisted_smul`, `dbarTwistedAddHom`, `dbarTwistedLinearMap`,
+        `twistedDbarImage_toAddSubgroup_eq_range`,
+        `twistedDbarImage_eq_range_linearMap`.
+      - added continuity bridge:
+        `dbarRealSectionCandidate_continuousAt_of_transitionFactor_continuousAt_hd`
+        (parallel to the smoothness bridge, useful for lower-regularity closure steps).
     - explicit model diagnostic added:
       `chartTransitionFactor_riemannSphere_zero_nonzero` now computes the factor
       at nonzero finite points (center `0`) as `-conj(z)^2`, giving a concrete
@@ -119,6 +197,11 @@ Resolved recently:
 1. `dbar_real_local_overlap_contDiffWithinAt`:
    overlap-transport lemma in the exact `ContDiffWithinAt` shape expected by
    `contMDiffWithinAt_iff_of_mem_source`.
+   current status: chart-indexed predecessor now formalized as
+   `dbarRealLocalCoeff_contMDiffWithinAt_fixedCharts_hd` plus
+   coordinate-level `dbarRealLocalCoeff_contDiffWithinAt_chartOverlap_fixedCharts_hd`.
+   Remaining step is to consume this in the
+   moving-selector/global section assembly.
 2. Transition-factor smoothness bridge (missing):
    prove
    `dbarRealTransitionFactor_contMDiffAt_hd`
@@ -147,6 +230,9 @@ Conclusion:
   either prove smoothness of the moving transition Jacobian factor directly,
   or refactor the formalization to chart-free bundle sections where smoothness is
   invariant under chart choice.
+- any proved non-smoothness of the selector-dependent transition-factor expression
+  should be read as an encoding/selection obstruction, not as a claim that
+  `RiemannSphere` (or any target manifold) is non-smooth.
 3. `dbar_real_chart_local_contMDiffAt`:
    chart-local `ContMDiffAt` statement for the section candidate at an arbitrary point.
 4. `dbar_real_hd_smooth_section` via local-to-global assembly.
