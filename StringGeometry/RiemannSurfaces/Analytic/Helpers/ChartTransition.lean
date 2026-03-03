@@ -124,6 +124,77 @@ theorem wirtingerDeriv_comp_chartTransition (f : ℂ → ℂ) (q r : RS.carrier)
   exact Infrastructure.wirtingerDeriv_comp_analyticAt hf
     (chartTransition_analyticAt q r z hz_tgt hovlp)
 
+/-- On overlapping charts, the two chart pullbacks are eventually equal near the overlap point
+after composing with the chart transition. -/
+theorem comp_extChart_symm_eventuallyEq_chartTransition
+    (F : RS.carrier → ℂ) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source) :
+    (F ∘ (eChart r).symm) =ᶠ[nhds z]
+      ((F ∘ (eChart q).symm) ∘ chartTransition (RS := RS) q r) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  haveI := RS.isManifold
+  change (F ∘ (extChartAt 𝓘(ℂ, ℂ) r).symm) =ᶠ[nhds z]
+      ((F ∘ (extChartAt 𝓘(ℂ, ℂ) q).symm) ∘ chartTransition (RS := RS) q r)
+  have htgt_nhds : ∀ᶠ u in nhds z, u ∈ (extChartAt 𝓘(ℂ, ℂ) r).target :=
+    (isOpen_extChartAt_target (I := 𝓘(ℂ, ℂ)) r).mem_nhds hz_tgt
+  have hsrc_q_nhds : (extChartAt 𝓘(ℂ, ℂ) q).source ∈ nhds ((extChartAt 𝓘(ℂ, ℂ) r).symm z) :=
+    (isOpen_extChartAt_source (I := 𝓘(ℂ, ℂ)) q).mem_nhds hovlp
+  have hovlp_nhds : ∀ᶠ u in nhds z, (extChartAt 𝓘(ℂ, ℂ) r).symm u ∈ (extChartAt 𝓘(ℂ, ℂ) q).source :=
+    (continuousAt_extChartAt_symm'' (I := 𝓘(ℂ, ℂ)) hz_tgt).eventually hsrc_q_nhds
+  exact (htgt_nhds.and hovlp_nhds).mono (fun u hu => by
+    rcases hu with ⟨hu_tgt, hu_ovlp⟩
+    simp only [Function.comp_apply, chartTransition]
+    congr 1
+    exact ((extChartAt 𝓘(ℂ, ℂ) q).left_inv hu_ovlp).symm)
+
+/-- Chart-change formula for `∂̄` of local pullbacks. -/
+theorem wirtingerDerivBar_extChart_symm_change
+    (F : RS.carrier → ℂ) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source)
+    (hf : DifferentiableAt ℝ (F ∘ (eChart q).symm)
+      (chartTransition (RS := RS) q r z)) :
+    Infrastructure.wirtingerDerivBar (F ∘ (eChart r).symm) z =
+      Infrastructure.wirtingerDerivBar (F ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r z) *
+        starRingEnd ℂ (deriv (chartTransition (RS := RS) q r) z) := by
+  have heq := comp_extChart_symm_eventuallyEq_chartTransition (RS := RS) F q r z hz_tgt hovlp
+  calc
+    Infrastructure.wirtingerDerivBar (F ∘ (eChart r).symm) z
+      = Infrastructure.wirtingerDerivBar
+          (((F ∘ (eChart q).symm) ∘ chartTransition (RS := RS) q r)) z := by
+          exact Infrastructure.wirtingerDerivBar_congr_of_eventuallyEq heq
+    _ = Infrastructure.wirtingerDerivBar (F ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r z) *
+        starRingEnd ℂ (deriv (chartTransition (RS := RS) q r) z) := by
+          exact wirtingerDerivBar_comp_chartTransition
+            (f := F ∘ (eChart q).symm) q r z hz_tgt hovlp hf
+
+/-- Chart-change formula for `∂` of local pullbacks. -/
+theorem wirtingerDeriv_extChart_symm_change
+    (F : RS.carrier → ℂ) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source)
+    (hf : DifferentiableAt ℝ (F ∘ (eChart q).symm)
+      (chartTransition (RS := RS) q r z)) :
+    Infrastructure.wirtingerDeriv (F ∘ (eChart r).symm) z =
+      Infrastructure.wirtingerDeriv (F ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r z) *
+        deriv (chartTransition (RS := RS) q r) z := by
+  have heq := comp_extChart_symm_eventuallyEq_chartTransition (RS := RS) F q r z hz_tgt hovlp
+  calc
+    Infrastructure.wirtingerDeriv (F ∘ (eChart r).symm) z
+      = Infrastructure.wirtingerDeriv
+          (((F ∘ (eChart q).symm) ∘ chartTransition (RS := RS) q r)) z := by
+          exact Infrastructure.wirtingerDeriv_congr_of_eventuallyEq heq
+    _ = Infrastructure.wirtingerDeriv (F ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r z) *
+        deriv (chartTransition (RS := RS) q r) z := by
+          exact wirtingerDeriv_comp_chartTransition
+            (f := F ∘ (eChart q).symm) q r z hz_tgt hovlp hf
+
 /-- Chart transition has nonzero derivative at points in the overlap. -/
 theorem chartTransition_deriv_ne_zero (q r : RS.carrier) (z : ℂ)
     (hz_tgt : z ∈ (eChart r).target)
@@ -192,7 +263,7 @@ theorem chartTransition_deriv_ne_zero (q r : RS.carrier) (z : ℂ)
 
 /-- **Chart independence of meromorphic order.** -/
 theorem chartOrderAt_eq_in_chart (f : RS.carrier → ℂ) (q r : RS.carrier)
-    (hf : IsChartMeromorphic (RS := RS) f)
+    (_hf : IsChartMeromorphic (RS := RS) f)
     (hr : r ∈ (eChart q).source) :
     chartOrderAt (RS := RS) f r =
       meromorphicOrderAt (chartRep (RS := RS) f q) ((eChart q) r) := by

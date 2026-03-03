@@ -34,6 +34,25 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: added extChart-level chart-change transport for Wirtinger derivatives)
+- `Analytic/Helpers/ChartTransition.lean`:
+  - added overlap eventual-equality bridge:
+    `comp_extChart_symm_eventuallyEq_chartTransition`.
+  - added chart-change transport lemmas for local pullbacks:
+    - `wirtingerDerivBar_extChart_symm_change`,
+    - `wirtingerDeriv_extChart_symm_change`.
+- Why this matters:
+  - packages the standard chart-change identity
+    `(F ∘ e_r.symm) = (F ∘ e_q.symm) ∘ transition` near overlap points as an
+    `EventuallyEq` lemma directly consumable by Wirtinger congruence lemmas.
+  - removes repeated local rewrite boilerplate in fixed-point gluing arguments
+    for `dbar_real_hd_smooth_section`.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: added holomorphic-composition chain rule for `∂̄`)
 - `Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`:
   - added algebraic CLM identity:

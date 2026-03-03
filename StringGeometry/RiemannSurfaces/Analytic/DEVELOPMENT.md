@@ -215,6 +215,20 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartTransition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
     (pass with warnings only).
+51. `Helpers/ChartTransition.lean`:
+    added extChart-level chart-change transport infrastructure:
+    - `comp_extChart_symm_eventuallyEq_chartTransition`,
+    - `wirtingerDerivBar_extChart_symm_change`,
+    - `wirtingerDeriv_extChart_symm_change`.
+52. Why this layer:
+    it exposes the overlap identity between two local pullbacks as an
+    `EventuallyEq` theorem and immediately packages the resulting `∂̄`/`∂`
+    transport formulas, reducing boilerplate in fixed-point chart-gluing steps.
+53. Compile frontier re-checked after this extension:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
 
 ## Current blocker clusters
 
