@@ -1,6 +1,7 @@
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Dolbeault
+import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Infrastructure.ChartSelection
 import StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartTransition
 
 /-!
@@ -1070,14 +1071,7 @@ private theorem complexPlane_chartAt_eventuallyEq_center_hd
       =ᶠ[nhds p0]
     (fun _ : ComplexPlane.carrier =>
       @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p0) := by
-  letI := ComplexPlane.topology
-  letI := ComplexPlane.chartedSpace
-  refine Filter.Eventually.of_forall ?_
-  intro p
-  change @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p =
-      @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p0
-  simpa using (chartAt_self_eq (H := ℂ) (x := (p : ℂ))).trans
-    (chartAt_self_eq (H := ℂ) (x := (p0 : ℂ))).symm
+  simpa using Infrastructure.chartAt_eventuallyEq_center_complexPlane p0
 
 /-- Closed smoothness theorem for `dbar_real_hd` on the model surface `ComplexPlane`,
 obtained from the chart-stabilized criterion. -/

@@ -16,6 +16,12 @@ Current issue:
     are hard to control directly with local smoothness lemmas.
 
 Resolved recently:
+- local chart-selection infrastructure now exists in
+  `HodgeTheory/Infrastructure/ChartSelection.lean`:
+  - `chartAt_eventuallyEq_of_forall_eq`,
+  - `chartAt_eventuallyEq_center_self`,
+  - `chartAt_eventuallyEq_center_complexPlane`.
+  This gives reusable building blocks for model-space / constant-chart situations.
 - smoothness-index normalization now uses project alias
   `smoothOrder : WithTop ℕ∞ := ((⊤ : ℕ∞) : WithTop ℕ∞)`.
 - `RealSmoothFunction`, `Form_10`, and `Form_01` now consistently use `smoothOrder`.

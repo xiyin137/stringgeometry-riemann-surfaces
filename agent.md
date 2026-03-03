@@ -48,7 +48,11 @@ This file is the working guidance for Codex in this repository.
 11. Reuse existing results first: search Mathlib and local `StringGeometry` modules before re-proving.
 12. Prefer reusable infrastructure over ad-hoc local hacks.
 13. Prefer local infrastructure development first when blocked: add internal lemmas/definitions/bridges before introducing external assumption bundles.
-14. In `WithTop`/`WithBot` goals, annotate `⊤`/`⊥`/`0` and casts explicitly to avoid metavariable-stuck typeclass resolution.
+14. If required API/lemmas are missing in Mathlib, explicitly build robust local infrastructure in this repo first:
+   - add reusable bridge lemmas in the nearest `Infrastructure/*` or `Helpers/*` module,
+   - prefer these local bridges over one-off in-proof workaround scripts,
+   - then refactor call sites to consume the new infrastructure.
+15. In `WithTop`/`WithBot` goals, annotate `⊤`/`⊥`/`0` and casts explicitly to avoid metavariable-stuck typeclass resolution.
 
 ## Sorry-closing workflow
 
@@ -68,6 +72,9 @@ This file is the working guidance for Codex in this repository.
 11. Always re-check soundness after progress; successful compilation is necessary but not sufficient.
 12. After 2 distinct failed in-file proof attempts, move to scratch/test files, get a compiling micro-lemma, then port back.
 13. If backing out of an approach, record the failed route and concrete blocker in local TODO/proof notes.
+14. Missing-library policy:
+   - when a needed theorem is absent upstream, stop retrying brittle tactics and build the missing local infrastructure lemma/theorem with stable statement shape,
+   - keep that infrastructure reusable and documented in local proof notes/TODO.
 
 ## Build and tooling rules
 

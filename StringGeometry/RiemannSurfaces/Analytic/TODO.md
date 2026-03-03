@@ -34,6 +34,24 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: chart-selection infrastructure extraction)
+- Added reusable local infrastructure module:
+  - `Analytic/HodgeTheory/Infrastructure/ChartSelection.lean`
+  - key lemmas:
+    - `chartAt_eventuallyEq_of_forall_eq`
+    - `chartAt_eventuallyEq_center_self`
+    - `chartAt_eventuallyEq_center_complexPlane`
+- Refactored `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - `complexPlane_chartAt_eventuallyEq_center_hd` now delegates to
+    `Infrastructure.chartAt_eventuallyEq_center_complexPlane`.
+- Updated `agent.md` to explicitly prioritize building local reusable
+  infrastructure when Mathlib lacks required APIs/lemmas.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/ChartSelection.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only from existing theorem-level `sorry`s).
+
 ### Incremental Update (latest pass: closed ComplexPlane smoothness slice for `dbar_real_hd`)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - added `complexPlane_chartAt_eventuallyEq_center_hd`, proving the chart-selection
