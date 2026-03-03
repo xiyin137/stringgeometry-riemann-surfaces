@@ -950,8 +950,16 @@ private theorem dbarRealSectionCandidate_contMDiffAt_of_chartAtLocallyConstant_h
     letI := RS.chartedSpace
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
       (dbarRealSectionCandidate_hd (RS := RS) f) p0 := by
-  exact dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
-    (RS := RS) f p0 (hchart p0)
+  have htrans :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+        (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
+    simpa [dbarRealTransitionFactor_hd] using
+      Infrastructure.chartTransitionFactor_contMDiffAt_of_chartAtLocallyConstant
+        (RS := RS) (n := smoothOrder) p0 hchart
+  exact dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd
+    (RS := RS) f p0 htrans
 
 /-- Global smoothness of the chart-varying `dbar` coefficient candidate under
 pointwise local stabilization of `chartAt`. -/
