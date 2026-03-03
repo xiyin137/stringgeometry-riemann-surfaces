@@ -34,6 +34,27 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: added holomorphic-composition chain rule for `∂̄`)
+- `Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`:
+  - added algebraic CLM identity:
+    `clm_eval_add_I_eval_I_mul_conj`.
+  - added chain-rule theorem:
+    `wirtingerDerivBar_comp_holomorphic`.
+- New theorem statement:
+  - if `g` is holomorphic at `z`, then
+    `wirtingerDerivBar (f ∘ g) z =
+      wirtingerDerivBar f (g z) * starRingEnd ℂ (deriv g z)`.
+- Why this matters:
+  - this is the exact transition-law kernel needed when transporting local `∂̄`
+    coefficients across holomorphic chart changes.
+  - it strengthens the infrastructure around the remaining
+    `dbar_real_hd_smooth_section` blocker.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: fixed Hodge local-regularity compile blocker + added pointwise chart lemmas)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - fixed the local regularity proof in

@@ -411,6 +411,82 @@ private theorem fderiv_real_eq_mulLeftCLM {g : ℂ → ℂ} {z : ℂ}
     fderiv ℝ g z = mulLeftCLM (deriv g z) :=
   (hasFDerivAt_real_of_complex hg).fderiv
 
+/-- Algebraic identity for evaluating an ℝ-linear map on a complex number and its
+`I`-multiple. This is the core linear-algebra step behind the chain rule for
+`wirtingerDerivBar` under holomorphic reparametrization. -/
+private theorem clm_eval_add_I_eval_I_mul_conj
+    (L : ℂ →L[ℝ] ℂ) (a : ℂ) :
+    L a + Complex.I * L (Complex.I * a) =
+      (L 1 + Complex.I * L Complex.I) * (starRingEnd ℂ a) := by
+  have ha :
+      a = (a.re : ℝ) • (1 : ℂ) + (a.im : ℝ) • Complex.I := by
+    apply Complex.ext <;> simp
+  have hIa :
+      Complex.I * a =
+        (-a.im : ℝ) • (1 : ℂ) + (a.re : ℝ) • Complex.I := by
+    rw [ha]
+    apply Complex.ext <;> simp
+  have hLa :
+      L a = (a.re : ℝ) • L 1 + (a.im : ℝ) • L Complex.I := by
+    calc
+      L a = L ((a.re : ℝ) • (1 : ℂ) + (a.im : ℝ) • Complex.I) := by
+        exact congrArg L ha
+      _ = L ((a.re : ℝ) • (1 : ℂ)) + L ((a.im : ℝ) • Complex.I) := by rw [map_add]
+      _ = (a.re : ℝ) • L 1 + (a.im : ℝ) • L Complex.I := by rw [map_smul, map_smul]
+  have hLIa :
+      L (Complex.I * a) =
+        (-a.im : ℝ) • L 1 + (a.re : ℝ) • L Complex.I := by
+    calc
+      L (Complex.I * a) = L ((-a.im : ℝ) • (1 : ℂ) + (a.re : ℝ) • Complex.I) := by
+        exact congrArg L hIa
+      _ = L ((-a.im : ℝ) • (1 : ℂ)) + L ((a.re : ℝ) • Complex.I) := by rw [map_add]
+      _ = (-a.im : ℝ) • L 1 + (a.re : ℝ) • L Complex.I := by rw [map_smul, map_smul]
+  have hconj :
+      (starRingEnd ℂ a) = (a.re : ℝ) • (1 : ℂ) + (-a.im : ℝ) • Complex.I := by
+    apply Complex.ext <;> simp
+  rw [hLa, hLIa, hconj]
+  apply Complex.ext <;> simp [mul_add, add_mul, Complex.mul_re, Complex.mul_im] <;> ring
+
+/-- Chain rule for `wirtingerDerivBar` under composition with a holomorphic map.
+
+If `g` is holomorphic at `z`, then
+`∂̄(f ∘ g)(z) = (∂̄f)(g(z)) * conj(g'(z))`. -/
+theorem wirtingerDerivBar_comp_holomorphic {f g : ℂ → ℂ} {z : ℂ}
+    (hf : DifferentiableAt ℝ f (g z)) (hg : DifferentiableAt ℂ g z) :
+    wirtingerDerivBar (f ∘ g) z =
+      wirtingerDerivBar f (g z) * starRingEnd ℂ (deriv g z) := by
+  unfold wirtingerDerivBar
+  have hgR : DifferentiableAt ℝ g z := differentiableAt_real_of_complex hg
+  have hchain : fderiv ℝ (f ∘ g) z =
+      (fderiv ℝ f (g z)).comp (fderiv ℝ g z) := by
+    exact (hf.hasFDerivAt.comp z hgR.hasFDerivAt).fderiv
+  have hgfd : fderiv ℝ g z = mulLeftCLM (deriv g z) := fderiv_real_eq_mulLeftCLM hg
+  rw [hchain, hgfd]
+  set L : ℂ →L[ℝ] ℂ := fderiv ℝ f (g z)
+  have hEval :
+      L (deriv g z) + Complex.I * L (Complex.I * deriv g z) =
+        (L 1 + Complex.I * L Complex.I) * (starRingEnd ℂ (deriv g z)) :=
+    clm_eval_add_I_eval_I_mul_conj L (deriv g z)
+  have hEval' :
+      L (deriv g z) + Complex.I * L (deriv g z * Complex.I) =
+        (L 1 + Complex.I * L Complex.I) * (starRingEnd ℂ (deriv g z)) := by
+    simpa [mul_comm] using hEval
+  have hLhs :
+      (L.comp (mulLeftCLM (deriv g z))) 1 +
+        Complex.I * (L.comp (mulLeftCLM (deriv g z))) Complex.I =
+        (L 1 + Complex.I * L Complex.I) * (starRingEnd ℂ (deriv g z)) := by
+    simpa [mulLeftCLM, ContinuousLinearMap.comp_apply] using hEval'
+  calc
+    (1 / 2 : ℂ) *
+        ((L.comp (mulLeftCLM (deriv g z))) 1 +
+          Complex.I * (L.comp (mulLeftCLM (deriv g z))) Complex.I)
+      = (1 / 2 : ℂ) *
+          ((L 1 + Complex.I * L Complex.I) * (starRingEnd ℂ (deriv g z))) := by
+            rw [hLhs]
+    _ = ((1 / 2 : ℂ) * (L 1 + Complex.I * L Complex.I)) *
+          (starRingEnd ℂ (deriv g z)) := by ring
+    _ = wirtingerDerivBar f (g z) * starRingEnd ℂ (deriv g z) := by rfl
+
 theorem wirtingerDerivBar_comp_conj {g : ℂ → ℂ} {z : ℂ} (hg : DifferentiableAt ℂ g z) :
     wirtingerDerivBar (starRingEnd ℂ ∘ g) z = starRingEnd ℂ (wirtingerDeriv g z) := by
   -- Rewrite RHS using wirtingerDeriv = deriv for holomorphic functions
