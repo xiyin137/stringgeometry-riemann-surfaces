@@ -853,6 +853,60 @@ private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd
   have hchange := dbarRealSectionCandidate_chartChange_hd (RS := RS) f p0 p hp
   simpa [dbarRealFixedPart_hd, dbarRealTransitionFactor_hd] using hchange
 
+/-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor. -/
+private theorem dbarRealTransitionFactor_contMDiffAt_hd (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
+  -- Core blocker:
+  -- control smoothness of `p ↦ deriv (chartTransition p0 p) ((chartAt ℂ p) p)`
+  -- under moving chart selection.
+  sorry
+
+/-- Pointwise smoothness of the global `dbar` section candidate. -/
+private theorem dbarRealSectionCandidate_contMDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealSectionCandidate_hd (RS := RS) f) p0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  set fixedPart := dbarRealFixedPart_hd (RS := RS) f p0
+  set transFactor := dbarRealTransitionFactor_hd (RS := RS) p0
+  have hloc :
+      dbarRealSectionCandidate_hd (RS := RS) f =ᶠ[nhds p0]
+        fun p => fixedPart p * transFactor p := by
+    simpa [fixedPart, transFactor] using
+      dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd (RS := RS) f p0
+  have hfixedTop :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞) fixedPart p0 := by
+    simpa [fixedPart, dbarRealFixedPart_hd] using
+      dbar_real_local_fixedChart_contMDiffAt_hd (RS := RS) f p0
+  have hfixed :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder fixedPart p0 :=
+    by simpa [smoothOrder] using hfixedTop
+  have htrans :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder transFactor p0 := by
+    simpa [transFactor] using dbarRealTransitionFactor_contMDiffAt_hd (RS := RS) p0
+  have hmulSmooth : ContDiff ℝ smoothOrder (fun z : ℂ × ℂ => z.1 * z.2) := by
+    exact (contDiff_mul : ContDiff ℝ (⊤ : WithTop ℕ∞) (fun z : ℂ × ℂ => z.1 * z.2)).of_le
+      smoothOrder_le_top
+  have hpair :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) smoothOrder
+        (fun p => (fixedPart p, transFactor p)) p0 :=
+    hfixed.prodMk_space htrans
+  have hmulMap :
+      ContMDiffAt 𝓘(ℝ, ℂ × ℂ) 𝓘(ℝ, ℂ) smoothOrder
+        (fun z : ℂ × ℂ => z.1 * z.2) ((fixedPart p0, transFactor p0)) :=
+    (hmulSmooth.contMDiff).contMDiffAt
+  have hmul :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+        (fun p => fixedPart p * transFactor p) p0 := by
+    simpa [Function.comp] using hmulMap.comp p0 hpair
+  exact hmul.congr_of_eventuallyEq hloc
+
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
@@ -862,20 +916,8 @@ theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
   letI := RS.topology
   letI := RS.chartedSpace
   intro p0
-  set fixedPart := dbarRealFixedPart_hd (RS := RS) f p0
-  set transFactor := dbarRealTransitionFactor_hd (RS := RS) p0
-  have hloc :
-      dbarRealSectionCandidate_hd (RS := RS) f =ᶠ[nhds p0]
-        fun p => fixedPart p * transFactor p := by
-    simpa [fixedPart, transFactor] using
-      dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd (RS := RS) f p0
-  have hfixed : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞) fixedPart p0 := by
-    simpa [fixedPart, dbarRealFixedPart_hd] using
-      dbar_real_local_fixedChart_contMDiffAt_hd (RS := RS) f p0
-  -- Remaining global blocker:
-  -- establish `ContMDiffAt` for `transFactor` at `p0`, then conclude via
-  -- product smoothness and `congr_of_eventuallyEq` using `hloc`.
-  sorry
+  simpa [dbarRealSectionCandidate_hd] using
+    dbarRealSectionCandidate_contMDiffAt_hd (RS := RS) f p0
 
 /-- The ∂̄ operator on ℝ-smooth functions: ∂̄f = (∂f/∂z̄) dz̄.
     Duplicated from DolbeaultCohomology.lean to avoid circular imports

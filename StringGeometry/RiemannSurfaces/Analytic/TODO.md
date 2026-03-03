@@ -62,6 +62,9 @@
   - updated differentiability helper callsites to smoothOrder specializations.
   - fixed `dbar_real_hd_smooth_section` statement and downstream expectations to
     `ContMDiff ... smoothOrder`.
+  - refactored `dbar_real_hd_smooth_section` assembly to be sorry-free apart from
+    one isolated bridge:
+    - `dbarRealTransitionFactor_contMDiffAt_hd` (transition-factor smoothness).
   - removed one lint-only `simpa` warning in Hodge decomposition infrastructure.
 - Why this matters:
   - resolves the prior `((⊤ : ℕ∞) : WithTop ℕ∞)` vs `⊤` regularity mismatch in
