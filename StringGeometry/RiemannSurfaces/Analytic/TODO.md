@@ -51,6 +51,12 @@
   - added neighborhood congruence lemmas:
     `wirtingerDerivBar_congr_of_eventuallyEq`,
     `wirtingerDeriv_congr_of_eventuallyEq`.
+- `Analytic/Helpers/ChartTransition.lean`:
+  - added chart-transition chain-rule bridges:
+    - `wirtingerDerivBar_comp_chartTransition`,
+    - `wirtingerDeriv_comp_chartTransition`.
+  - these package `chartTransition_analyticAt` + Wirtinger composition rules for
+    direct use in local coordinate-change computations.
 - New theorem statement:
   - if `g` is holomorphic at `z`, then
     `wirtingerDerivBar (f ∘ g) z =

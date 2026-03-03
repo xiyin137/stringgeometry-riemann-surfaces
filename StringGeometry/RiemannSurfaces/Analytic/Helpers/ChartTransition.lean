@@ -1,4 +1,5 @@
 import StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartMeromorphic
+import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Infrastructure.WirtingerDerivatives
 import Mathlib.Geometry.Manifold.IsManifold.ExtChartAt
 
 /-!
@@ -100,6 +101,28 @@ theorem chartTransition_analyticAt (q r : RS.carrier) (z : ℂ)
     ModelWithCorners.range_eq_univ 𝓘(ℂ, ℂ)
   rw [hrange, contDiffWithinAt_univ] at hcd
   exact hcd.analyticAt
+
+/-- Chain rule for `∂̄` composed with a chart transition map. -/
+theorem wirtingerDerivBar_comp_chartTransition (f : ℂ → ℂ) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source)
+    (hf : DifferentiableAt ℝ f (chartTransition (RS := RS) q r z)) :
+    Infrastructure.wirtingerDerivBar (f ∘ chartTransition (RS := RS) q r) z =
+      Infrastructure.wirtingerDerivBar f (chartTransition (RS := RS) q r z) *
+        starRingEnd ℂ (deriv (chartTransition (RS := RS) q r) z) := by
+  exact Infrastructure.wirtingerDerivBar_comp_analyticAt hf
+    (chartTransition_analyticAt q r z hz_tgt hovlp)
+
+/-- Chain rule for `∂` composed with a chart transition map. -/
+theorem wirtingerDeriv_comp_chartTransition (f : ℂ → ℂ) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source)
+    (hf : DifferentiableAt ℝ f (chartTransition (RS := RS) q r z)) :
+    Infrastructure.wirtingerDeriv (f ∘ chartTransition (RS := RS) q r) z =
+      Infrastructure.wirtingerDeriv f (chartTransition (RS := RS) q r z) *
+        deriv (chartTransition (RS := RS) q r) z := by
+  exact Infrastructure.wirtingerDeriv_comp_analyticAt hf
+    (chartTransition_analyticAt q r z hz_tgt hovlp)
 
 /-- Chart transition has nonzero derivative at points in the overlap. -/
 theorem chartTransition_deriv_ne_zero (q r : RS.carrier) (z : ℂ)

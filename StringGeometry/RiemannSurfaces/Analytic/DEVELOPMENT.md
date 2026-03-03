@@ -202,6 +202,19 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
     (pass with warnings only).
+48. `Helpers/ChartTransition.lean`:
+    added direct Wirtinger chain-rule wrappers for coordinate changes:
+    - `wirtingerDerivBar_comp_chartTransition`,
+    - `wirtingerDeriv_comp_chartTransition`.
+49. Why this layer:
+    these lemmas avoid repeating the same `AnalyticAt`-conversion boilerplate
+    (`chartTransition_analyticAt` + composition chain rule) in downstream local
+    chart computations.
+50. Compile frontier re-checked after chart-transition bridges:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartTransition`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
 
 ## Current blocker clusters
 
