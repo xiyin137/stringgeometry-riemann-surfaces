@@ -1060,18 +1060,16 @@ theorem dbar_real_hd_smooth_section_of_chartAt_eventuallyEq
     dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
       (RS := RS) f p0 (hchart p0)
 
-/-- On `ComplexPlane`, the chart selector is globally constant (`chartAt = refl`),
-so the local chart-stabilization hypothesis holds automatically. -/
-private theorem complexPlane_chartAt_eventuallyEq_center_hd
-    (p0 : ComplexPlane.carrier) :
-    letI := ComplexPlane.topology
-    letI := ComplexPlane.chartedSpace
-    (fun p : ComplexPlane.carrier =>
-      @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p)
-      =ᶠ[nhds p0]
-    (fun _ : ComplexPlane.carrier =>
-      @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p0) := by
-  simpa using Infrastructure.chartAt_eventuallyEq_center_complexPlane p0
+/-- Global smoothness of `dbar_real_hd` under local chart-selection stability. -/
+theorem dbar_real_hd_smooth_section_of_chartAtLocallyConstant
+    (f : RealSmoothFunction RS)
+    (hchart : Infrastructure.ChartAtLocallyConstant RS) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (fun p : RS.carrier =>
+      let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+      wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
+  exact dbar_real_hd_smooth_section_of_chartAt_eventuallyEq (RS := RS) f hchart
 
 /-- Closed smoothness theorem for `dbar_real_hd` on the model surface `ComplexPlane`,
 obtained from the chart-stabilized criterion. -/
@@ -1082,8 +1080,8 @@ theorem dbar_real_hd_smooth_section_complexPlane
     ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (fun p : ComplexPlane.carrier =>
       let e := @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p
       wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
-  exact dbar_real_hd_smooth_section_of_chartAt_eventuallyEq
-    (RS := ComplexPlane) f (fun p0 => complexPlane_chartAt_eventuallyEq_center_hd p0)
+  exact dbar_real_hd_smooth_section_of_chartAtLocallyConstant
+    (RS := ComplexPlane) f Infrastructure.chartAtLocallyConstant_complexPlane
 
 /-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor.
 The issue is the moving chart choice `p ↦ chartAt ℂ p` inside the derivative point

@@ -20,7 +20,8 @@ Resolved recently:
   `HodgeTheory/Infrastructure/ChartSelection.lean`:
   - `chartAt_eventuallyEq_of_forall_eq`,
   - `chartAt_eventuallyEq_center_self`,
-  - `chartAt_eventuallyEq_center_complexPlane`.
+  - `chartAt_eventuallyEq_center_complexPlane`,
+  - `ChartAtLocallyConstant` (project-level predicate for local chart stability).
   This gives reusable building blocks for model-space / constant-chart situations.
 - smoothness-index normalization now uses project alias
   `smoothOrder : WithTop ℕ∞ := ((⊤ : ℕ∞) : WithTop ℕ∞)`.

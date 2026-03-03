@@ -41,9 +41,15 @@
     - `chartAt_eventuallyEq_of_forall_eq`
     - `chartAt_eventuallyEq_center_self`
     - `chartAt_eventuallyEq_center_complexPlane`
+    - `ChartAtLocallyConstant`
+    - `chartAtLocallyConstant_complexPlane`
 - Refactored `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - `complexPlane_chartAt_eventuallyEq_center_hd` now delegates to
     `Infrastructure.chartAt_eventuallyEq_center_complexPlane`.
+  - added reusable bridge:
+    `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`.
+  - `dbar_real_hd_smooth_section_complexPlane` now discharges through
+    `Infrastructure.chartAtLocallyConstant_complexPlane`.
 - Updated `agent.md` to explicitly prioritize building local reusable
   infrastructure when Mathlib lacks required APIs/lemmas.
 - Compile checks run:

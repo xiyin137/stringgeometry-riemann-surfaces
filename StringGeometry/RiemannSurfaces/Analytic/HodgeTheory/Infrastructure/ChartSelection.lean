@@ -13,6 +13,14 @@ namespace RiemannSurfaces.Analytic.Infrastructure
 
 open Topology
 
+/-- Local chart-selection stability: `chartAt` is eventually constant at every point. -/
+def ChartAtLocallyConstant (RS : RiemannSurface) : Prop :=
+  letI := RS.topology
+  letI := RS.chartedSpace
+  ∀ p0 : RS.carrier,
+    (fun p : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p) =ᶠ[nhds p0]
+      (fun _ : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0)
+
 /-- If chart selection is globally constant at a center chart, it is eventually equal
 near that center. -/
 theorem chartAt_eventuallyEq_of_forall_eq
@@ -48,5 +56,9 @@ theorem chartAt_eventuallyEq_center_complexPlane
   letI := ComplexPlane.chartedSpace
   simpa using chartAt_eventuallyEq_center_self (H := ℂ) (p0 := (p0 : ℂ))
 
-end RiemannSurfaces.Analytic.Infrastructure
+/-- `ComplexPlane` satisfies local chart-selection stability. -/
+theorem chartAtLocallyConstant_complexPlane : ChartAtLocallyConstant ComplexPlane := by
+  intro p0
+  simpa using chartAt_eventuallyEq_center_complexPlane p0
 
+end RiemannSurfaces.Analytic.Infrastructure
