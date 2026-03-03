@@ -249,8 +249,10 @@ theorem chartTransitionFactor_riemannSphere_zero_nonzero (z : ℂ) (hz : z ≠ 0
   have hstar := congrArg (starRingEnd ℂ) hderiv
   simpa [chartTransitionFactor, pow_two, map_mul, map_neg] using hstar
 
-/-- Diagnostic result: with the current explicit `chartAt` selector on `RiemannSphere`,
-the transition factor centered at `0` is not continuous at `0`. -/
+/-- Diagnostic result about the selector-dependent transition-factor expression:
+with the current explicit `chartAt` selector on `RiemannSphere`, the transition factor
+centered at `0` is not continuous at `0`.
+This does **not** assert any failure of manifold smoothness of `RiemannSphere`. -/
 theorem not_continuousAt_chartTransitionFactor_riemannSphere_zero :
     letI := RiemannSphere.topology
     letI := RiemannSphere.chartedSpace
@@ -312,8 +314,8 @@ theorem not_continuousAt_chartTransitionFactor_riemannSphere_zero :
   have h01 : (0 : ℂ) = 1 := tendsto_nhds_unique hF0 hF1
   exact zero_ne_one h01
 
-/-- Consequently, the same centered transition factor is not `ContMDiffAt` at `0`
-for any regularity order. -/
+/-- Consequently, the same selector-dependent centered transition factor is not
+`ContMDiffAt` at `0` for any regularity order. -/
 theorem not_contMDiffAt_chartTransitionFactor_riemannSphere_zero (n : WithTop ℕ∞) :
     letI := RiemannSphere.topology
     letI := RiemannSphere.chartedSpace

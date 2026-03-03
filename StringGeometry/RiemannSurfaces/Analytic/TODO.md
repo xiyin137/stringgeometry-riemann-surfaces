@@ -20,6 +20,7 @@
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/ArgumentPrincipleRoadmap.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/FiberMultiplicityBridge.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/DbarRealSmoothnessPlan.md`
+  - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/TransitionFactorStrategy.md`
 
 ## Reference Baseline (Griffiths-Harris style)
 - Priority references for the current analytic path:
@@ -47,6 +48,8 @@
     on the canonical nontrivial model (`RiemannSphere`).
   - now formally proves the centered transition factor is not continuous/smooth at `0`
     for this selector, confirming the unconditional smoothness path cannot close as stated.
+  - this concerns the selector-dependent transition-factor expression only;
+    `RiemannSphere` remains a smooth manifold.
 - Compile checks run:
   - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`
   - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`

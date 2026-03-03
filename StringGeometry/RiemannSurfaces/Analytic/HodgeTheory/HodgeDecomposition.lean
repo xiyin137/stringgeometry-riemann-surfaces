@@ -1010,9 +1010,32 @@ theorem dbar_real_hd_smooth_section_complexPlane
   exact dbar_real_hd_smooth_section_of_chartAtLocallyConstant
     (RS := ComplexPlane) f Infrastructure.chartAtLocallyConstant_complexPlane
 
+/-!
+Diagnostic obstruction (current selector model):
+for `RiemannSphere` at center `0`, the transition-factor candidate is not even
+continuous/smooth (`Infrastructure.not_contMDiffAt_chartTransitionFactor_riemannSphere_zero`).
+This is about the selector-dependent transition-factor expression, not about
+manifold smoothness of `RiemannSphere`.
+-/
+
+/-- On `RiemannSphere` at center `0`, the local transition-factor smoothness
+statement fails for `smoothOrder` under the current explicit chart selector. -/
+theorem dbarRealTransitionFactor_not_contMDiffAt_riemannSphere_zero_hd :
+    letI := RiemannSphere.topology
+    letI := RiemannSphere.chartedSpace
+    ¬ ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealTransitionFactor_hd (RS := RiemannSphere) (((0 : ℂ) : OnePoint ℂ)))
+      (((0 : ℂ) : OnePoint ℂ)) := by
+  letI := RiemannSphere.topology
+  letI := RiemannSphere.chartedSpace
+  simpa [dbarRealTransitionFactor_hd] using
+    Infrastructure.not_contMDiffAt_chartTransitionFactor_riemannSphere_zero (n := smoothOrder)
+
 /-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor.
 The issue is the moving chart choice `p ↦ chartAt ℂ p` inside the derivative point
-of `chartTransition p0 p`, which is not yet bridged to a chart-free smooth object. -/
+of `chartTransition p0 p`, which is not yet bridged to a chart-free smooth object.
+The unconditional statement is obstructed on `RiemannSphere` at `0`
+(`dbarRealTransitionFactor_not_contMDiffAt_riemannSphere_zero_hd`). -/
 private theorem dbarRealTransitionFactor_contMDiffAt_hd (p0 : RS.carrier) :
     letI := RS.topology
     letI := RS.chartedSpace
