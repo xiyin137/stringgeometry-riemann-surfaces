@@ -9,6 +9,11 @@ Target declaration:
 Current issue:
 - the section is defined pointwise using `chartAt` at the same point.
 - this creates a chart-varying expression with difficult global `ContMDiff` obligations.
+- structural friction in current encoding:
+  - `(1,0)` / `(0,1)` forms are represented as raw coefficient functions
+    `RS.carrier → ℂ` rather than chart-free cotangent-bundle sections.
+  - because `chartAt` is a choice function, moving-chart coefficient expressions
+    are hard to control directly with local smoothness lemmas.
 
 Resolved recently:
 - smoothness-index normalization now uses project alias
@@ -75,6 +80,10 @@ Resolved recently:
 5. eliminate dependence on the ad hoc moving chart expression by replacing
    `p ↦ chartAt ℂ p` in the coefficient definition with a chart-localized
    formulation that glues via overlap equalities.
+6. medium-term refactor target:
+   migrate form representation toward chart-free section data (or an equivalent
+   bundle-level interface), so smoothness proofs are invariant under chart
+   choice and no longer depend on regularity of the selected `chartAt`.
 
 ## Constraints
 
