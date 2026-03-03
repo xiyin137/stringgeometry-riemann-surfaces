@@ -34,6 +34,46 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: smoothOrder normalization completed across analytic Hodge core)
+- `Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`:
+  - introduced project-level order aliases/bridges:
+    - `smoothOrder`,
+    - `smoothOrder_ne_zero`,
+    - `smoothOrder_le_top`,
+    - `coeNatInf_le_smoothOrder`,
+    - `withTopNatInf_le_top`.
+  - migrated `RealSmoothFunction` smoothness field to `ContMDiff ... smoothOrder`.
+- `Analytic/HodgeTheory/DifferentialForms.lean`:
+  - migrated `Form_10`/`Form_01` smoothness fields to `smoothOrder`.
+  - generalized `contMDiff_mul_real` to arbitrary `n : WithTop ℕ∞`.
+  - updated smooth/real-smooth scalar actions and `ofComplexSmooth` to lower
+    from `⊤` via `smoothOrder_le_top` where needed.
+- `Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`:
+  - generalized chart differentiability bridge to nonzero order:
+    - `differentiableAt_chart_comp_of_ne_zero`,
+    - `differentiableAt_chart_comp_of_contMDiffAt_of_ne_zero`.
+  - added stable specializations:
+    - `differentiableAt_chart_comp` (`⊤`),
+    - `differentiableAt_chart_comp_smoothOrder`,
+    - `differentiableAt_chart_comp_of_contMDiffAt`,
+    - `differentiableAt_chart_comp_of_contMDiffAt_smoothOrder`.
+- `Analytic/HodgeTheory/HodgeDecomposition.lean` and
+  `Analytic/HodgeTheory/DolbeaultCohomology.lean`:
+  - updated differentiability helper callsites to smoothOrder specializations.
+  - fixed `dbar_real_hd_smooth_section` statement and downstream expectations to
+    `ContMDiff ... smoothOrder`.
+  - removed one lint-only `simpa` warning in Hodge decomposition infrastructure.
+- Why this matters:
+  - resolves the prior `((⊤ : ℕ∞) : WithTop ℕ∞)` vs `⊤` regularity mismatch in
+    active analytic Hodge modules.
+  - narrows the remaining `dbar_real_hd_smooth_section` blocker to the genuine
+    chart-variation transition-factor smoothness problem.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.DolbeaultCohomology`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build`
+  - status: pass (warnings only from existing theorem-level `sorry`s).
+
 ### Incremental Update (latest pass: added pointwise chart-change identity for `dbar` candidate)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - imported `Analytic/Helpers/ChartTransition`.
