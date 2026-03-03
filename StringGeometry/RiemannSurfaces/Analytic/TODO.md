@@ -40,6 +40,8 @@
     `clm_eval_add_I_eval_I_mul_conj`.
   - added chain-rule theorem:
     `wirtingerDerivBar_comp_holomorphic`.
+  - added `AnalyticAt` specialization:
+    `wirtingerDerivBar_comp_analyticAt`.
 - New theorem statement:
   - if `g` is holomorphic at `z`, then
     `wirtingerDerivBar (f ∘ g) z =

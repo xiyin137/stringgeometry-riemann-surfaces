@@ -487,6 +487,13 @@ theorem wirtingerDerivBar_comp_holomorphic {f g : ℂ → ℂ} {z : ℂ}
           (starRingEnd ℂ (deriv g z)) := by ring
     _ = wirtingerDerivBar f (g z) * starRingEnd ℂ (deriv g z) := by rfl
 
+/-- `AnalyticAt` specialization of `wirtingerDerivBar_comp_holomorphic`. -/
+theorem wirtingerDerivBar_comp_analyticAt {f g : ℂ → ℂ} {z : ℂ}
+    (hf : DifferentiableAt ℝ f (g z)) (hg : AnalyticAt ℂ g z) :
+    wirtingerDerivBar (f ∘ g) z =
+      wirtingerDerivBar f (g z) * starRingEnd ℂ (deriv g z) := by
+  exact wirtingerDerivBar_comp_holomorphic hf hg.differentiableAt
+
 theorem wirtingerDerivBar_comp_conj {g : ℂ → ℂ} {z : ℂ} (hg : DifferentiableAt ℂ g z) :
     wirtingerDerivBar (starRingEnd ℂ ∘ g) z = starRingEnd ℂ (wirtingerDeriv g z) := by
   -- Rewrite RHS using wirtingerDeriv = deriv for holomorphic functions

@@ -182,11 +182,13 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     `wirtingerDerivBar_comp_holomorphic`.
 42. Added the supporting ℝ-linear algebra identity:
     `clm_eval_add_I_eval_I_mul_conj`.
-43. Infrastructure impact:
+43. Added `AnalyticAt` convenience specialization:
+    `wirtingerDerivBar_comp_analyticAt`.
+44. Infrastructure impact:
     this captures the chart-transition core formula
     `∂̄(f ∘ g) = (∂̄f ∘ g) · conj(g')` for holomorphic `g`, which is a direct
     building block for the remaining `dbar_real_hd_smooth_section` gluing proof.
-44. Compile frontier re-checked after this addition:
+45. Compile frontier re-checked after this addition:
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/WirtingerDerivatives.lean`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
