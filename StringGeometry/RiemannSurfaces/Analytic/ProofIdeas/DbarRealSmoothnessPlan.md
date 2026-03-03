@@ -76,6 +76,14 @@ Resolved recently:
       `HodgeTheory/Infrastructure/TransitionFactor.lean`, and the
       duplicated local scripts in `HodgeDecomposition.lean` were removed.
       this keeps the obstruction visible at a single declaration boundary.
+    - explicit model diagnostic added:
+      `chartTransitionFactor_riemannSphere_zero_nonzero` now computes the factor
+      at nonzero finite points (center `0`) as `-conj(z)^2`, giving a concrete
+      local formula for analyzing the unconditional smoothness failure mode.
+    - obstruction now formalized:
+      `not_continuousAt_chartTransitionFactor_riemannSphere_zero` and
+      `not_contMDiffAt_chartTransitionFactor_riemannSphere_zero` are proved in
+      `TransitionFactor.lean` for the current explicit sphere selector.
     - cleanup completed:
       the intermediate theorem asserting local eventual equality of `chartAt` was removed.
       the remaining theorem-level blocker is now explicit and isolated at

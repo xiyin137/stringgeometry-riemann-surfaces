@@ -34,6 +34,25 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: explicit `RiemannSphere` transition-factor diagnostic)
+- Added explicit diagnostic theorem in
+  `Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`:
+  - `chartTransitionFactor_riemannSphere_zero_nonzero`
+    (for `z ≠ 0`, centered at `0` on `RiemannSphere`,
+    `chartTransitionFactor = -conj(z)^2`).
+  - `not_continuousAt_chartTransitionFactor_riemannSphere_zero`.
+  - `not_contMDiffAt_chartTransitionFactor_riemannSphere_zero`.
+- Why this matters:
+  - turns the abstract blocker around moving chart selection into a concrete formula
+    on the canonical nontrivial model (`RiemannSphere`).
+  - now formally proves the centered transition factor is not continuous/smooth at `0`
+    for this selector, confirming the unconditional smoothness path cannot close as stated.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only from existing theorem-level `sorry`s/lints).
+
 ### Incremental Update (latest pass: transition-factor infrastructure extraction)
 - Added reusable module:
   - `Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`
