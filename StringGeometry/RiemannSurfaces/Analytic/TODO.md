@@ -49,6 +49,10 @@
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - refactored `realSmooth_comp_chart_symm_contDiffOn_hd` to reuse
     `RealSmoothFunction.contDiffOn_comp_chart_symm` directly.
+  - added target-point generalizations:
+    - `realSmooth_comp_chart_symm_contDiffAt_hd_of_mem`,
+    - `wirtingerDerivBar_chart_comp_contDiffAt_hd_of_mem`.
+    Existing pointwise-at-center lemmas are now specializations of these.
 - Why this matters:
   - directly lowers friction in the `dbar_real_hd_smooth_section` path by
     turning repeated local differentiability obligations into reusable

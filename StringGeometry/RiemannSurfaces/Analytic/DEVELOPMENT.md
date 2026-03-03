@@ -243,6 +243,10 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     refactored `realSmooth_comp_chart_symm_contDiffOn_hd` to delegate directly to
     `RealSmoothFunction.contDiffOn_comp_chart_symm`, removing duplicated chart-level
     regularity proof script from the Hodge file.
+    Added target-point generalizations:
+    - `realSmooth_comp_chart_symm_contDiffAt_hd_of_mem`,
+    - `wirtingerDerivBar_chart_comp_contDiffAt_hd_of_mem`.
+    The previous pointwise-at-chart-center lemmas are now derived as special cases.
 57. Compile frontier re-checked after this pass:
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
