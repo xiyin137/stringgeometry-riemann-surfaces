@@ -768,7 +768,7 @@ private theorem dbarRealSectionCandidate_chartChange_hd
   letI := RS.topology
   letI := RS.chartedSpace
   have hp : p ∈ (eChart (RS := RS) p).source := by
-    simpa [eChart] using (mem_chart_source ℂ p)
+    simp [eChart]
   have hp0' : p ∈ (eChart (RS := RS) p0).source := by
     simpa [eChart] using hp0
   have hchange :=
