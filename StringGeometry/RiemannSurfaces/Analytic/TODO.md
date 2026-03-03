@@ -53,6 +53,9 @@
     - `realSmooth_comp_chart_symm_contDiffAt_hd_of_mem`,
     - `wirtingerDerivBar_chart_comp_contDiffAt_hd_of_mem`.
     Existing pointwise-at-center lemmas are now specializations of these.
+  - added fixed-chart local manifold-smooth bridges for the `∂̄` coefficient map:
+    - `dbar_real_local_fixedChart_contMDiffOn_hd`,
+    - `dbar_real_local_fixedChart_contMDiffAt_hd`.
 - Why this matters:
   - directly lowers friction in the `dbar_real_hd_smooth_section` path by
     turning repeated local differentiability obligations into reusable

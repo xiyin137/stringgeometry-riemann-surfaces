@@ -27,6 +27,8 @@ Current issue:
   - done infrastructure:
     - `wirtingerDerivBar_chart_comp_contDiffOn_hd`
     - `wirtingerDerivBar_chart_comp_contDiffAt_hd`
+    - `dbar_real_local_fixedChart_contMDiffOn_hd`
+    - `dbar_real_local_fixedChart_contMDiffAt_hd`
 
 3. Prove chart-transition compatibility for local definitions. (partially complete)
 - On overlaps of two charts, prove equality between local `∂̄` coefficient descriptions via transition maps.

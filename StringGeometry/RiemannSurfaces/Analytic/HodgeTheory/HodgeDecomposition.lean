@@ -698,6 +698,50 @@ private theorem wirtingerDerivBar_chart_comp_contDiffAt_hd
   exact wirtingerDerivBar_chart_comp_contDiffAt_hd_of_mem (RS := RS) f p0 n
     (z := (chartAt ℂ p0) p0) (mem_chart_target ℂ p0)
 
+/-- With a fixed chart center `p0`, the local `∂̄` coefficient expression is
+`C^∞` on the chart source as a manifold map. -/
+private theorem dbar_real_local_fixedChart_contMDiffOn_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : RS.carrier =>
+        wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p))
+      (chartAt ℂ p0).source := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
+  haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
+  have hfixed_contDiff :
+      ContDiffOn ℝ ((⊤ : ℕ∞) : WithTop ℕ∞)
+        (wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm)) (chartAt ℂ p0).target := by
+    simpa using wirtingerDerivBar_chart_comp_contDiffOn_hd (RS := RS) f p0 (n := (⊤ : ℕ∞))
+  have hfixed_md :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞)
+        (wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm)) (chartAt ℂ p0).target := by
+    exact hfixed_contDiff.contMDiffOn
+  have hchart :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞)
+        (chartAt ℂ p0) (chartAt ℂ p0).source := by
+    simpa using (contMDiffOn_chart (I := 𝓘(ℝ, ℂ)) (H := ℂ) (x := p0))
+  refine hfixed_md.comp hchart ?_
+  intro p hp
+  exact (chartAt ℂ p0).map_source hp
+
+/-- Pointwise version of `dbar_real_local_fixedChart_contMDiffOn_hd` at the chart center. -/
+private theorem dbar_real_local_fixedChart_contMDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞)
+      (fun p : RS.carrier =>
+        wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p))
+      p0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hOn := dbar_real_local_fixedChart_contMDiffOn_hd (RS := RS) f p0
+  exact hOn.contMDiffAt (chart_source_mem_nhds (H := ℂ) p0)
+
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace

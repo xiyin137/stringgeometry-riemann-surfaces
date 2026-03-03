@@ -247,6 +247,11 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `realSmooth_comp_chart_symm_contDiffAt_hd_of_mem`,
     - `wirtingerDerivBar_chart_comp_contDiffAt_hd_of_mem`.
     The previous pointwise-at-chart-center lemmas are now derived as special cases.
+    Added fixed-chart local manifold smoothness bridges for the `∂̄` coefficient map:
+    - `dbar_real_local_fixedChart_contMDiffOn_hd`,
+    - `dbar_real_local_fixedChart_contMDiffAt_hd`.
+    These isolate a proved local piece of `dbar_real_hd_smooth_section`; the remaining
+    gap is explicit chart-choice compatibility, not fixed-chart regularity.
 57. Compile frontier re-checked after this pass:
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
