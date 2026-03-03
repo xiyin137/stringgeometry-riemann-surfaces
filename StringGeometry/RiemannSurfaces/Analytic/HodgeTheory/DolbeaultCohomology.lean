@@ -45,7 +45,8 @@ This isolates the genuine manifold-analytic proof obligation away from the
 private theorem dbar_real_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
-    ContMDiff (modelWithCornersSelf ℝ ℂ) (modelWithCornersSelf ℝ ℂ) ⊤ (fun p : RS.carrier =>
+    ContMDiff (modelWithCornersSelf ℝ ℂ) (modelWithCornersSelf ℝ ℂ) smoothOrder
+      (fun p : RS.carrier =>
       let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
       wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
   simpa [dbar_real_hd] using (dbar_real_hd (RS := RS) f).smooth'
@@ -76,7 +77,7 @@ private theorem realSmooth_differentiableAt_chart (f : RealSmoothFunction RS) (p
     DifferentiableAt ℝ (f.toFun ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) := by
   letI := RS.topology; letI := RS.chartedSpace; haveI := RS.isManifold
   haveI := isManifold_real_of_complex (M := RS.carrier)
-  exact Infrastructure.differentiableAt_chart_comp f.smooth' p
+  exact Infrastructure.differentiableAt_chart_comp_smoothOrder f.smooth' p
 
 theorem dbar_real_add (f g : RealSmoothFunction RS) :
     dbar_real (f + g) = dbar_real f + dbar_real g := by

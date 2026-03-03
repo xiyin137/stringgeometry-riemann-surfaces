@@ -193,11 +193,18 @@ Since there is no ContMDiffMul 𝓘(ℝ, ℂ) instance, we provide explicit proo
 
 /-- Helper: multiplication of ℝ-smooth functions is ℝ-smooth. -/
 theorem contMDiff_mul_real {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M]
-    {f g : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f) (hg : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ g) :
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun p => f p * g p) := by
-  have hmul : ContDiff ℝ ⊤ (fun p : ℂ × ℂ => p.1 * p.2) := contDiff_mul
-  have hpair : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) ⊤ (fun p => (f p, g p)) := hf.prodMk_space hg
-  exact hmul.comp_contMDiff hpair
+    {n : WithTop ℕ∞} {f g : M → ℂ}
+    (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n f) (hg : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n g) :
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n (fun p => f p * g p) := by
+  have hmul : ContDiff ℝ (⊤ : WithTop ℕ∞) (fun p : ℂ × ℂ => p.1 * p.2) := contDiff_mul
+  have hmulN : ContDiff ℝ n (fun p : ℂ × ℂ => p.1 * p.2) := by
+    have hn_top : n ≤ (⊤ : WithTop ℕ∞) := by
+      cases n with
+      | top => exact le_rfl
+      | coe a => exact (WithTop.coe_lt_top a).le
+    exact hmul.of_le (m := n) (n := (⊤ : WithTop ℕ∞)) hn_top
+  have hpair : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) n (fun p => (f p, g p)) := hf.prodMk_space hg
+  exact hmulN.comp_contMDiff hpair
 
 /-!
 ## Differential Forms
@@ -243,7 +250,7 @@ structure Form_10 (RS : RiemannSurface) where
   /-- ℝ-smoothness of the section -/
   smooth' : letI := RS.topology
             letI := RS.chartedSpace
-            ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ toSection
+            ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder toSection
 
 /-- A smooth (0,1)-form on a Riemann surface.
 
@@ -258,7 +265,7 @@ structure Form_01 (RS : RiemannSurface) where
   toSection : RS.carrier → ℂ
   smooth' : letI := RS.topology
             letI := RS.chartedSpace
-            ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ toSection
+            ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder toSection
 
 /-- A (1,1)-form on a Riemann surface.
 
@@ -319,7 +326,8 @@ noncomputable instance : SMul (SmoothFunction RS) (Form_10 RS) where
     by
       letI := RS.topology; letI := RS.chartedSpace
       -- ℂ-smooth implies ℝ-smooth, so we can use the ℂ-smooth function
-      exact contMDiff_mul_real (contMDiff_real_of_complex_rs f.smooth') ω.smooth'⟩
+      exact contMDiff_mul_real
+        ((contMDiff_real_of_complex_rs f.smooth').of_le smoothOrder_le_top) ω.smooth'⟩
 
 /-- Multiplication by an ℝ-smooth function -/
 noncomputable instance : SMul (RealSmoothFunction RS) (Form_10 RS) where
@@ -327,9 +335,12 @@ noncomputable instance : SMul (RealSmoothFunction RS) (Form_10 RS) where
     by
       letI := RS.topology; letI := RS.chartedSpace
       have hmul : ContDiff ℝ ⊤ (fun p : ℂ × ℂ => p.1 * p.2) := contDiff_mul
-      have hpair : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) ⊤ (fun p => (f.toFun p, ω.toSection p)) :=
+      have hmulSmooth : ContDiff ℝ smoothOrder (fun p : ℂ × ℂ => p.1 * p.2) :=
+        hmul.of_le smoothOrder_le_top
+      have hpair :
+          ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) smoothOrder (fun p => (f.toFun p, ω.toSection p)) :=
         f.smooth'.prodMk_space ω.smooth'
-      exact hmul.comp_contMDiff hpair⟩
+      exact hmulSmooth.comp_contMDiff hpair⟩
 
 @[simp] lemma add_toSection (ω₁ ω₂ : Form_10 RS) (p : RS.carrier) :
     (ω₁ + ω₂).toSection p = ω₁.toSection p + ω₂.toSection p := rfl
@@ -397,16 +408,20 @@ noncomputable instance : SMul (SmoothFunction RS) (Form_01 RS) where
   smul f ω := ⟨fun p => f.toFun p * ω.toSection p,
     by
       letI := RS.topology; letI := RS.chartedSpace
-      exact contMDiff_mul_real (contMDiff_real_of_complex_rs f.smooth') ω.smooth'⟩
+      exact contMDiff_mul_real
+        ((contMDiff_real_of_complex_rs f.smooth').of_le smoothOrder_le_top) ω.smooth'⟩
 
 noncomputable instance : SMul (RealSmoothFunction RS) (Form_01 RS) where
   smul f ω := ⟨fun p => f.toFun p * ω.toSection p,
     by
       letI := RS.topology; letI := RS.chartedSpace
       have hmul : ContDiff ℝ ⊤ (fun p : ℂ × ℂ => p.1 * p.2) := contDiff_mul
-      have hpair : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) ⊤ (fun p => (f.toFun p, ω.toSection p)) :=
+      have hmulSmooth : ContDiff ℝ smoothOrder (fun p : ℂ × ℂ => p.1 * p.2) :=
+        hmul.of_le smoothOrder_le_top
+      have hpair :
+          ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) smoothOrder (fun p => (f.toFun p, ω.toSection p)) :=
         f.smooth'.prodMk_space ω.smooth'
-      exact hmul.comp_contMDiff hpair⟩
+      exact hmulSmooth.comp_contMDiff hpair⟩
 
 @[simp] lemma add_toSection (ω₁ ω₂ : Form_01 RS) (p : RS.carrier) :
     (ω₁ + ω₂).toSection p = ω₁.toSection p + ω₂.toSection p := rfl
@@ -700,7 +715,10 @@ noncomputable def Form_10.ofComplexSmooth {RS : RiemannSurface}
           letI := RS.isManifold
           ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ⊤ f) : Form_10 RS where
   toSection := f
-  smooth' := contMDiff_real_of_complex_rs hf
+  smooth' := by
+    letI := RS.topology
+    letI := RS.chartedSpace
+    exact (contMDiff_real_of_complex_rs hf).of_le smoothOrder_le_top
 
 /-!
 ## Real Forms

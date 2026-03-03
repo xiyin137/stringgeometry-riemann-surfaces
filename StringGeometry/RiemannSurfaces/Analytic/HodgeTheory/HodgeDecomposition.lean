@@ -418,7 +418,7 @@ private theorem form10_chart_differentiableAt (ω : Form_10 RS) (p : RS.carrier)
   letI := RS.topology; letI := RS.chartedSpace
   haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
   haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
-  exact Infrastructure.differentiableAt_chart_comp ω.smooth' p
+  exact Infrastructure.differentiableAt_chart_comp_smoothOrder ω.smooth' p
 
 /-- ∂̄ is additive: dbar_10 (ω₁ + ω₂) = dbar_10 ω₁ + dbar_10 ω₂ -/
 theorem dbar_10_add (ω₁ ω₂ : Form_10 RS) :
@@ -578,7 +578,8 @@ theorem dim_harmonic_10_eq_genus (CRS : CompactRiemannSurface) :
        smooth' := by
          simpa using
            (contMDiff_const :
-             ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun _ : RS.carrier => (i : ℂ))) },
+             ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun _ : RS.carrier => (i : ℂ))).of_le
+             smoothOrder_le_top },
       by
         unfold Form_10.IsHarmonic dbar_10
         apply Form_11.ext
@@ -855,7 +856,7 @@ private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun p : RS.carrier =>
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (fun p : RS.carrier =>
       let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
       wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
   letI := RS.topology
@@ -944,7 +945,7 @@ private theorem form01_chart_differentiableAt (ω : Form_01 RS) (p : RS.carrier)
   letI := RS.topology; letI := RS.chartedSpace
   haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
   haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
-  exact Infrastructure.differentiableAt_chart_comp ω.smooth' p
+  exact Infrastructure.differentiableAt_chart_comp_smoothOrder ω.smooth' p
 
 /-- Helper: RealSmoothFunction values composed with chart inverse are ℝ-differentiable. -/
 private theorem realSmooth_chart_differentiableAt_hd (f : RealSmoothFunction RS) (p : RS.carrier) :
@@ -953,7 +954,7 @@ private theorem realSmooth_chart_differentiableAt_hd (f : RealSmoothFunction RS)
   letI := RS.topology; letI := RS.chartedSpace
   haveI := RS.isManifold
   haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
-  exact Infrastructure.differentiableAt_chart_comp f.smooth' p
+  exact Infrastructure.differentiableAt_chart_comp_smoothOrder f.smooth' p
 
 -- ∂ on (0,1)-forms: linearity
 

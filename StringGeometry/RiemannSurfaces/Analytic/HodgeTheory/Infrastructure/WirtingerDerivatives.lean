@@ -653,15 +653,17 @@ open scoped Manifold
 open Topology
 
 /-- For a ContMDiff function on a manifold modeled on ℂ (with ℝ-smoothness),
-    composition with chart symm gives DifferentiableAt ℝ.
+    composition with chart symm gives DifferentiableAt ℝ, provided the smoothness
+    order is nonzero.
 
     This is the key link: manifold smoothness → chart differentiability → Wirtinger derivatives. -/
-theorem differentiableAt_chart_comp {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M]
-    [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
-    {f : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f) (p : M) :
+theorem differentiableAt_chart_comp_of_ne_zero {M : Type*}
+    [TopologicalSpace M] [ChartedSpace ℂ M] [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
+    {n : WithTop ℕ∞} {f : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n f)
+    (hn : n ≠ 0) (p : M) :
     DifferentiableAt ℝ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) := by
   -- Get ContMDiffAt from ContMDiff
-  have hCM : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f p := hf.contMDiffAt
+  have hCM : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n f p := hf.contMDiffAt
   -- Use contMDiffAt_iff_of_mem_source to extract ContDiffWithinAt
   have hp_source : p ∈ (chartAt ℂ p).source := mem_chart_source ℂ p
   have hfp_source : f p ∈ (chartAt ℂ (f p)).source := mem_chart_source ℂ (f p)
@@ -682,7 +684,7 @@ theorem differentiableAt_chart_comp {M : Type*} [TopologicalSpace M] [ChartedSpa
   have hrange : Set.range (𝓘(ℝ, ℂ) : ℂ → ℂ) = Set.univ := by
     simp only [modelWithCornersSelf_coe, Set.range_id]
   -- Rewrite hcdiff using these simplifications
-  have hcdiff' : ContDiffWithinAt ℝ ⊤ (f ∘ (chartAt ℂ p).symm) Set.univ ((chartAt ℂ p) p) := by
+  have hcdiff' : ContDiffWithinAt ℝ n (f ∘ (chartAt ℂ p).symm) Set.univ ((chartAt ℂ p) p) := by
     have heq1 : (fun z => (extChartAt 𝓘(ℝ, ℂ) p).symm z) = (fun z => (chartAt ℂ p).symm z) :=
       funext hsource_symm
     have heq2 : (extChartAt 𝓘(ℝ, ℂ) (f p)) ∘ f = f := by
@@ -691,15 +693,30 @@ theorem differentiableAt_chart_comp {M : Type*} [TopologicalSpace M] [ChartedSpa
     simp only [heq1, hrange, hsource_val, htarget, PartialEquiv.refl_coe] at hcdiff
     exact hcdiff
   -- ContDiffWithinAt on univ gives ContDiffAt
-  have hcdiffAt : ContDiffAt ℝ ⊤ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
+  have hcdiffAt : ContDiffAt ℝ n (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
     hcdiff'.contDiffAt Filter.univ_mem
-  -- ContDiffAt ⊤ implies DifferentiableAt (⊤ ≠ 0)
-  exact hcdiffAt.differentiableAt WithTop.top_ne_zero
+  -- Nonzero-order ContDiffAt implies differentiability
+  exact hcdiffAt.differentiableAt hn
+
+/-- `C^∞` specialization of `differentiableAt_chart_comp_of_ne_zero`. -/
+theorem differentiableAt_chart_comp {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M]
+    [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
+    {f : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f) (p : M) :
+    DifferentiableAt ℝ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
+  differentiableAt_chart_comp_of_ne_zero (n := (⊤ : WithTop ℕ∞)) hf WithTop.top_ne_zero p
+
+/-- `smoothOrder` specialization of `differentiableAt_chart_comp_of_ne_zero`. -/
+theorem differentiableAt_chart_comp_smoothOrder {M : Type*}
+    [TopologicalSpace M] [ChartedSpace ℂ M] [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
+    {f : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder f) (p : M) :
+    DifferentiableAt ℝ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
+  differentiableAt_chart_comp_of_ne_zero (n := smoothOrder) hf smoothOrder_ne_zero p
 
 /-- Variant: ContMDiffAt implies DifferentiableAt in chart. -/
-theorem differentiableAt_chart_comp_of_contMDiffAt {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M]
-    [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
-    {f : M → ℂ} {p : M} (hf : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f p) :
+theorem differentiableAt_chart_comp_of_contMDiffAt_of_ne_zero {M : Type*}
+    [TopologicalSpace M] [ChartedSpace ℂ M] [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
+    {n : WithTop ℕ∞} {f : M → ℂ} {p : M}
+    (hf : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n f p) (hn : n ≠ 0) :
     DifferentiableAt ℝ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) := by
   -- Use contMDiffAt_iff_of_mem_source to extract ContDiffWithinAt
   have hp_source : p ∈ (chartAt ℂ p).source := mem_chart_source ℂ p
@@ -719,15 +736,33 @@ theorem differentiableAt_chart_comp_of_contMDiffAt {M : Type*} [TopologicalSpace
   have hrange : Set.range (𝓘(ℝ, ℂ) : ℂ → ℂ) = Set.univ := by
     simp only [modelWithCornersSelf_coe, Set.range_id]
   -- Rewrite hcdiff using these simplifications
-  have hcdiff' : ContDiffWithinAt ℝ ⊤ (f ∘ (chartAt ℂ p).symm) Set.univ ((chartAt ℂ p) p) := by
+  have hcdiff' : ContDiffWithinAt ℝ n (f ∘ (chartAt ℂ p).symm) Set.univ ((chartAt ℂ p) p) := by
     have heq1 : (fun z => (extChartAt 𝓘(ℝ, ℂ) p).symm z) = (fun z => (chartAt ℂ p).symm z) :=
       funext hsource_symm
     -- Rewrite hcdiff step by step
     simp only [heq1, hrange, hsource_val, htarget, PartialEquiv.refl_coe] at hcdiff
     exact hcdiff
-  have hcdiffAt : ContDiffAt ℝ ⊤ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
+  have hcdiffAt : ContDiffAt ℝ n (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
     hcdiff'.contDiffAt Filter.univ_mem
-  exact hcdiffAt.differentiableAt WithTop.top_ne_zero
+  exact hcdiffAt.differentiableAt hn
+
+/-- `C^∞` specialization of `differentiableAt_chart_comp_of_contMDiffAt_of_ne_zero`. -/
+theorem differentiableAt_chart_comp_of_contMDiffAt {M : Type*}
+    [TopologicalSpace M] [ChartedSpace ℂ M] [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
+    {f : M → ℂ} {p : M} (hf : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f p) :
+    DifferentiableAt ℝ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
+  differentiableAt_chart_comp_of_contMDiffAt_of_ne_zero
+    (n := (⊤ : WithTop ℕ∞)) hf WithTop.top_ne_zero
+
+/-- `smoothOrder` specialization of
+`differentiableAt_chart_comp_of_contMDiffAt_of_ne_zero`. -/
+theorem differentiableAt_chart_comp_of_contMDiffAt_smoothOrder {M : Type*}
+    [TopologicalSpace M] [ChartedSpace ℂ M] [IsManifold 𝓘(ℝ, ℂ) ⊤ M]
+    {f : M → ℂ} {p : M}
+    (hf : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder f p) :
+    DifferentiableAt ℝ (f ∘ (chartAt ℂ p).symm) ((chartAt ℂ p) p) :=
+  differentiableAt_chart_comp_of_contMDiffAt_of_ne_zero
+    (n := smoothOrder) hf smoothOrder_ne_zero
 
 /-!
 ## Smoothness of Wirtinger Derivatives

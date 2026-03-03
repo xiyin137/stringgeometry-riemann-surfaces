@@ -40,6 +40,30 @@ namespace RiemannSurfaces.Analytic
 open scoped Manifold
 open Complex Topology
 
+/-- The project-level "smooth" order for manifold regularity (`C^∞`). -/
+abbrev smoothOrder : WithTop ℕ∞ := ((⊤ : ℕ∞) : WithTop ℕ∞)
+
+/-- `smoothOrder` is nonzero. -/
+lemma smoothOrder_ne_zero : smoothOrder ≠ (0 : WithTop ℕ∞) := by
+  change (((⊤ : ℕ∞) : WithTop ℕ∞) ≠ (0 : WithTop ℕ∞))
+  simp
+
+lemma smoothOrder_le_top : smoothOrder ≤ (⊤ : WithTop ℕ∞) := by
+  have h : (((⊤ : ℕ∞) : WithTop ℕ∞) < (⊤ : WithTop ℕ∞)) :=
+    WithTop.coe_lt_top (⊤ : ℕ∞)
+  exact le_of_lt h
+
+lemma coeNatInf_le_smoothOrder (n : ℕ∞) : (n : WithTop ℕ∞) ≤ smoothOrder := by
+  have hnat : n ≤ (⊤ : ℕ∞) := le_top
+  have hcoeeq : ((n : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞)) :=
+    (WithTop.coe_le_coe).2 hnat
+  simpa [smoothOrder] using hcoeeq
+
+lemma withTopNatInf_le_top (n : WithTop ℕ∞) : n ≤ (⊤ : WithTop ℕ∞) := by
+  cases n with
+  | top => exact le_rfl
+  | coe a => exact (WithTop.coe_lt_top a).le
+
 
 /-!
 ## Core Infrastructure: ℂ-Smooth Implies ℝ-Smooth
@@ -212,9 +236,9 @@ theorem contDiff_conj_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E
 
 /-- Complex conjugation is ℝ-smooth on complex manifolds. -/
 theorem conj_contMDiff_real {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M]
-    {f : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f) :
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun x => starRingEnd ℂ (f x)) :=
-  conj_contDiff_real.comp_contMDiff hf
+    {n : WithTop ℕ∞} {f : M → ℂ} (hf : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n f) :
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) n (fun x => starRingEnd ℂ (f x)) :=
+  (conj_contDiff_real_n (n := n)).comp_contMDiff hf
 
 /-!
 ## ℝ-Smooth Functions on Riemann Surfaces
@@ -222,13 +246,13 @@ theorem conj_contMDiff_real {M : Type*} [TopologicalSpace M] [ChartedSpace ℂ M
 
 /-- An ℝ-smooth function on a Riemann surface.
 
-    Uses `ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤` which requires ℝ-differentiability
+    Uses `ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder` which requires ℝ-differentiability
     in charts, but still uses the same ChartedSpace as the RiemannSurface. -/
 structure RealSmoothFunction (RS : RiemannSurface) where
   toFun : RS.carrier → ℂ
   smooth' : letI := RS.topology
             letI := RS.chartedSpace
-            ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ toFun
+            ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder toFun
 
 namespace RealSmoothFunction
 
@@ -243,7 +267,11 @@ theorem ext {f g : RealSmoothFunction RS} (h : ∀ p, f.toFun p = g.toFun p) : f
 /-- Constant functions are ℝ-smooth. -/
 noncomputable def const (c : ℂ) : RealSmoothFunction RS where
   toFun := fun _ => c
-  smooth' := by letI := RS.topology; letI := RS.chartedSpace; exact contMDiff_const
+  smooth' := by
+    letI := RS.topology
+    letI := RS.chartedSpace
+    exact (contMDiff_const : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (fun _ : RS.carrier => c)).of_le
+      smoothOrder_le_top
 
 noncomputable instance : Zero (RealSmoothFunction RS) := ⟨const 0⟩
 noncomputable instance : One (RealSmoothFunction RS) := ⟨const 1⟩
@@ -277,9 +305,11 @@ noncomputable def mul (f g : RealSmoothFunction RS) : RealSmoothFunction RS wher
     letI := RS.topology; letI := RS.chartedSpace
     -- Multiplication in ℂ is ℝ-smooth
     have hmul : ContDiff ℝ ⊤ (fun p : ℂ × ℂ => p.1 * p.2) := contDiff_mul
-    have hpair : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) ⊤ (fun p => (f.toFun p, g.toFun p)) :=
+    have hmulSmooth : ContDiff ℝ smoothOrder (fun p : ℂ × ℂ => p.1 * p.2) :=
+      hmul.of_le smoothOrder_le_top
+    have hpair : ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) smoothOrder (fun p => (f.toFun p, g.toFun p)) :=
       f.smooth'.prodMk_space g.smooth'
-    exact hmul.comp_contMDiff hpair
+    exact hmulSmooth.comp_contMDiff hpair
 
 noncomputable instance : Mul (RealSmoothFunction RS) := ⟨mul⟩
 
@@ -374,21 +404,24 @@ theorem contDiffOn_comp_chart_symm
   haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
   haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
   have hfOn :
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f.toFun Set.univ := f.smooth'.contMDiffOn
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder f.toFun Set.univ := f.smooth'.contMDiffOn
   have hchart :
       ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (chartAt ℂ p0).symm (chartAt ℂ p0).target := by
     simpa using (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (H := ℂ) (x := p0))
+  have hchartSmooth :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (chartAt ℂ p0).symm (chartAt ℂ p0).target := by
+    exact hchart.of_le smoothOrder_le_top
   have hcompMDiffTop :
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
         (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
-    refine hfOn.comp hchart ?_
+    refine hfOn.comp hchartSmooth ?_
     intro z hz
     simp
   have hcompMDiff :
       ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (n : WithTop ℕ∞)
         (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
     refine hcompMDiffTop.of_le ?_
-    exact (WithTop.le_def).2 (Or.inl rfl)
+    exact coeNatInf_le_smoothOrder n
   exact (contMDiffOn_iff_contDiffOn.mp hcompMDiff)
 
 /-- Pointwise differentiability of a fixed-chart coordinate expression
@@ -431,18 +464,22 @@ theorem RealSmoothFunction.re_smooth {RS : RiemannSurface}
     (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) ⊤ (fun p => (f.toFun p).re) := by
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) smoothOrder (fun p => (f.toFun p).re) := by
   letI := RS.topology; letI := RS.chartedSpace
-  exact re_contDiff_real.comp_contMDiff f.smooth'
+  have hre : ContDiff ℝ smoothOrder (Complex.re : ℂ → ℝ) :=
+    re_contDiff_real.of_le smoothOrder_le_top
+  exact hre.comp_contMDiff f.smooth'
 
 /-- The imaginary part of an ℝ-smooth function is ℝ-smooth (as a real-valued function). -/
 theorem RealSmoothFunction.im_smooth {RS : RiemannSurface}
     (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
-    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) ⊤ (fun p => (f.toFun p).im) := by
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℝ) smoothOrder (fun p => (f.toFun p).im) := by
   letI := RS.topology; letI := RS.chartedSpace
-  exact im_contDiff_real.comp_contMDiff f.smooth'
+  have him : ContDiff ℝ smoothOrder (Complex.im : ℂ → ℝ) :=
+    im_contDiff_real.of_le smoothOrder_le_top
+  exact him.comp_contMDiff f.smooth'
 
 /-!
 ## Converting ℂ-Smooth to ℝ-Smooth
@@ -459,6 +496,9 @@ noncomputable def RealSmoothFunction.ofHolomorphic {RS : RiemannSurface}
           letI := RS.isManifold
           ContMDiff 𝓘(ℂ, ℂ) 𝓘(ℂ, ℂ) ⊤ f) : RealSmoothFunction RS where
   toFun := f
-  smooth' := contMDiff_real_of_complex_rs hf
+  smooth' := by
+    letI := RS.topology
+    letI := RS.chartedSpace
+    exact (contMDiff_real_of_complex_rs hf).of_le smoothOrder_le_top
 
 end RiemannSurfaces.Analytic
