@@ -61,6 +61,19 @@ Resolved recently:
     - now partially bridged:
       under eventual chart stabilization
       `chartAt p = chartAt p0` near `p0`, this factor is eventually `1` and smooth.
+    - cleanup completed:
+      the intermediate theorem asserting local eventual equality of `chartAt` was removed.
+      the remaining theorem-level blocker is now explicit and isolated at
+      `dbarRealTransitionFactor_contMDiffAt_hd`.
+    - added assumption-explicit closure route:
+      `dbar_real_hd_smooth_section_of_chartAt_eventuallyEq`
+      proves the full smoothness chain if one assumes local eventual stabilization of
+      `chartAt` at every point.
+    - refactor completed:
+      extracted
+      `dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd`
+      as the single local-to-global assembly lemma parameterized by transition-factor
+      smoothness, and rewired both conditional and unconditional routes through it.
 
 4. Lift local regularity to global section smoothness.
 - Use manifold-local-to-global `ContMDiff` criteria:
@@ -73,12 +86,13 @@ Resolved recently:
 1. `dbar_real_local_overlap_contDiffWithinAt`:
    overlap-transport lemma in the exact `ContDiffWithinAt` shape expected by
    `contMDiffWithinAt_iff_of_mem_source`.
-2. `chartAt` stabilization bridge (missing):
-   prove or encode a usable local eventual-equality statement for chart choice near `p0`,
-   then feed it into the now-available conditional smoothness lemma
-   `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
-   Current named blocker theorem:
-   `chartAt_eventuallyEq_center_hd`.
+2. Transition-factor smoothness bridge (missing):
+   prove
+   `dbarRealTransitionFactor_contMDiffAt_hd`
+   directly by chart-free/tangent-bundle infrastructure, or replace the coefficient
+   model by a chart-invariant section interface.
+   current fallback route (already formalized): provide a hypothesis
+   `∀ p0, chartAt p =ᶠ[nhds p0] chartAt p0`.
 
 ## Attempted route (tangent-bundle infrastructure)
 
@@ -97,7 +111,7 @@ Outcome:
 
 Conclusion:
 - without an additional chart-selection regularity axiom, the clean path remains:
-  either prove `chartAt_eventuallyEq_center_hd` in this specific setting,
+  either prove smoothness of the moving transition Jacobian factor directly,
   or refactor the formalization to chart-free bundle sections where smoothness is
   invariant under chart choice.
 3. `dbar_real_chart_local_contMDiffAt`:

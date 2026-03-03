@@ -873,6 +873,56 @@ private theorem dbarRealTransitionFactor_eq_one_of_chartEq_hd
   rw [dbarRealTransitionFactor_hd, hcomp, hchartEq, hderiv]
   simp
 
+/-- The transition Jacobian factor is normalized to `1` at the chart center. -/
+private theorem dbarRealTransitionFactor_center_hd (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    dbarRealTransitionFactor_hd (RS := RS) p0 p0 = 1 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  simpa using dbarRealTransitionFactor_eq_one_of_chartEq_hd (RS := RS) p0 p0 rfl
+
+/-- On the fixed-chart source overlap, the transition Jacobian factor is nonzero. -/
+private theorem dbarRealTransitionFactor_ne_zero_of_mem_source_hd
+    (p0 p : RS.carrier)
+    (hp0 :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      p ∈ (chartAt ℂ p0).source) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    dbarRealTransitionFactor_hd (RS := RS) p0 p ≠ 0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hp : p ∈ (eChart (RS := RS) p).source := by
+    simp [eChart]
+  have hz_tgt : ((eChart (RS := RS) p) p) ∈ (eChart (RS := RS) p).target :=
+    (eChart (RS := RS) p).map_source hp
+  have hovlp : (eChart (RS := RS) p).symm ((eChart (RS := RS) p) p) ∈
+      (eChart (RS := RS) p0).source := by
+    rw [(eChart (RS := RS) p).left_inv hp]
+    simpa [eChart] using hp0
+  have hderiv_ne :
+      deriv (chartTransition (RS := RS) p0 p) ((eChart (RS := RS) p) p) ≠ 0 :=
+    chartTransition_deriv_ne_zero (RS := RS) p0 p ((eChart (RS := RS) p) p) hz_tgt hovlp
+  have hstar_ne :
+      starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((eChart (RS := RS) p) p)) ≠ 0 :=
+    (map_ne_zero_iff (starRingEnd ℂ) (starRingEnd ℂ).injective).2 hderiv_ne
+  simpa [dbarRealTransitionFactor_hd, eChart] using
+    hstar_ne
+
+/-- Near `p0`, the transition Jacobian factor is nonzero. -/
+private theorem dbarRealTransitionFactor_eventually_ne_zero_hd (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ∀ᶠ p in nhds p0, dbarRealTransitionFactor_hd (RS := RS) p0 p ≠ 0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hsrc : ∀ᶠ p in nhds p0, p ∈ (chartAt ℂ p0).source :=
+    (chartAt ℂ p0).open_source.mem_nhds (mem_chart_source ℂ p0)
+  exact hsrc.mono (fun p hp => dbarRealTransitionFactor_ne_zero_of_mem_source_hd
+    (RS := RS) p0 p hp)
+
 /-- Conditional local smoothness: if `chartAt` is eventually constant near `p0`,
 the transition factor is smooth at `p0`. -/
 private theorem dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd
@@ -914,31 +964,15 @@ private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd
   have hchange := dbarRealSectionCandidate_chartChange_hd (RS := RS) f p0 p hp
   simpa [dbarRealFixedPart_hd, dbarRealTransitionFactor_hd] using hchange
 
-/-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor. -/
-private theorem chartAt_eventuallyEq_center_hd (p0 : RS.carrier) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    (fun p : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p)
-      =ᶠ[nhds p0]
-    (fun _ : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0) := by
-  -- Core unresolved chart-selection bridge:
-  -- show local stabilization of the chosen `chartAt` near `p0`.
-  sorry
-
-/-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor. -/
-private theorem dbarRealTransitionFactor_contMDiffAt_hd (p0 : RS.carrier) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
-      (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  exact dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd (RS := RS) p0
-    (chartAt_eventuallyEq_center_hd (RS := RS) p0)
-
-/-- Pointwise smoothness of the global `dbar` section candidate. -/
-private theorem dbarRealSectionCandidate_contMDiffAt_hd
-    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+/-- Pointwise smoothness of the global `dbar` section candidate, assuming smoothness of the
+transition-Jacobian factor at the center point. -/
+private theorem dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier)
+    (htrans :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+        (dbarRealTransitionFactor_hd (RS := RS) p0) p0) :
     letI := RS.topology
     letI := RS.chartedSpace
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
@@ -959,16 +993,16 @@ private theorem dbarRealSectionCandidate_contMDiffAt_hd
   have hfixed :
       ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder fixedPart p0 :=
     by simpa [smoothOrder] using hfixedTop
-  have htrans :
+  have htrans' :
       ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder transFactor p0 := by
-    simpa [transFactor] using dbarRealTransitionFactor_contMDiffAt_hd (RS := RS) p0
+    simpa [transFactor] using htrans
   have hmulSmooth : ContDiff ℝ smoothOrder (fun z : ℂ × ℂ => z.1 * z.2) := by
     exact (contDiff_mul : ContDiff ℝ (⊤ : WithTop ℕ∞) (fun z : ℂ × ℂ => z.1 * z.2)).of_le
       smoothOrder_le_top
   have hpair :
       ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ × ℂ) smoothOrder
         (fun p => (fixedPart p, transFactor p)) p0 :=
-    hfixed.prodMk_space htrans
+    hfixed.prodMk_space htrans'
   have hmulMap :
       ContMDiffAt 𝓘(ℝ, ℂ × ℂ) 𝓘(ℝ, ℂ) smoothOrder
         (fun z : ℂ × ℂ => z.1 * z.2) ((fixedPart p0, transFactor p0)) :=
@@ -978,6 +1012,78 @@ private theorem dbarRealSectionCandidate_contMDiffAt_hd
         (fun p => fixedPart p * transFactor p) p0 := by
     simpa [Function.comp] using hmulMap.comp p0 hpair
   exact hmul.congr_of_eventuallyEq hloc
+
+/-- Local smoothness of the global `dbar` coefficient candidate, assuming local stabilization
+of the selected chart map near the center point. -/
+private theorem dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier)
+    (hchart :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      (fun p : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p)
+        =ᶠ[nhds p0]
+      (fun _ : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0)) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealSectionCandidate_hd (RS := RS) f) p0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have htrans :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+        (dbarRealTransitionFactor_hd (RS := RS) p0) p0 :=
+    dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd (RS := RS) p0 hchart
+  exact dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd
+    (RS := RS) f p0 htrans
+
+/-- Global smoothness of the chart-varying `dbar` coefficient candidate under
+pointwise local stabilization of `chartAt`. -/
+theorem dbar_real_hd_smooth_section_of_chartAt_eventuallyEq
+    (f : RealSmoothFunction RS)
+    (hchart :
+      letI := RS.topology
+      letI := RS.chartedSpace
+      ∀ p0 : RS.carrier,
+        (fun p : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p)
+          =ᶠ[nhds p0]
+        (fun _ : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0)) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (fun p : RS.carrier =>
+      let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
+      wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  intro p0
+  simpa [dbarRealSectionCandidate_hd] using
+    dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
+      (RS := RS) f p0 (hchart p0)
+
+/-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor.
+The issue is the moving chart choice `p ↦ chartAt ℂ p` inside the derivative point
+of `chartTransition p0 p`, which is not yet bridged to a chart-free smooth object. -/
+private theorem dbarRealTransitionFactor_contMDiffAt_hd (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
+  sorry
+
+/-- Pointwise smoothness of the global `dbar` section candidate. -/
+private theorem dbarRealSectionCandidate_contMDiffAt_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealSectionCandidate_hd (RS := RS) f) p0 := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have htrans :
+      ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+        (dbarRealTransitionFactor_hd (RS := RS) p0) p0 :=
+    dbarRealTransitionFactor_contMDiffAt_hd (RS := RS) p0
+  exact dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd
+    (RS := RS) f p0 htrans
 
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology

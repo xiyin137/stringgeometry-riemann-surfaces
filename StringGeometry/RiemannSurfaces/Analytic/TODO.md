@@ -34,6 +34,35 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: blocker cleanup in `dbar_real_hd` smoothness chain)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - removed the intermediate chart-selection theorem
+    `chartAt_eventuallyEq_center_hd` (which encoded a likely non-canonical local
+    stabilization claim about `chartAt`).
+  - kept the genuine blocker explicit as the single theorem-level gap:
+    `dbarRealTransitionFactor_contMDiffAt_hd`.
+  - added reusable transition-factor infrastructure:
+    - `dbarRealTransitionFactor_center_hd`,
+    - `dbarRealTransitionFactor_ne_zero_of_mem_source_hd`,
+    - `dbarRealTransitionFactor_eventually_ne_zero_hd`.
+  - added assumption-explicit closure theorem:
+    - `dbar_real_hd_smooth_section_of_chartAt_eventuallyEq`.
+    This gives a full sorry-free smoothness proof path once local eventual chart
+    stabilization is available as an explicit hypothesis.
+  - refactored the assembly step into a reusable interface lemma:
+    - `dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd`
+    so the remaining blocker is isolated exactly to transition-factor smoothness.
+- Why this matters:
+  - removes a potentially false intermediate assertion from the proof chain.
+  - keeps the obstruction explicit at the correct mathematical interface
+    (smoothness of the moving transition Jacobian factor).
+  - captures a reusable conditional theorem for chart systems where local chart
+    selection stability is known.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only from existing theorem-level `sorry`s).
+
 ### Incremental Update (latest pass: smoothOrder normalization completed across analytic Hodge core)
 - `Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`:
   - introduced project-level order aliases/bridges:
@@ -68,8 +97,9 @@
   - added conditional transition bridge lemmas:
     - `dbarRealTransitionFactor_eq_one_of_chartEq_hd`,
     - `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
-    These reduce the blocker to chart-stabilization near `p0`
-    (`chartAt_eventuallyEq_center_hd`).
+    These provide a conditional route under eventual chart stabilization.
+    The current active blocker is kept as a direct theorem-level goal:
+    `dbarRealTransitionFactor_contMDiffAt_hd`.
   - investigated a tangent-bundle/`mfderiv` route (via
     `continuousLinearMapAt_trivializationAt*` + `tangentBundleCore_coordChange_achart`);
     identities are usable, but they do not eliminate dependence on moving `chartAt` selection.
