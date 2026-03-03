@@ -818,6 +818,40 @@ private theorem dbarRealSectionCandidate_contMDiffAt_of_eventuallyEq_chart_hd
     simp [dbarRealSectionCandidate_hd, dbarRealSectionInChart_hd, hp]
   exact (dbarRealSectionInChart_contMDiffAt_hd (RS := RS) f p0).congr_of_eventuallyEq hloc
 
+/-- Fixed-chart coefficient factor appearing in local chart-change decomposition of `dbar`. -/
+private noncomputable def dbarRealFixedPart_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) : RS.carrier → ℂ := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  exact fun p =>
+    wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p)
+
+/-- Transition-Jacobian factor appearing in local chart-change decomposition of `dbar`. -/
+private noncomputable def dbarRealTransitionFactor_hd
+    (p0 : RS.carrier) : RS.carrier → ℂ := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  exact fun p =>
+    starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((chartAt ℂ p) p))
+
+/-- Near `p0`, the chart-varying `dbar` coefficient equals fixed-chart part times transition factor. -/
+private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    dbarRealSectionCandidate_hd (RS := RS) f =ᶠ[nhds p0]
+      fun p =>
+        dbarRealFixedPart_hd (RS := RS) f p0 p *
+          dbarRealTransitionFactor_hd (RS := RS) p0 p := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have hsrc : ∀ᶠ p in nhds p0, p ∈ (chartAt ℂ p0).source :=
+    (chartAt ℂ p0).open_source.mem_nhds (mem_chart_source ℂ p0)
+  refine hsrc.mono ?_
+  intro p hp
+  have hchange := dbarRealSectionCandidate_chartChange_hd (RS := RS) f p0 p hp
+  simpa [dbarRealFixedPart_hd, dbarRealTransitionFactor_hd] using hchange
+
 theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
     letI := RS.topology
     letI := RS.chartedSpace
@@ -827,21 +861,16 @@ theorem dbar_real_hd_smooth_section (f : RealSmoothFunction RS) :
   letI := RS.topology
   letI := RS.chartedSpace
   intro p0
-  set fixedPart : RS.carrier → ℂ := fun p =>
-    wirtingerDeriv_zbar (f.toFun ∘ (chartAt ℂ p0).symm) ((chartAt ℂ p0) p)
-  set transFactor : RS.carrier → ℂ := fun p =>
-    starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((chartAt ℂ p) p))
+  set fixedPart := dbarRealFixedPart_hd (RS := RS) f p0
+  set transFactor := dbarRealTransitionFactor_hd (RS := RS) p0
   have hloc :
       dbarRealSectionCandidate_hd (RS := RS) f =ᶠ[nhds p0]
         fun p => fixedPart p * transFactor p := by
-    have hsrc : ∀ᶠ p in nhds p0, p ∈ (chartAt ℂ p0).source :=
-      (chartAt ℂ p0).open_source.mem_nhds (mem_chart_source ℂ p0)
-    refine hsrc.mono ?_
-    intro p hp
-    have hchange := dbarRealSectionCandidate_chartChange_hd (RS := RS) f p0 p hp
-    simpa [fixedPart, transFactor] using hchange
+    simpa [fixedPart, transFactor] using
+      dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd (RS := RS) f p0
   have hfixed : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ((⊤ : ℕ∞) : WithTop ℕ∞) fixedPart p0 := by
-    simpa [fixedPart] using dbar_real_local_fixedChart_contMDiffAt_hd (RS := RS) f p0
+    simpa [fixedPart, dbarRealFixedPart_hd] using
+      dbar_real_local_fixedChart_contMDiffAt_hd (RS := RS) f p0
   -- Remaining global blocker:
   -- establish `ContMDiffAt` for `transFactor` at `p0`, then conclude via
   -- product smoothness and `congr_of_eventuallyEq` using `hloc`.

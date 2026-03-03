@@ -277,6 +277,20 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
     (pass with warnings only).
+63. `HodgeTheory/HodgeDecomposition.lean`:
+    extracted reusable local decomposition infrastructure for the `dbar` chart-varying
+    section candidate:
+    - `dbarRealFixedPart_hd`,
+    - `dbarRealTransitionFactor_hd`,
+    - `dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd`.
+64. Refactor impact:
+    `dbar_real_hd_smooth_section` now uses these helpers directly, so the remaining
+    blocker is concentrated in the transition-factor smoothness closure rather than
+    mixed with chart-change rewriting boilerplate.
+65. Compile frontier re-checked after this refactor:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
     (pass with warnings only).
 58. `Helpers/ChartTransition.lean`:
     added manifold-point overlap specializations of the real-smooth chart-change

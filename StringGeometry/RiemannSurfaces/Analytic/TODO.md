@@ -39,9 +39,15 @@
   - imported `Analytic/Helpers/ChartTransition`.
   - added reusable bridge lemma:
     - `dbarRealSectionCandidate_chartChange_hd`.
-  - statement shape:
-    for `p ∈ (chartAt ℂ p0).source`, rewrite the chart-varying candidate
-    value at `p` as
+  - extracted reusable decomposition helpers:
+    - `dbarRealFixedPart_hd`,
+    - `dbarRealTransitionFactor_hd`,
+    - `dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd`.
+  - refactored `dbar_real_hd_smooth_section` to consume the extracted helpers
+    instead of carrying this decomposition inline.
+- statement shape:
+  for `p ∈ (chartAt ℂ p0).source`, rewrite the chart-varying candidate
+  value at `p` as
     fixed-chart `∂̄` coefficient at `p` times the antiholomorphic Jacobian
     factor of `chartTransition p0 p`.
 - Why this matters:
@@ -61,6 +67,8 @@
     form smoothness target is `ContMDiff ... ⊤` (in `WithTop ℕ∞`).
   - this is now recorded as an explicit infrastructure task in
     `ProofIdeas/DbarRealSmoothnessPlan.md`.
+  - active theorem-level blocker is now tightly localized to the transition-factor
+    regularity closure step in `dbar_real_hd_smooth_section`.
 
 ### Incremental Update (latest pass: added point-based overlap formulas for local Wirtinger coefficients)
 - `Analytic/Helpers/ChartTransition.lean`:
