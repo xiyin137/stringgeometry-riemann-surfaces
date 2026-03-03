@@ -58,6 +58,9 @@ Resolved recently:
       transport lemma directly usable by `contMDiff_iff` local-to-global assembly.
     - control regularity in the moving-point factor
       `p ↦ starRingEnd ℂ (deriv (chartTransition p0 p) ((chartAt ℂ p) p))`.
+    - now partially bridged:
+      under eventual chart stabilization
+      `chartAt p = chartAt p0` near `p0`, this factor is eventually `1` and smooth.
 
 4. Lift local regularity to global section smoothness.
 - Use manifold-local-to-global `ContMDiff` criteria:
@@ -70,10 +73,10 @@ Resolved recently:
 1. `dbar_real_local_overlap_contDiffWithinAt`:
    overlap-transport lemma in the exact `ContDiffWithinAt` shape expected by
    `contMDiffWithinAt_iff_of_mem_source`.
-2. `chartTransition_self_derivFactor_contMDiffAt` (new bridge target):
-   local regularity of
-   `p ↦ starRingEnd ℂ (deriv (chartTransition p0 p) ((chartAt ℂ p) p))`
-   near `p0`.
+2. `chartAt` stabilization bridge (missing):
+   prove or encode a usable local eventual-equality statement for chart choice near `p0`,
+   then feed it into the now-available conditional smoothness lemma
+   `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
 3. `dbar_real_chart_local_contMDiffAt`:
    chart-local `ContMDiffAt` statement for the section candidate at an arbitrary point.
 4. `dbar_real_hd_smooth_section` via local-to-global assembly.
