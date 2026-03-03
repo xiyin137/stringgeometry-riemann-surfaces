@@ -12,6 +12,7 @@ choices near a point.
 namespace RiemannSurfaces.Analytic.Infrastructure
 
 open Topology
+open OnePoint
 
 /-- Local chart-selection stability: `chartAt` is eventually constant at every point. -/
 def ChartAtLocallyConstant (RS : RiemannSurface) : Prop :=
@@ -60,5 +61,89 @@ theorem chartAt_eventuallyEq_center_complexPlane
 theorem chartAtLocallyConstant_complexPlane : ChartAtLocallyConstant ComplexPlane := by
   intro p0
   simpa using chartAt_eventuallyEq_center_complexPlane p0
+
+/-!
+## Negative Model Example
+
+`ChartAtLocallyConstant` is a strong chart-selection property. It holds for
+`ComplexPlane`, but fails for `RiemannSphere` with the current explicit atlas:
+the selector uses `riemannSphereFiniteChart` at `0` and
+`riemannSphereInftyChart` at every nonzero finite point.
+-/
+
+private theorem riemannSphereInftyChart_ne_finiteChart :
+    riemannSphereInftyChart ≠ riemannSphereFiniteChart := by
+  intro hEq
+  have hmem : (∞ : OnePoint ℂ) ∈ riemannSphereInftyChart.source := by
+    simp [riemannSphereInftyChart]
+  have hmem' : (∞ : OnePoint ℂ) ∈ riemannSphereFiniteChart.source := by
+    simpa [hEq] using hmem
+  simp [riemannSphereFiniteChart, Topology.IsOpenEmbedding.toOpenPartialHomeomorph_target] at hmem'
+
+private theorem riemannSphere_chartAt_zero :
+    @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+      (((0 : ℂ) : OnePoint ℂ)) = riemannSphereFiniteChart := by
+  simpa using (show
+    @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+      (((0 : ℂ) : OnePoint ℂ)) =
+      (if (0 : ℂ) = 0 then riemannSphereFiniteChart else riemannSphereInftyChart) from rfl)
+
+private theorem riemannSphere_chartAt_coe_ne_zero (a : ℂ) (ha : a ≠ 0) :
+    @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+      ((a : ℂ) : OnePoint ℂ) ≠
+    @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+      (((0 : ℂ) : OnePoint ℂ)) := by
+  rw [show @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+      ((a : ℂ) : OnePoint ℂ) =
+      (if a = 0 then riemannSphereFiniteChart else riemannSphereInftyChart) from rfl]
+  rw [riemannSphere_chartAt_zero]
+  simpa [ha] using riemannSphereInftyChart_ne_finiteChart
+
+private theorem riemannSphere_chartAt_eq_zero_coe_preimage :
+    {a : ℂ |
+      @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+        ((a : ℂ) : OnePoint ℂ) =
+      @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+        (((0 : ℂ) : OnePoint ℂ))} = {(0 : ℂ)} := by
+  ext a
+  by_cases ha : a = 0
+  · subst ha
+    simp
+  · simp [ha, riemannSphere_chartAt_coe_ne_zero]
+
+private theorem singleton_zero_not_mem_nhds_complex :
+    ({(0 : ℂ)} : Set ℂ) ∉ nhds (0 : ℂ) := by
+  intro hzero_nhds
+  rcases Metric.mem_nhds_iff.mp hzero_nhds with ⟨ε, hεpos, hεsub⟩
+  have hhalf_pos : 0 < ε / 2 := by linarith
+  have hhalf_mem : (((ε / 2 : ℝ) : ℂ)) ∈ Metric.ball (0 : ℂ) ε := by
+    have hlt : ε / 2 < ε := by linarith
+    simpa [Metric.mem_ball, dist_eq_norm, Real.norm_eq_abs, abs_of_pos hεpos] using hlt
+  have hhalf_zero : (((ε / 2 : ℝ) : ℂ)) = 0 := hεsub hhalf_mem
+  have hhalf_ne : (((ε / 2 : ℝ) : ℂ)) ≠ 0 := by
+    exact_mod_cast (ne_of_gt hhalf_pos)
+  exact hhalf_ne hhalf_zero
+
+/-- `RiemannSphere` does **not** satisfy local chart-selection stability at `0`
+for the current explicit two-chart `chartAt` selector. -/
+theorem not_chartAtLocallyConstant_riemannSphere :
+    ¬ ChartAtLocallyConstant RiemannSphere := by
+  intro h
+  have h0 := h (((0 : ℂ) : OnePoint ℂ))
+  have hset :
+      {p : OnePoint ℂ |
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace p =
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+          (((0 : ℂ) : OnePoint ℂ))} ∈ nhds (((0 : ℂ) : OnePoint ℂ)) := h0
+  have hpre :
+      {a : ℂ |
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+          ((a : ℂ) : OnePoint ℂ) =
+        @chartAt ℂ _ RiemannSphere.carrier RiemannSphere.topology RiemannSphere.chartedSpace
+          (((0 : ℂ) : OnePoint ℂ))} ∈ nhds (0 : ℂ) := by
+    simpa [OnePoint.nhds_coe_eq] using hset
+  have hzero_nhds : ({(0 : ℂ)} : Set ℂ) ∈ nhds (0 : ℂ) := by
+    simpa [riemannSphere_chartAt_eq_zero_coe_preimage] using hpre
+  exact singleton_zero_not_mem_nhds_complex hzero_nhds
 
 end RiemannSurfaces.Analytic.Infrastructure

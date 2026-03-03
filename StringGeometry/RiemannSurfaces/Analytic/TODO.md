@@ -43,6 +43,7 @@
     - `chartAt_eventuallyEq_center_complexPlane`
     - `ChartAtLocallyConstant`
     - `chartAtLocallyConstant_complexPlane`
+    - `not_chartAtLocallyConstant_riemannSphere`
 - Refactored `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - added local predicate bridges:
     - `dbarRealTransitionFactor_contMDiffAt_of_chartAtLocallyConstant_hd`
@@ -52,6 +53,10 @@
     `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`.
   - `dbar_real_hd_smooth_section_complexPlane` now discharges through
     `Infrastructure.chartAtLocallyConstant_complexPlane`.
+- Strategic consequence:
+  - the `chartAt` eventual-stability closure path is now proven non-global
+    (fails on `RiemannSphere`), so the remaining universal blocker must be solved
+    via chart-free/transition-factor infrastructure, not by this assumption route.
 - Updated `agent.md` to explicitly prioritize building local reusable
   infrastructure when Mathlib lacks required APIs/lemmas.
 - Compile checks run:

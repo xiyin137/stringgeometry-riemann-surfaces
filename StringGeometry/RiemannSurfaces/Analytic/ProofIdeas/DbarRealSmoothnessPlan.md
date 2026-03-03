@@ -22,7 +22,10 @@ Resolved recently:
   - `chartAt_eventuallyEq_center_self`,
   - `chartAt_eventuallyEq_center_complexPlane`,
   - `ChartAtLocallyConstant` (project-level predicate for local chart stability).
+  - `not_chartAtLocallyConstant_riemannSphere` (negative model result).
   This gives reusable building blocks for model-space / constant-chart situations.
+  It also confirms the eventual-chart-stability route cannot be the global proof
+  strategy for general surfaces represented like `RiemannSphere`.
 - smoothness-index normalization now uses project alias
   `smoothOrder : WithTop ℕ∞ := ((⊤ : ℕ∞) : WithTop ℕ∞)`.
 - `RealSmoothFunction`, `Form_10`, and `Form_01` now consistently use `smoothOrder`.
