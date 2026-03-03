@@ -77,6 +77,8 @@ Resolved recently:
    prove or encode a usable local eventual-equality statement for chart choice near `p0`,
    then feed it into the now-available conditional smoothness lemma
    `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
+   Current named blocker theorem:
+   `chartAt_eventuallyEq_center_hd`.
 3. `dbar_real_chart_local_contMDiffAt`:
    chart-local `ContMDiffAt` statement for the section candidate at an arbitrary point.
 4. `dbar_real_hd_smooth_section` via local-to-global assembly.

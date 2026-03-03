@@ -915,15 +915,26 @@ private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd
   simpa [dbarRealFixedPart_hd, dbarRealTransitionFactor_hd] using hchange
 
 /-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor. -/
+private theorem chartAt_eventuallyEq_center_hd (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    (fun p : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p)
+      =ᶠ[nhds p0]
+    (fun _ : RS.carrier => @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0) := by
+  -- Core unresolved chart-selection bridge:
+  -- show local stabilization of the chosen `chartAt` near `p0`.
+  sorry
+
+/-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor. -/
 private theorem dbarRealTransitionFactor_contMDiffAt_hd (p0 : RS.carrier) :
     letI := RS.topology
     letI := RS.chartedSpace
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
       (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
-  -- Core blocker:
-  -- prove eventual stabilization of `chartAt` near `p0`, then apply
-  -- `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
-  sorry
+  letI := RS.topology
+  letI := RS.chartedSpace
+  exact dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd (RS := RS) p0
+    (chartAt_eventuallyEq_center_hd (RS := RS) p0)
 
 /-- Pointwise smoothness of the global `dbar` section candidate. -/
 private theorem dbarRealSectionCandidate_contMDiffAt_hd

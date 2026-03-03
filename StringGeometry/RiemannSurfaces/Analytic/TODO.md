@@ -68,7 +68,8 @@
   - added conditional transition bridge lemmas:
     - `dbarRealTransitionFactor_eq_one_of_chartEq_hd`,
     - `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
-    These reduce the blocker to chart-stabilization near `p0`.
+    These reduce the blocker to chart-stabilization near `p0`
+    (`chartAt_eventuallyEq_center_hd`).
   - removed one lint-only `simpa` warning in Hodge decomposition infrastructure.
 - Why this matters:
   - resolves the prior `((⊤ : ℕ∞) : WithTop ℕ∞)` vs `⊤` regularity mismatch in
