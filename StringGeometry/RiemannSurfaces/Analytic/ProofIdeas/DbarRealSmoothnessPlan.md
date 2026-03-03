@@ -79,6 +79,27 @@ Resolved recently:
    `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
    Current named blocker theorem:
    `chartAt_eventuallyEq_center_hd`.
+
+## Attempted route (tangent-bundle infrastructure)
+
+Tried:
+- rewrite transition Jacobian factor via tangent-bundle core / chart derivatives:
+  - `TangentBundle.continuousLinearMapAt_trivializationAt_eq_core`
+  - `TangentBundle.continuousLinearMapAt_trivializationAt`
+  - `tangentBundleCore_coordChange_achart`
+  - derivative-to-scalar projection by evaluation at `1`.
+
+Outcome:
+- gives good structural identities, but does not remove the root obstruction:
+  the moving index `achart H p` (equivalently `chartAt p`) remains selection-dependent.
+- smoothness APIs in `VectorBundle` / `ContMDiffMFDeriv` control fixed-chart/fixed-index
+  coordinate changes, not arbitrary point-dependent chart choices.
+
+Conclusion:
+- without an additional chart-selection regularity axiom, the clean path remains:
+  either prove `chartAt_eventuallyEq_center_hd` in this specific setting,
+  or refactor the formalization to chart-free bundle sections where smoothness is
+  invariant under chart choice.
 3. `dbar_real_chart_local_contMDiffAt`:
    chart-local `ContMDiffAt` statement for the section candidate at an arbitrary point.
 4. `dbar_real_hd_smooth_section` via local-to-global assembly.

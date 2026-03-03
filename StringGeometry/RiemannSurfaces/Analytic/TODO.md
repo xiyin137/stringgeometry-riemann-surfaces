@@ -70,6 +70,9 @@
     - `dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd`.
     These reduce the blocker to chart-stabilization near `p0`
     (`chartAt_eventuallyEq_center_hd`).
+  - investigated a tangent-bundle/`mfderiv` route (via
+    `continuousLinearMapAt_trivializationAt*` + `tangentBundleCore_coordChange_achart`);
+    identities are usable, but they do not eliminate dependence on moving `chartAt` selection.
   - removed one lint-only `simpa` warning in Hodge decomposition infrastructure.
 - Why this matters:
   - resolves the prior `((⊤ : ℕ∞) : WithTop ℕ∞)` vs `⊤` regularity mismatch in
