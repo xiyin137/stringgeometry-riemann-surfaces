@@ -627,29 +627,7 @@ private theorem realSmooth_comp_chart_symm_contDiffOn_hd
     letI := RS.topology
     letI := RS.chartedSpace
     ContDiffOn ℝ (n : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
-  haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
-  have hfOn :
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f.toFun Set.univ := f.smooth'.contMDiffOn
-  have hchart :
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (chartAt ℂ p0).symm (chartAt ℂ p0).target := by
-    simpa using (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (H := ℂ) (x := p0))
-  have hcompMDiffTop :
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤
-        (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
-    refine hfOn.comp hchart ?_
-    intro z hz
-    simp
-  have hcompMDiff :
-      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (n : WithTop ℕ∞)
-        (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target :=
-    by
-      have hle : (n : WithTop ℕ∞) ≤ (⊤ : WithTop ℕ∞) := by
-        exact (WithTop.le_def).2 (Or.inl rfl)
-      exact hcompMDiffTop.of_le hle
-  exact (contMDiffOn_iff_contDiffOn.mp hcompMDiff)
+  simpa using RealSmoothFunction.contDiffOn_comp_chart_symm (f := f) (p0 := p0) (n := n)
 
 private theorem wirtingerDerivBar_chart_comp_contDiffOn_hd
     (f : RealSmoothFunction RS) (p0 : RS.carrier) (n : ℕ∞) :

@@ -1,4 +1,5 @@
 import Mathlib.Geometry.Manifold.ContMDiff.Basic
+import Mathlib.Geometry.Manifold.ContMDiff.Atlas
 import Mathlib.Geometry.Manifold.Algebra.Structures
 import Mathlib.Analysis.Complex.Basic
 import Mathlib.Analysis.Calculus.FDeriv.RestrictScalars
@@ -360,6 +361,54 @@ theorem conj_mul (f g : RealSmoothFunction RS) : (f * g).conj = f.conj * g.conj 
 theorem conj_neg (f : RealSmoothFunction RS) : (-f).conj = -f.conj := by
   ext p
   simp only [conj_toFun, neg_toFun, map_neg]
+
+/-- In any fixed chart, an `ℝ`-smooth function has a `C^n` coordinate expression
+on the chart target. -/
+theorem contDiffOn_comp_chart_symm
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) (n : ℕ∞) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContDiffOn ℝ (n : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  haveI : IsManifold 𝓘(ℂ, ℂ) ⊤ RS.carrier := RS.isManifold
+  haveI : IsManifold 𝓘(ℝ, ℂ) ⊤ RS.carrier := isManifold_real_of_complex
+  have hfOn :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ f.toFun Set.univ := f.smooth'.contMDiffOn
+  have hchart :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤ (chartAt ℂ p0).symm (chartAt ℂ p0).target := by
+    simpa using (contMDiffOn_chart_symm (I := 𝓘(ℝ, ℂ)) (H := ℂ) (x := p0))
+  have hcompMDiffTop :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) ⊤
+        (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+    refine hfOn.comp hchart ?_
+    intro z hz
+    simp
+  have hcompMDiff :
+      ContMDiffOn 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) (n : WithTop ℕ∞)
+        (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+    refine hcompMDiffTop.of_le ?_
+    exact (WithTop.le_def).2 (Or.inl rfl)
+  exact (contMDiffOn_iff_contDiffOn.mp hcompMDiff)
+
+/-- Pointwise differentiability of a fixed-chart coordinate expression
+of an `ℝ`-smooth function. -/
+theorem differentiableAt_comp_chart_symm
+    (f : RealSmoothFunction RS) (p0 : RS.carrier) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ∀ {w : ℂ}, w ∈ (chartAt ℂ p0).target →
+      DifferentiableAt ℝ (f.toFun ∘ (chartAt ℂ p0).symm) w := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  intro w hw
+  have hcd :
+      ContDiffOn ℝ (1 : WithTop ℕ∞) (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target := by
+    simpa using contDiffOn_comp_chart_symm (f := f) p0 (n := (1 : ℕ∞))
+  have hdiffOn :
+      DifferentiableOn ℝ (f.toFun ∘ (chartAt ℂ p0).symm) (chartAt ℂ p0).target :=
+    hcd.differentiableOn_one
+  exact (hdiffOn w hw).differentiableAt ((chartAt ℂ p0).open_target.mem_nhds hw)
 
 end RealSmoothFunction
 

@@ -229,6 +229,27 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
     (pass with warnings only).
+54. `HodgeTheory/Infrastructure/RealSmoothness.lean`:
+    added fixed-chart regularity bridges for `RealSmoothFunction`:
+    - `RealSmoothFunction.contDiffOn_comp_chart_symm`,
+    - `RealSmoothFunction.differentiableAt_comp_chart_symm`.
+55. `Helpers/ChartTransition.lean`:
+    added real-smooth wrappers over extChart chart-change formulas:
+    - `wirtingerDerivBar_extChart_symm_change_of_realSmooth`,
+    - `wirtingerDeriv_extChart_symm_change_of_realSmooth`.
+    These discharge local `DifferentiableAt` obligations automatically when the
+    function input is `RealSmoothFunction`.
+56. `HodgeTheory/HodgeDecomposition.lean`:
+    refactored `realSmooth_comp_chart_symm_contDiffOn_hd` to delegate directly to
+    `RealSmoothFunction.contDiffOn_comp_chart_symm`, removing duplicated chart-level
+    regularity proof script from the Hodge file.
+57. Compile frontier re-checked after this pass:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
 
 ## Current blocker clusters
 

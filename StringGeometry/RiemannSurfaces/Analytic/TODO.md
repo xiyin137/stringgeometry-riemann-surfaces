@@ -34,6 +34,32 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: added RealSmooth chart regularity bridges + real-smooth chart-change wrappers)
+- `Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`:
+  - added fixed-chart regularity theorem:
+    `RealSmoothFunction.contDiffOn_comp_chart_symm`.
+  - added pointwise differentiability consequence:
+    `RealSmoothFunction.differentiableAt_comp_chart_symm`.
+- `Analytic/Helpers/ChartTransition.lean`:
+  - added real-smooth chart-change wrappers:
+    - `wirtingerDerivBar_extChart_symm_change_of_realSmooth`,
+    - `wirtingerDeriv_extChart_symm_change_of_realSmooth`.
+  - these remove manual `DifferentiableAt` plumbing in chart-change formulas
+    when the input comes from `RealSmoothFunction`.
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - refactored `realSmooth_comp_chart_symm_contDiffOn_hd` to reuse
+    `RealSmoothFunction.contDiffOn_comp_chart_symm` directly.
+- Why this matters:
+  - directly lowers friction in the `dbar_real_hd_smooth_section` path by
+    turning repeated local differentiability obligations into reusable
+    infrastructure lemmas.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: added extChart-level chart-change transport for Wirtinger derivatives)
 - `Analytic/Helpers/ChartTransition.lean`:
   - added overlap eventual-equality bridge:

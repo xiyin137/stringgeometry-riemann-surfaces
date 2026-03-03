@@ -195,6 +195,50 @@ theorem wirtingerDeriv_extChart_symm_change
           exact wirtingerDeriv_comp_chartTransition
             (f := F ∘ (eChart q).symm) q r z hz_tgt hovlp hf
 
+/-- Chart-change formula for `∂̄` of local pullbacks of an `ℝ`-smooth function,
+with differentiability discharged by `RealSmoothFunction` infrastructure. -/
+theorem wirtingerDerivBar_extChart_symm_change_of_realSmooth
+    (f : RealSmoothFunction RS) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source) :
+    Infrastructure.wirtingerDerivBar (f.toFun ∘ (eChart r).symm) z =
+      Infrastructure.wirtingerDerivBar (f.toFun ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r z) *
+        starRingEnd ℂ (deriv (chartTransition (RS := RS) q r) z) := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have htrans_tgt : chartTransition (RS := RS) q r z ∈ (chartAt ℂ q).target := by
+    simpa [chartTransition, eChart, Function.comp_apply] using (eChart q).map_source hovlp
+  have hf :
+      DifferentiableAt ℝ (f.toFun ∘ (eChart q).symm)
+        (chartTransition (RS := RS) q r z) := by
+    simpa using RealSmoothFunction.differentiableAt_comp_chart_symm
+      (f := f) (p0 := q) htrans_tgt
+  exact wirtingerDerivBar_extChart_symm_change
+    (F := f.toFun) q r z hz_tgt hovlp hf
+
+/-- Chart-change formula for `∂` of local pullbacks of an `ℝ`-smooth function,
+with differentiability discharged by `RealSmoothFunction` infrastructure. -/
+theorem wirtingerDeriv_extChart_symm_change_of_realSmooth
+    (f : RealSmoothFunction RS) (q r : RS.carrier) (z : ℂ)
+    (hz_tgt : z ∈ (eChart r).target)
+    (hovlp : (eChart r).symm z ∈ (eChart q).source) :
+    Infrastructure.wirtingerDeriv (f.toFun ∘ (eChart r).symm) z =
+      Infrastructure.wirtingerDeriv (f.toFun ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r z) *
+        deriv (chartTransition (RS := RS) q r) z := by
+  letI := RS.topology
+  letI := RS.chartedSpace
+  have htrans_tgt : chartTransition (RS := RS) q r z ∈ (chartAt ℂ q).target := by
+    simpa [chartTransition, eChart, Function.comp_apply] using (eChart q).map_source hovlp
+  have hf :
+      DifferentiableAt ℝ (f.toFun ∘ (eChart q).symm)
+        (chartTransition (RS := RS) q r z) := by
+    simpa using RealSmoothFunction.differentiableAt_comp_chart_symm
+      (f := f) (p0 := q) htrans_tgt
+  exact wirtingerDeriv_extChart_symm_change
+    (F := f.toFun) q r z hz_tgt hovlp hf
+
 /-- Chart transition has nonzero derivative at points in the overlap. -/
 theorem chartTransition_deriv_ne_zero (q r : RS.carrier) (z : ℂ)
     (hz_tgt : z ∈ (eChart r).target)
