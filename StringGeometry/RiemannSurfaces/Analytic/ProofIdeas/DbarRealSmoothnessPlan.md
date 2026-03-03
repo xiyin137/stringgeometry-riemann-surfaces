@@ -71,6 +71,11 @@ Resolved recently:
     - now partially bridged:
       under eventual chart stabilization
       `chartAt p = chartAt p0` near `p0`, this factor is eventually `1` and smooth.
+    - reusable extraction completed:
+      transition-factor definitions/bridges were moved into
+      `HodgeTheory/Infrastructure/TransitionFactor.lean`, and the
+      duplicated local scripts in `HodgeDecomposition.lean` were removed.
+      this keeps the obstruction visible at a single declaration boundary.
     - cleanup completed:
       the intermediate theorem asserting local eventual equality of `chartAt` was removed.
       the remaining theorem-level blocker is now explicit and isolated at

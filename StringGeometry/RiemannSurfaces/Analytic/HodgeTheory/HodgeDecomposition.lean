@@ -2,6 +2,7 @@ import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.InnerProductSpace.PiL2
 import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Dolbeault
 import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Infrastructure.ChartSelection
+import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.Infrastructure.TransitionFactor
 import StringGeometry.RiemannSurfaces.Analytic.Helpers.ChartTransition
 
 /-!
@@ -831,98 +832,7 @@ private noncomputable def dbarRealFixedPart_hd
 /-- Transition-Jacobian factor appearing in local chart-change decomposition of `dbar`. -/
 private noncomputable def dbarRealTransitionFactor_hd
     (p0 : RS.carrier) : RS.carrier → ℂ := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  exact fun p =>
-    starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((chartAt ℂ p) p))
-
-/-- If the chosen chart at `p` equals the chart at `p0`, then the local transition
-Jacobian factor is exactly `1` at `p`. -/
-private theorem dbarRealTransitionFactor_eq_one_of_chartEq_hd
-    (p0 p : RS.carrier)
-    (hchart :
-      letI := RS.topology
-      letI := RS.chartedSpace
-      @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p =
-        @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p0) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    dbarRealTransitionFactor_hd (RS := RS) p0 p = 1 := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  have hp0src : p ∈ (chartAt ℂ p0).source := by
-    simpa [hchart] using (mem_chart_source ℂ p)
-  have hx_tgt : ((chartAt ℂ p0) p) ∈ (chartAt ℂ p0).target :=
-    (chartAt ℂ p0).map_source hp0src
-  have hevent :
-      (fun y : ℂ => (chartAt ℂ p0) ((chartAt ℂ p0).symm y)) =ᶠ[nhds ((chartAt ℂ p0) p)]
-      (fun y : ℂ => y) := by
-    simpa [id, Function.comp] using (chartAt ℂ p0).eventually_right_inverse hx_tgt
-  have hderiv_aux :
-      HasDerivAt (fun y : ℂ => (chartAt ℂ p0) ((chartAt ℂ p0).symm y)) (1 : ℂ)
-        ((chartAt ℂ p0) p) :=
-    (hasDerivAt_id ((chartAt ℂ p0) p)).congr_of_eventuallyEq hevent
-  have hderiv :
-      deriv (fun y : ℂ => (chartAt ℂ p0) ((chartAt ℂ p0).symm y)) ((chartAt ℂ p0) p) = (1 : ℂ) :=
-    hderiv_aux.deriv
-  have hchartEq : (chartAt ℂ p) p = (chartAt ℂ p0) p := by
-    simp [hchart]
-  have hcomp : chartTransition (RS := RS) p0 p =
-      (fun y : ℂ => (chartAt ℂ p0) ((chartAt ℂ p0).symm y)) := by
-    ext y
-    simp [chartTransition, hchart, extChartAt]
-  rw [dbarRealTransitionFactor_hd, hcomp, hchartEq, hderiv]
-  simp
-
-/-- The transition Jacobian factor is normalized to `1` at the chart center. -/
-private theorem dbarRealTransitionFactor_center_hd (p0 : RS.carrier) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    dbarRealTransitionFactor_hd (RS := RS) p0 p0 = 1 := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  simpa using dbarRealTransitionFactor_eq_one_of_chartEq_hd (RS := RS) p0 p0 rfl
-
-/-- On the fixed-chart source overlap, the transition Jacobian factor is nonzero. -/
-private theorem dbarRealTransitionFactor_ne_zero_of_mem_source_hd
-    (p0 p : RS.carrier)
-    (hp0 :
-      letI := RS.topology
-      letI := RS.chartedSpace
-      p ∈ (chartAt ℂ p0).source) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    dbarRealTransitionFactor_hd (RS := RS) p0 p ≠ 0 := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  have hp : p ∈ (eChart (RS := RS) p).source := by
-    simp [eChart]
-  have hz_tgt : ((eChart (RS := RS) p) p) ∈ (eChart (RS := RS) p).target :=
-    (eChart (RS := RS) p).map_source hp
-  have hovlp : (eChart (RS := RS) p).symm ((eChart (RS := RS) p) p) ∈
-      (eChart (RS := RS) p0).source := by
-    rw [(eChart (RS := RS) p).left_inv hp]
-    simpa [eChart] using hp0
-  have hderiv_ne :
-      deriv (chartTransition (RS := RS) p0 p) ((eChart (RS := RS) p) p) ≠ 0 :=
-    chartTransition_deriv_ne_zero (RS := RS) p0 p ((eChart (RS := RS) p) p) hz_tgt hovlp
-  have hstar_ne :
-      starRingEnd ℂ (deriv (chartTransition (RS := RS) p0 p) ((eChart (RS := RS) p) p)) ≠ 0 :=
-    (map_ne_zero_iff (starRingEnd ℂ) (starRingEnd ℂ).injective).2 hderiv_ne
-  simpa [dbarRealTransitionFactor_hd, eChart] using
-    hstar_ne
-
-/-- Near `p0`, the transition Jacobian factor is nonzero. -/
-private theorem dbarRealTransitionFactor_eventually_ne_zero_hd (p0 : RS.carrier) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    ∀ᶠ p in nhds p0, dbarRealTransitionFactor_hd (RS := RS) p0 p ≠ 0 := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  have hsrc : ∀ᶠ p in nhds p0, p ∈ (chartAt ℂ p0).source :=
-    (chartAt ℂ p0).open_source.mem_nhds (mem_chart_source ℂ p0)
-  exact hsrc.mono (fun p hp => dbarRealTransitionFactor_ne_zero_of_mem_source_hd
-    (RS := RS) p0 p hp)
+  exact Infrastructure.chartTransitionFactor (RS := RS) p0
 
 /-- Conditional local smoothness: if `chartAt` is eventually constant near `p0`,
 the transition factor is smooth at `p0`. -/
@@ -938,25 +848,9 @@ private theorem dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd
     letI := RS.chartedSpace
     ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
       (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
-  letI := RS.topology
-  letI := RS.chartedSpace
-  have hloc : dbarRealTransitionFactor_hd (RS := RS) p0 =ᶠ[nhds p0] fun _ : RS.carrier => (1 : ℂ) := by
-    refine hchart.mono ?_
-    intro p hp
-    simpa using dbarRealTransitionFactor_eq_one_of_chartEq_hd (RS := RS) p0 p hp
-  exact (contMDiffAt_const : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
-      (fun _ : RS.carrier => (1 : ℂ)) p0).congr_of_eventuallyEq hloc
-
-/-- Local smoothness of the transition factor under local chart-selection stability. -/
-private theorem dbarRealTransitionFactor_contMDiffAt_of_chartAtLocallyConstant_hd
-    (p0 : RS.carrier)
-    (hchart : Infrastructure.ChartAtLocallyConstant RS) :
-    letI := RS.topology
-    letI := RS.chartedSpace
-    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
-      (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
-  exact dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd
-    (RS := RS) p0 (hchart p0)
+  simpa [dbarRealTransitionFactor_hd] using
+    Infrastructure.chartTransitionFactor_contMDiffAt_of_eventuallyEq_chart
+      (RS := RS) (n := smoothOrder) p0 hchart
 
 /-- Near `p0`, the chart-varying `dbar` coefficient equals fixed-chart part times transition factor. -/
 private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd

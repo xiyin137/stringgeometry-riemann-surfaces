@@ -34,6 +34,31 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: transition-factor infrastructure extraction)
+- Added reusable module:
+  - `Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`
+  - exported reusable lemmas:
+    - `chartTransitionFactor`
+    - `chartTransitionFactor_eq_one_of_chartEq`
+    - `chartTransitionFactor_center`
+    - `chartTransitionFactor_ne_zero_of_mem_source`
+    - `chartTransitionFactor_eventually_ne_zero`
+    - `chartTransitionFactor_contMDiffAt_of_eventuallyEq_chart`
+- Refactored `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - imported `Infrastructure.TransitionFactor`.
+  - replaced duplicated local transition-factor proof scripts with direct calls to the
+    infrastructure theorem.
+  - removed redundant local transition-factor lemmas from `HodgeDecomposition`.
+- Strategic consequence:
+  - the transition-factor branch now has a reusable API boundary.
+  - the remaining hard gap stays isolated at:
+    `dbarRealTransitionFactor_contMDiffAt_hd` (unconditional smoothness under moving `chartAt`).
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/Infrastructure/TransitionFactor.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only from existing theorem-level `sorry`s/lints).
+
 ### Incremental Update (latest pass: chart-selection infrastructure extraction)
 - Added reusable local infrastructure module:
   - `Analytic/HodgeTheory/Infrastructure/ChartSelection.lean`
