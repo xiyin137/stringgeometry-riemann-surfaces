@@ -239,6 +239,38 @@ theorem wirtingerDeriv_extChart_symm_change_of_realSmooth
   exact wirtingerDeriv_extChart_symm_change
     (F := f.toFun) q r z hz_tgt hovlp hf
 
+/-- Point-based overlap formula for `∂̄` local coefficients of an `ℝ`-smooth function. -/
+theorem wirtingerDerivBar_extChart_symm_change_at_point_of_realSmooth
+    (f : RealSmoothFunction RS) (q r p : RS.carrier)
+    (hp_r : p ∈ (eChart r).source)
+    (hp_q : p ∈ (eChart q).source) :
+    Infrastructure.wirtingerDerivBar (f.toFun ∘ (eChart r).symm) ((eChart r) p) =
+      Infrastructure.wirtingerDerivBar (f.toFun ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r ((eChart r) p)) *
+        starRingEnd ℂ (deriv (chartTransition (RS := RS) q r) ((eChart r) p)) := by
+  have hz_tgt : (eChart r) p ∈ (eChart r).target := (eChart r).map_source hp_r
+  have hovlp : (eChart r).symm ((eChart r) p) ∈ (eChart q).source := by
+    rw [(eChart r).left_inv hp_r]
+    exact hp_q
+  exact wirtingerDerivBar_extChart_symm_change_of_realSmooth
+    (RS := RS) (f := f) q r ((eChart r) p) hz_tgt hovlp
+
+/-- Point-based overlap formula for `∂` local coefficients of an `ℝ`-smooth function. -/
+theorem wirtingerDeriv_extChart_symm_change_at_point_of_realSmooth
+    (f : RealSmoothFunction RS) (q r p : RS.carrier)
+    (hp_r : p ∈ (eChart r).source)
+    (hp_q : p ∈ (eChart q).source) :
+    Infrastructure.wirtingerDeriv (f.toFun ∘ (eChart r).symm) ((eChart r) p) =
+      Infrastructure.wirtingerDeriv (f.toFun ∘ (eChart q).symm)
+          (chartTransition (RS := RS) q r ((eChart r) p)) *
+        deriv (chartTransition (RS := RS) q r) ((eChart r) p) := by
+  have hz_tgt : (eChart r) p ∈ (eChart r).target := (eChart r).map_source hp_r
+  have hovlp : (eChart r).symm ((eChart r) p) ∈ (eChart q).source := by
+    rw [(eChart r).left_inv hp_r]
+    exact hp_q
+  exact wirtingerDeriv_extChart_symm_change_of_realSmooth
+    (RS := RS) (f := f) q r ((eChart r) p) hz_tgt hovlp
+
 /-- Chart transition has nonzero derivative at points in the overlap. -/
 theorem chartTransition_deriv_ne_zero (q r : RS.carrier) (z : ℂ)
     (hz_tgt : z ∈ (eChart r).target)

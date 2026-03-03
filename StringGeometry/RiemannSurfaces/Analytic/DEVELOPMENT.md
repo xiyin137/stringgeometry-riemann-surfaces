@@ -259,6 +259,17 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
     - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
     - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
     (pass with warnings only).
+58. `Helpers/ChartTransition.lean`:
+    added manifold-point overlap specializations of the real-smooth chart-change
+    formulas:
+    - `wirtingerDerivBar_extChart_symm_change_at_point_of_realSmooth`,
+    - `wirtingerDeriv_extChart_symm_change_at_point_of_realSmooth`.
+    These package the coordinate transition formulas at
+    `z = (eChart r) p` directly under overlap assumptions on `p`.
+59. Compile frontier re-checked for this pass:
+    - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+    - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+    (pass with warnings only).
 
 ## Current blocker clusters
 

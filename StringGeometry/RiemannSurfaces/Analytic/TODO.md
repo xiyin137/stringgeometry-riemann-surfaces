@@ -34,6 +34,23 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: added point-based overlap formulas for local Wirtinger coefficients)
+- `Analytic/Helpers/ChartTransition.lean`:
+  - added point-specialized overlap lemmas for `RealSmoothFunction`:
+    - `wirtingerDerivBar_extChart_symm_change_at_point_of_realSmooth`,
+    - `wirtingerDeriv_extChart_symm_change_at_point_of_realSmooth`.
+  - these instantiate the existing chart-coordinate transition formulas at
+    `z = (eChart r) p` under source-overlap hypotheses
+    `p ∈ (eChart r).source ∩ (eChart q).source`.
+- Why this matters:
+  - this is a direct bridge from coordinate-level formulas to manifold-point
+    overlap formulas, which is the shape needed for chart-gluing steps in the
+    remaining `dbar_real_hd_smooth_section` proof.
+- Compile checks run:
+  - `lake env lean StringGeometry/RiemannSurfaces/Analytic/Helpers/ChartTransition.lean`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only).
+
 ### Incremental Update (latest pass: added RealSmooth chart regularity bridges + real-smooth chart-change wrappers)
 - `Analytic/HodgeTheory/Infrastructure/RealSmoothness.lean`:
   - added fixed-chart regularity theorem:
