@@ -69,6 +69,10 @@ Resolved recently:
       `dbar_real_hd_smooth_section_of_chartAt_eventuallyEq`
       proves the full smoothness chain if one assumes local eventual stabilization of
       `chartAt` at every point.
+    - closed model-surface slice:
+      `dbar_real_hd_smooth_section_complexPlane` now proves the full smoothness
+      theorem on `ComplexPlane` by supplying the chart-stability hypothesis from
+      `complexPlane_chartAt_eventuallyEq_center_hd`.
     - refactor completed:
       extracted
       `dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd`

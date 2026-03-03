@@ -1059,6 +1059,38 @@ theorem dbar_real_hd_smooth_section_of_chartAt_eventuallyEq
     dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
       (RS := RS) f p0 (hchart p0)
 
+/-- On `ComplexPlane`, the chart selector is globally constant (`chartAt = refl`),
+so the local chart-stabilization hypothesis holds automatically. -/
+private theorem complexPlane_chartAt_eventuallyEq_center_hd
+    (p0 : ComplexPlane.carrier) :
+    letI := ComplexPlane.topology
+    letI := ComplexPlane.chartedSpace
+    (fun p : ComplexPlane.carrier =>
+      @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p)
+      =ᶠ[nhds p0]
+    (fun _ : ComplexPlane.carrier =>
+      @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p0) := by
+  letI := ComplexPlane.topology
+  letI := ComplexPlane.chartedSpace
+  refine Filter.Eventually.of_forall ?_
+  intro p
+  change @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p =
+      @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p0
+  simpa using (chartAt_self_eq (H := ℂ) (x := (p : ℂ))).trans
+    (chartAt_self_eq (H := ℂ) (x := (p0 : ℂ))).symm
+
+/-- Closed smoothness theorem for `dbar_real_hd` on the model surface `ComplexPlane`,
+obtained from the chart-stabilized criterion. -/
+theorem dbar_real_hd_smooth_section_complexPlane
+    (f : RealSmoothFunction ComplexPlane) :
+    letI := ComplexPlane.topology
+    letI := ComplexPlane.chartedSpace
+    ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (fun p : ComplexPlane.carrier =>
+      let e := @chartAt ℂ _ ComplexPlane.carrier ComplexPlane.topology ComplexPlane.chartedSpace p
+      wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
+  exact dbar_real_hd_smooth_section_of_chartAt_eventuallyEq
+    (RS := ComplexPlane) f (fun p0 => complexPlane_chartAt_eventuallyEq_center_hd p0)
+
 /-- Remaining hard local bridge: smoothness of the chart-transition Jacobian factor.
 The issue is the moving chart choice `p ↦ chartAt ℂ p` inside the derivative point
 of `chartTransition p0 p`, which is not yet bridged to a chart-free smooth object. -/

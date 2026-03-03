@@ -34,6 +34,23 @@
 
 ## Development Snapshot (2026-03-02)
 
+### Incremental Update (latest pass: closed ComplexPlane smoothness slice for `dbar_real_hd`)
+- `Analytic/HodgeTheory/HodgeDecomposition.lean`:
+  - added `complexPlane_chartAt_eventuallyEq_center_hd`, proving the chart-selection
+    stabilization hypothesis for `ComplexPlane` (`chartAt = refl` on model space).
+  - added `dbar_real_hd_smooth_section_complexPlane`, a compile-checked closure of
+    the `dbar_real_hd` smoothness theorem on `ComplexPlane` via the assumption-explicit
+    bridge `dbar_real_hd_smooth_section_of_chartAt_eventuallyEq`.
+- Why this matters:
+  - confirms the conditional smoothness pipeline is mathematically/computationally
+    viable on canonical model surfaces.
+  - gives a concrete closed theorem while the generic blocker
+    `dbarRealTransitionFactor_contMDiffAt_hd` remains open.
+- Compile checks run:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.HodgeDecomposition`
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
+  - status: pass (warnings only from existing theorem-level `sorry`s).
+
 ### Incremental Update (latest pass: blocker cleanup in `dbar_real_hd` smoothness chain)
 - `Analytic/HodgeTheory/HodgeDecomposition.lean`:
   - removed the intermediate chart-selection theorem
