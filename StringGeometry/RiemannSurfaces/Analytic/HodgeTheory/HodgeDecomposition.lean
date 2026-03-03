@@ -947,6 +947,17 @@ private theorem dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd
   exact (contMDiffAt_const : ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
       (fun _ : RS.carrier => (1 : ℂ)) p0).congr_of_eventuallyEq hloc
 
+/-- Local smoothness of the transition factor under local chart-selection stability. -/
+private theorem dbarRealTransitionFactor_contMDiffAt_of_chartAtLocallyConstant_hd
+    (p0 : RS.carrier)
+    (hchart : Infrastructure.ChartAtLocallyConstant RS) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealTransitionFactor_hd (RS := RS) p0) p0 := by
+  exact dbarRealTransitionFactor_contMDiffAt_of_eventuallyEq_chart_hd
+    (RS := RS) p0 (hchart p0)
+
 /-- Near `p0`, the chart-varying `dbar` coefficient equals fixed-chart part times transition factor. -/
 private theorem dbarRealSectionCandidate_eventuallyEq_fixed_mul_transition_hd
     (f : RealSmoothFunction RS) (p0 : RS.carrier) :
@@ -1037,6 +1048,17 @@ private theorem dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
   exact dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd
     (RS := RS) f p0 htrans
 
+/-- Pointwise smoothness of the `dbar` section candidate under local chart-selection stability. -/
+private theorem dbarRealSectionCandidate_contMDiffAt_of_chartAtLocallyConstant_hd
+    (f : RealSmoothFunction RS) (p0 : RS.carrier)
+    (hchart : Infrastructure.ChartAtLocallyConstant RS) :
+    letI := RS.topology
+    letI := RS.chartedSpace
+    ContMDiffAt 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder
+      (dbarRealSectionCandidate_hd (RS := RS) f) p0 := by
+  exact dbarRealSectionCandidate_contMDiffAt_of_chartAt_eventuallyEq_hd
+    (RS := RS) f p0 (hchart p0)
+
 /-- Global smoothness of the chart-varying `dbar` coefficient candidate under
 pointwise local stabilization of `chartAt`. -/
 theorem dbar_real_hd_smooth_section_of_chartAt_eventuallyEq
@@ -1069,7 +1091,10 @@ theorem dbar_real_hd_smooth_section_of_chartAtLocallyConstant
     ContMDiff 𝓘(ℝ, ℂ) 𝓘(ℝ, ℂ) smoothOrder (fun p : RS.carrier =>
       let e := @chartAt ℂ _ RS.carrier RS.topology RS.chartedSpace p
       wirtingerDeriv_zbar (f.toFun ∘ e.symm) (e p)) := by
-  exact dbar_real_hd_smooth_section_of_chartAt_eventuallyEq (RS := RS) f hchart
+  intro p0
+  simpa [dbarRealSectionCandidate_hd] using
+    dbarRealSectionCandidate_contMDiffAt_of_chartAtLocallyConstant_hd
+      (RS := RS) f p0 hchart
 
 /-- Closed smoothness theorem for `dbar_real_hd` on the model surface `ComplexPlane`,
 obtained from the chart-stabilized criterion. -/

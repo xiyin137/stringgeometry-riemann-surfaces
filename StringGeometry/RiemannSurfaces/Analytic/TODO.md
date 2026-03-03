@@ -44,8 +44,10 @@
     - `ChartAtLocallyConstant`
     - `chartAtLocallyConstant_complexPlane`
 - Refactored `Analytic/HodgeTheory/HodgeDecomposition.lean`:
-  - `complexPlane_chartAt_eventuallyEq_center_hd` now delegates to
-    `Infrastructure.chartAt_eventuallyEq_center_complexPlane`.
+  - added local predicate bridges:
+    - `dbarRealTransitionFactor_contMDiffAt_of_chartAtLocallyConstant_hd`
+    - `dbarRealSectionCandidate_contMDiffAt_of_chartAtLocallyConstant_hd`
+    - `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`
   - added reusable bridge:
     `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`.
   - `dbar_real_hd_smooth_section_complexPlane` now discharges through

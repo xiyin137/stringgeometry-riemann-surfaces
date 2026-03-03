@@ -85,6 +85,11 @@ Resolved recently:
       `dbarRealSectionCandidate_contMDiffAt_of_transitionFactor_contMDiffAt_hd`
       as the single local-to-global assembly lemma parameterized by transition-factor
       smoothness, and rewired both conditional and unconditional routes through it.
+    - added predicate-level route:
+      - `dbarRealTransitionFactor_contMDiffAt_of_chartAtLocallyConstant_hd`
+      - `dbarRealSectionCandidate_contMDiffAt_of_chartAtLocallyConstant_hd`
+      - `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`
+      so assumption-driven closure no longer repeats ad hoc `hchart p0` plumbing.
 
 4. Lift local regularity to global section smoothness.
 - Use manifold-local-to-global `ContMDiff` criteria:
