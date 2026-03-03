@@ -9,6 +9,10 @@ Target declaration:
 Current issue:
 - the section is defined pointwise using `chartAt` at the same point.
 - this creates a chart-varying expression with difficult global `ContMDiff` obligations.
+- additional type-level obstruction in current infrastructure:
+  many local Wirtinger regularity lemmas land at smoothness index
+  `((⊤ : ℕ∞) : WithTop ℕ∞)` (coerced `∞`), while form fields require
+  `ContMDiff ... ⊤` at the `WithTop ℕ∞` level.
 
 ## Infrastructure-first route
 
@@ -50,6 +54,7 @@ Current issue:
 - Use manifold-local-to-global `ContMDiff` criteria:
   `contMDiff_iff` / chart-local reformulations.
 - Conclude `dbar_real_hd_smooth_section` from local fixed-chart smoothness + overlap compatibility.
+  - must resolve the smoothness-index bridge (`↑∞` vs `⊤`) in this step.
 
 ## Immediate next bridge lemmas
 
@@ -63,6 +68,9 @@ Current issue:
 3. `dbar_real_chart_local_contMDiffAt`:
    chart-local `ContMDiffAt` statement for the section candidate at an arbitrary point.
 4. `dbar_real_hd_smooth_section` via local-to-global assembly.
+5. smoothness-index normalization bridge:
+   provide a robust way to discharge `ContMDiff ... ⊤` goals from local
+   Wirtinger infrastructure currently phrased at `((⊤ : ℕ∞) : WithTop ℕ∞)`.
 
 ## Constraints
 

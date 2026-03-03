@@ -55,6 +55,12 @@
   - `lake env lean StringGeometry/RiemannSurfaces/Analytic/HodgeTheory/HodgeDecomposition.lean`
   - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`
   - status: pass (warnings only).
+- blocker refinement from this pass:
+  - attempted closure of `dbar_real_hd_smooth_section` exposed a smoothness-index mismatch:
+    local lemmas naturally provide `ContMDiffAt ... ((⊤ : ℕ∞) : WithTop ℕ∞)` while the global
+    form smoothness target is `ContMDiff ... ⊤` (in `WithTop ℕ∞`).
+  - this is now recorded as an explicit infrastructure task in
+    `ProofIdeas/DbarRealSmoothnessPlan.md`.
 
 ### Incremental Update (latest pass: added point-based overlap formulas for local Wirtinger coefficients)
 - `Analytic/Helpers/ChartTransition.lean`:
