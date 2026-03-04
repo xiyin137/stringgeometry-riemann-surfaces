@@ -91,7 +91,11 @@
 - Added RR point-step factorization infrastructure:
   - `RiemannRoch.lean`:
     `EvalResidueFiveTermData`,
-    `eval_residue_complementarity_of_fiveTermData`.
+    `eval_residue_complementarity_of_fiveTermData`,
+    `exists_evalResidueFiveTermData`.
+  - `Helpers/EvaluationMap.lean`:
+    `h0_add_point_upper_of_fiveTermData` (dimension-step reuse without
+    duplicating long-exact algebra).
   - Remaining deep gap is explicitly isolated to constructing
     `EvalResidueFiveTermData` from analytic geometry/cohomology.
 - Added chart-local `WithinAt` smoothness bridges in

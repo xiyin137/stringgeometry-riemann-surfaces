@@ -292,7 +292,7 @@ theorem pants_graph_infinite (g n : ℕ) (_ : 2 * g + n > 2) :
 
 /-- Distance in the pants graph (minimal number of moves) -/
 noncomputable def pantsDistance (P Q : PantsDecomposition g n) : ℕ :=
-  sorry  -- Minimal length of a path from P to Q
+  sInf {m : ℕ | ∃ path : PantsPath g n P Q, path.length = m}
 
 /-- The pants graph has infinite diameter -/
 theorem pants_graph_infinite_diameter (g n : ℕ) (_ : 3 * g - 3 + n ≥ 2) :

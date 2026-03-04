@@ -896,6 +896,13 @@ theorem eval_residue_complementarity_of_fiveTermData
   rw [hdata.hdim_V₁, hdata.hdim_V₂, hdata.hdim_V₄, hdata.hdim_V₅] at hdim
   simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hdim
 
+/-- Deep geometric input: existence of five-term exact-sequence data for the point step. -/
+theorem exists_evalResidueFiveTermData
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
+    Nonempty (EvalResidueFiveTermData CRS K D p) := by
+  sorry
+
 /-- **Evaluation-residue complementarity.**
 
     For any divisor D and point p on a compact Riemann surface with canonical
@@ -927,10 +934,8 @@ theorem eval_residue_complementarity (CRS : CompactRiemannSurface)
     (h0 CRS (D + Divisor.point p) : ℤ) - (h0 CRS D : ℤ) +
     ((h0 CRS (K.representative + (-D)) : ℤ) -
      (h0 CRS (K.representative + (-(D + Divisor.point p))) : ℤ)) = 1 := by
-  -- Remaining deep requirement:
-  -- construct the five-term exact-sequence package from analytic geometry.
-  have hdata : EvalResidueFiveTermData CRS K D p := by
-    sorry
+  let hdata : EvalResidueFiveTermData CRS K D p :=
+    Classical.choice (exists_evalResidueFiveTermData CRS K D p)
   exact eval_residue_complementarity_of_fiveTermData CRS K D p hdata
 
 /-- The Euler characteristic step: χ(D + [p]) = χ(D) + 1.
