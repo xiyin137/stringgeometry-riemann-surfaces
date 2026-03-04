@@ -133,15 +133,18 @@ structure Trinion where
     3. Each component is a trinion (by the count formula)
 
     The theorems below constrain this data to be consistent with Euler characteristic. -/
+theorem Marking.exists_trinions {g n : ℕ} (P : Marking g n) :
+    Nonempty (Finset Trinion) := by
+  -- A pants decomposition with 3g-3+n curves has 2g-2+n trinions.
+  -- Existence is deferred to later topological infrastructure.
+  sorry
+
+/-- The trinions of a pants decomposition. -/
 noncomputable def Marking.trinions {g n : ℕ} (P : Marking g n) : Finset Trinion :=
-  -- In a complete formalization, this would be computed from P.circles
+  -- In a complete formalization, this would be computed from `P.circles`
   -- by cutting the surface and identifying complementary regions.
-  -- For now, we use Classical.choice to assert existence.
-  -- The theorems trinions_card and circles_card_from_trinions constrain this choice.
-  Classical.choice (by
-    -- A pants decomposition with 3g-3+n curves has 2g-2+n trinions
-    -- This exists by the topology of surfaces
-    sorry)  -- Existence of trinions for a valid pants decomposition
+  -- For now, we choose a witness from the explicit existence theorem above.
+  Classical.choice (Marking.exists_trinions P)
 
 /-- **Theorem**: The number of trinions equals -χ(Σ_{g,n}) = 2g - 2 + n.
 
