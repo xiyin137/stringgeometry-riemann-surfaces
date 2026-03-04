@@ -76,7 +76,7 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality.lean::residue_theorem` remains open (Stokes-level requirement).
 6. Gate F (RR terminal theorems in `RiemannRoch.lean`):
    - Remaining theorem-level `sorry`s are concentrated at lines currently around
-     `599`, `1053`, `1462`, `1514`, `1533`, each depending on earlier gates (B-D, E).
+     `605`, `1057`, `1467`, `1534`, `1554`, each depending on earlier gates (B-D, E).
    - The point-step complementarity block is now reduced to one explicit deep obligation:
      `exists_evalResidueFiveTermMaps_and_ids`.
      `exists_evalResidueFiveTermData` is now composed from this package.
@@ -118,6 +118,8 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
      `h1_dolbeault CRS A`, with `serre_duality_h1`/`riemann_roch_classical`
      now parameterized by `(A, hA : IsConnectionFormFor CRS D A)` to avoid
      definition-level witness choice from unresolved existence.
+   - added compile-checked base-case connection lemmas for the trivial divisor:
+     `isConnectionFormFor_zero` and `connectionForm_exists_zero`.
    - added `EvalResidueFinrankIdentifications`,
    - consolidated to theorem-level obligation
      `exists_evalResidueFiveTermMaps_and_ids`,

@@ -65,7 +65,7 @@
     - `HodgeTheory/SerreDuality.lean`: `residue_theorem`.
   - Gate F (terminal RR theorems):
     - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
-      `599`, `1053`, `1462`, `1514`, `1533`.
+      `605`, `1057`, `1467`, `1534`, `1554`.
     - `eval_residue_complementarity` is now reduced to constructing a
       five-term exact-sequence data package; the dimension algebra step is discharged.
     - divisor-level twisted-Dolbeault wrappers now expose explicit existential witnesses
@@ -105,6 +105,9 @@
   - refactored twisted-Dolbeault `h¹` to use explicit connection-form input
     in the definition (`h1_dolbeault CRS A`), keeping unresolved connection-form
     existence at theorem level only.
+  - added compile-checked trivial-divisor connection infrastructure:
+    - `isConnectionFormFor_zero`
+    - `connectionForm_exists_zero`
   - added `EvalResidueFinrankIdentifications`,
   - consolidated to theorem-level obligation
     `exists_evalResidueFiveTermMaps_and_ids`,

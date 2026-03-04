@@ -1509,6 +1509,23 @@ def IsConnectionFormFor (CRS : CompactRiemannSurface)
         A.toSection (e.symm z) =
           (D.coeff p : ℂ) / (2 * starRingEnd ℂ (z - a)) + h z
 
+/-- The trivial divisor admits the zero `(0,1)`-connection form. -/
+theorem isConnectionFormFor_zero (CRS : CompactRiemannSurface) :
+    IsConnectionFormFor CRS (0 : Divisor CRS.toRiemannSurface)
+      (0 : Form_01 CRS.toRiemannSurface) := by
+  intro p
+  refine ⟨fun _ => 0, continuousAt_const, ?_⟩
+  refine Filter.Eventually.of_forall ?_
+  intro z
+  have hcoeff : (0 : Divisor CRS.toRiemannSurface).coeff p = 0 := rfl
+  simp [hcoeff]
+
+/-- Existence of a connection form for the trivial divisor. -/
+theorem connectionForm_exists_zero (CRS : CompactRiemannSurface) :
+    ∃ A : Form_01 CRS.toRiemannSurface,
+      IsConnectionFormFor CRS (0 : Divisor CRS.toRiemannSurface) A := by
+  exact ⟨0, isConnectionFormFor_zero CRS⟩
+
 /-- Every divisor D on a compact Riemann surface has a (0,1)-connection form.
     Follows from smooth triviality of complex line bundles on surfaces. -/
 theorem connectionForm_exists (CRS : CompactRiemannSurface)
