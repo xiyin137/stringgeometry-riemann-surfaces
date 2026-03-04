@@ -1591,6 +1591,35 @@ theorem riemann_roch_classical_of_divisor (CRS : CompactRiemannSurface)
   rcases connectionForm_exists CRS D with ⟨A, hA⟩
   exact ⟨A, hA, riemann_roch_classical CRS D K hK A hA⟩
 
+/-- Zero-divisor specialization of analytic Serre duality using the explicit
+trivial connection witness `A = 0`. -/
+theorem serre_duality_h1_zero (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS) :
+    h1_dolbeault CRS (0 : Form_01 CRS.toRiemannSurface) = h0 CRS K.representative := by
+  have hA0 : IsConnectionFormFor CRS (0 : Divisor CRS.toRiemannSurface)
+      (0 : Form_01 CRS.toRiemannSurface) := isConnectionFormFor_zero CRS
+  simpa [neg_zero, add_zero] using
+    serre_duality_h1 CRS K (0 : Divisor CRS.toRiemannSurface)
+      (0 : Form_01 CRS.toRiemannSurface) hA0
+
+/-- Zero-divisor specialization of classical Riemann-Roch using the explicit
+trivial connection witness `A = 0`. -/
+theorem riemann_roch_classical_zero (CRS : CompactRiemannSurface)
+    (K : CanonicalDivisor CRS) (hK : h0 CRS K.representative = CRS.genus) :
+    (h0 CRS (0 : Divisor CRS.toRiemannSurface) : ℤ) -
+      (h1_dolbeault CRS (0 : Form_01 CRS.toRiemannSurface) : ℤ) = 1 - CRS.genus := by
+  have hA0 : IsConnectionFormFor CRS (0 : Divisor CRS.toRiemannSurface)
+      (0 : Form_01 CRS.toRiemannSurface) := isConnectionFormFor_zero CRS
+  simpa [Divisor.degree_zero] using
+    riemann_roch_classical CRS (0 : Divisor CRS.toRiemannSurface) K hK
+      (0 : Form_01 CRS.toRiemannSurface) hA0
+
+/-- If `h⁰(K)=g`, then the twisted Dolbeault `h¹` for the trivial divisor
+with explicit zero connection satisfies `h¹(0)=g`. -/
+theorem h1_dolbeault_zero_eq_genus (CRS : CompactRiemannSurface)
+    (K : CanonicalDivisor CRS) (hK : h0 CRS K.representative = CRS.genus) :
+    h1_dolbeault CRS (0 : Form_01 CRS.toRiemannSurface) = CRS.genus := by
+  rw [serre_duality_h1_zero CRS K, hK]
+
 /-- The Euler characteristic χ(O) = 1 - g -/
 theorem euler_characteristic_structure_sheaf (CRS : CompactRiemannSurface)
     (K : CanonicalDivisor CRS)

@@ -108,6 +108,9 @@
   - added compile-checked trivial-divisor connection infrastructure:
     - `isConnectionFormFor_zero`
     - `connectionForm_exists_zero`
+    - `serre_duality_h1_zero`
+    - `riemann_roch_classical_zero`
+    - `h1_dolbeault_zero_eq_genus`
   - added `EvalResidueFinrankIdentifications`,
   - consolidated to theorem-level obligation
     `exists_evalResidueFiveTermMaps_and_ids`,

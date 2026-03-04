@@ -119,7 +119,9 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
      now parameterized by `(A, hA : IsConnectionFormFor CRS D A)` to avoid
      definition-level witness choice from unresolved existence.
    - added compile-checked base-case connection lemmas for the trivial divisor:
-     `isConnectionFormFor_zero` and `connectionForm_exists_zero`.
+     `isConnectionFormFor_zero`, `connectionForm_exists_zero`,
+     `serre_duality_h1_zero`, `riemann_roch_classical_zero`,
+     and `h1_dolbeault_zero_eq_genus`.
    - added `EvalResidueFinrankIdentifications`,
    - consolidated to theorem-level obligation
      `exists_evalResidueFiveTermMaps_and_ids`,
