@@ -22,6 +22,11 @@ This file is an index only. Planning is consolidated into exactly one TODO file 
   - all succeed (warnings only)
 - Full project re-check on 2026-03-02:
   - `lake build StringGeometry.RiemannSurfaces` succeeds (warnings only)
+- Re-check on 2026-03-04:
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic` succeeds (warnings only)
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch` succeeds (warnings only)
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.EvaluationMap` succeeds (warnings only)
+  - `lake build StringGeometry.RiemannSurfaces.Topology.HatcherThurston` succeeds (warnings only)
 
 ## Dependency Split (High Level)
 

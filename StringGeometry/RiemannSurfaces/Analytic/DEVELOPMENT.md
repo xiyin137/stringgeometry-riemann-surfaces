@@ -30,12 +30,12 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 10. `Helpers/ArgumentPrinciple.lean`
 11. `RiemannRoch.lean`
 
-## RR Path Status (2026-03-03)
+## RR Path Status (2026-03-04)
 
 ### Compile status
 1. `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch`: passes.
 2. Status is warning-only from theorem-level `sorry`s (no def-level placeholders introduced by recent passes).
-3. `lake build StringGeometry.RiemannSurfaces`: passes (2026-03-03, 3585 jobs, warning-only).
+3. `lake build StringGeometry.RiemannSurfaces`: passes (2026-03-04, warning-only).
 4. `scripts/check_lean_file_length.sh 2000`: passes; `HodgeDecomposition/Core.lean` is 1845 lines.
 
 ### Dependency gates
@@ -76,7 +76,11 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality.lean::residue_theorem` remains open (Stokes-level requirement).
 6. Gate F (RR terminal theorems in `RiemannRoch.lean`):
    - Remaining theorem-level `sorry`s are concentrated at lines currently around
-     `598`, `838`, `1137`, `1189`, `1212`, each depending on earlier gates (B-D, E).
+     `605`, `1012`, `1020`, `1364`, `1414`, `1437`, each depending on earlier gates (B-D, E).
+   - The point-step complementarity block is now split into two explicit deep obligations:
+     1) `exists_evalResidueFiveTermMaps`,
+     2) `exists_evalResidueFinrankIdentifications`.
+     `exists_evalResidueFiveTermData` is now a composed theorem from these two inputs.
 
 ### Immediate hard targets (next pass)
 1. Gate A closure path:
@@ -92,22 +96,32 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/HodgeDecomposition/Core.lean::closed_exactPair_commonPotential`
      (now reduced by infrastructure to an unconditional mixed-identity gap).
 
-### Latest infrastructure step (2026-03-03)
-1. Added chart-local `WithinAt` smoothness bridges in
+### Latest infrastructure step (2026-03-04)
+1. Refined RR Gate F dependency decomposition in `RiemannRoch.lean`:
+   - added `EvalResidueFinrankIdentifications`,
+   - added theorem-level obligations
+     `exists_evalResidueFiveTermMaps` and
+     `exists_evalResidueFinrankIdentifications`,
+   - rewired `exists_evalResidueFiveTermData` as an explicit composition through
+     `EvalResidueFiveTermMaps.toData`.
+2. This replaced one monolithic deep theorem obligation with two explicit targets
+   (map-level exact package vs finrank-identification package), without changing
+   downstream theorem APIs.
+3. Added chart-local `WithinAt` smoothness bridges in
    `HodgeTheory/HodgeDecomposition/Core.lean`:
    - `dbarRealSectionCandidate_contMDiffWithinAt_of_chartAt_eventuallyEq_hd`
    - `dbarRealSectionCandidate_contMDiffWithinAt_of_chartAtLocallyConstant_hd`
-2. Added global `ContMDiffOn` assembly lemmas and rewired the existing global
+4. Added global `ContMDiffOn` assembly lemmas and rewired the existing global
    chart-stabilized smoothness theorems through them:
    - `dbarRealSectionCandidate_contMDiffOn_of_chartAt_eventuallyEq_hd`
    - `dbarRealSectionCandidate_contMDiffOn_of_chartAtLocallyConstant_hd`
    - `dbar_real_hd_smooth_section_of_chartAt_eventuallyEq`
    - `dbar_real_hd_smooth_section_of_chartAtLocallyConstant`
-3. Added C/D finrank transport bridges:
+5. Added C/D finrank transport bridges:
    - `Harmonic10Forms.finrank_eq_submodule_finrank`
    - `Harmonic01Forms.finrank_eq_submodule_finrank`
    - `h1_trivial_eq_genus_of_linearEquiv` (in `DolbeaultCohomology.lean`)
-4. Added harmonic-to-de Rham infrastructure in
+6. Added harmonic-to-de Rham infrastructure in
    `HodgeTheory/HodgeDecomposition/Core.lean` and
    `HodgeTheory/HodgeDecomposition/DeRhamBridge.lean`:
    - `del_01_eq_zero_of_isHarmonic01`
@@ -119,14 +133,14 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
      bijectivity only.
    - corrected the harmonic-side domain model from Lean `Sum` (`⊕`, disjoint union) to
      product `Harmonic10Forms × Harmonic01Forms`, matching the intended direct-sum data.
-5. Added de Rham quotient interface lemmas in
+7. Added de Rham quotient interface lemmas in
    `HodgeTheory/HodgeDecomposition/Core.lean`:
    - `exactClosedForms1AddSubgroup`
    - `deRham_mk_eq_mk_iff`
    - `deRham_mk_eq_zero_iff`
    These give explicit criteria for class equality/vanishing in `DeRhamH1` and
    are intended to support the future injectivity branch of `hodge_isomorphism`.
-6. Added hodge/de Rham reduction criteria in
+8. Added hodge/de Rham reduction criteria in
    `HodgeTheory/HodgeDecomposition/DeRhamBridge.lean`:
    - `harmonicPairToDeRham_surjective_of_cohomologous_harmonicPair`
    - `harmonicPairToDeRham_surjective_of_hodgeDecomposition_and_commonPotential`

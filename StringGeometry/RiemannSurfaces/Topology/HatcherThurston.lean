@@ -258,9 +258,22 @@ theorem PantsPath.length_concat (p₁ : PantsPath g n P Q) (p₂ : PantsPath g n
   | refl _ => simp [concat, length]
   | step _ _ ih => simp [concat, length, ih]; ring
 
+/-- A pants path of length zero has equal source and target. -/
+theorem PantsPath.eq_of_length_eq_zero (path : PantsPath g n P Q)
+    (h0 : path.length = 0) : P = Q := by
+  induction path with
+  | refl P =>
+      rfl
+  | step h path ih =>
+      simp [PantsPath.length] at h0
+
 /-- Two pants decompositions are connected in the pants graph -/
 def connected (P Q : PantsDecomposition g n) : Prop :=
   Nonempty (PantsPath g n P Q)
+
+/-- Every pants decomposition is connected to itself. -/
+theorem connected_refl (P : PantsDecomposition g n) : connected P P :=
+  ⟨PantsPath.refl P⟩
 
 /-!
 ## The Hatcher-Thurston Theorem
@@ -294,6 +307,21 @@ theorem pants_graph_infinite (g n : ℕ) (_ : 2 * g + n > 2) :
 noncomputable def pantsDistance (P Q : PantsDecomposition g n) : ℕ :=
   sInf {m : ℕ | ∃ path : PantsPath g n P Q, path.length = m}
 
+/-- The pants distance is bounded above by the length of any connecting path. -/
+theorem pantsDistance_le_length {P Q : PantsDecomposition g n}
+    (path : PantsPath g n P Q) :
+    pantsDistance P Q ≤ path.length := by
+  unfold pantsDistance
+  exact Nat.sInf_le ⟨path, rfl⟩
+
+/-- The distance from a pants decomposition to itself is zero. -/
+theorem pantsDistance_self (P : PantsDecomposition g n) :
+    pantsDistance P P = 0 := by
+  apply Nat.eq_zero_of_le_zero
+  have hle : pantsDistance P P ≤ (PantsPath.refl P).length :=
+    pantsDistance_le_length (path := PantsPath.refl P)
+  simpa [PantsPath.length] using hle
+
 /-- The pants graph has infinite diameter -/
 theorem pants_graph_infinite_diameter (g n : ℕ) (_ : 3 * g - 3 + n ≥ 2) :
     ∀ D : ℕ, ∃ P Q : PantsDecomposition g n, pantsDistance P Q > D := by
@@ -302,7 +330,35 @@ theorem pants_graph_infinite_diameter (g n : ℕ) (_ : 3 * g - 3 + n ≥ 2) :
 /-- The pants distance equals the minimum path length -/
 theorem pants_distance_eq_min_length (P Q : PantsDecomposition g n) (_ : connected P Q) :
     ∃ path : PantsPath g n P Q, path.length = pantsDistance P Q := by
-  sorry
+  have hnonempty :
+      ({m : ℕ | ∃ path : PantsPath g n P Q, path.length = m} : Set ℕ).Nonempty := by
+    rcases (show connected P Q from ‹connected P Q›) with ⟨path⟩
+    exact ⟨path.length, ⟨path, rfl⟩⟩
+  have hsinf_mem :
+      pantsDistance P Q ∈ {m : ℕ | ∃ path : PantsPath g n P Q, path.length = m} := by
+    unfold pantsDistance
+    exact Nat.sInf_mem hnonempty
+  rcases hsinf_mem with ⟨path, hlen⟩
+  exact ⟨path, hlen⟩
+
+/-- For connected vertices, distance zero is equivalent to equality. -/
+theorem pantsDistance_eq_zero_iff (P Q : PantsDecomposition g n) (hconn : connected P Q) :
+    pantsDistance P Q = 0 ↔ P = Q := by
+  constructor
+  · intro hdist
+    rcases pants_distance_eq_min_length (P := P) (Q := Q) hconn with ⟨path, hlen⟩
+    exact PantsPath.eq_of_length_eq_zero path (by simpa [hlen] using hdist)
+  · intro hPQ
+    subst hPQ
+    exact pantsDistance_self P
+
+/-- For connected distinct vertices, pants distance is positive. -/
+theorem pantsDistance_pos_of_ne (P Q : PantsDecomposition g n)
+    (hconn : connected P Q) (hne : P ≠ Q) :
+    0 < pantsDistance P Q := by
+  refine Nat.pos_iff_ne_zero.mpr ?_
+  intro hzero
+  exact hne ((pantsDistance_eq_zero_iff P Q hconn).mp hzero)
 
 /-!
 ## Quasi-isometry to Weil-Petersson Metric (Brock)

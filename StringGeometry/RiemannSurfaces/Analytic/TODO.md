@@ -34,9 +34,11 @@
   - argument principle and degree-zero of principal divisors,
   - RR correction-term steps via divisor/cohomology exact sequences.
 
-## RR Critical-Path Status (2026-03-03)
+## RR Critical-Path Status (2026-03-04)
 - Build check:
   - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch` passes (warning-only).
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic` passes (warning-only).
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.EvaluationMap` passes (warning-only).
   - `lake build StringGeometry.RiemannSurfaces` passes (warning-only, no new errors).
   - `scripts/check_lean_file_length.sh 2000` passes;
     `HodgeDecomposition/Core.lean` is 1845 lines after splitting
@@ -60,10 +62,9 @@
     - `HodgeTheory/SerreDuality.lean`: `residue_theorem`.
   - Gate F (terminal RR theorems):
     - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
-      `598`, `838`, `1137`, `1189`, `1212`.
+      `605`, `1012`, `1020`, `1364`, `1414`, `1437`.
     - `eval_residue_complementarity` is now reduced to constructing a
-      five-term exact-sequence data package (`EvalResidueFiveTermData`);
-      the dimension algebra step is discharged.
+      five-term exact-sequence data package; the dimension algebra step is discharged.
 
 ## Current Concrete Targets (Authoritative)
 1. Gate A:
@@ -78,11 +79,23 @@
    injective-family lower-bound package into a finrank identity path for
    `h1_trivial_eq_genus`.
 4. Gate F:
-   construct `EvalResidueFiveTermData` in the analytic track (evaluation map,
-   connecting map, exactness, surjectivity) and close
-   `RiemannRoch.eval_residue_complementarity`.
+   construct the two deep inputs in the analytic track and close
+   `RiemannRoch.eval_residue_complementarity` end-to-end:
+   - map-level exact package: `exists_evalResidueFiveTermMaps`,
+   - divisor/cohomology rank identifications:
+     `exists_evalResidueFinrankIdentifications`.
 
-## Latest Compile-Checked Infrastructure (2026-03-03)
+## Latest Compile-Checked Infrastructure (2026-03-04)
+- Refined Gate F blocker decomposition in `RiemannRoch.lean`:
+  - added `EvalResidueFinrankIdentifications`,
+  - added theorem-level obligations
+    `exists_evalResidueFiveTermMaps` and
+    `exists_evalResidueFinrankIdentifications`,
+  - rewired `exists_evalResidueFiveTermData` to be a proved composition
+    of those two obligations through
+    `EvalResidueFiveTermMaps.toData`.
+- This replaces a monolithic deep blocker with two explicit theorem targets:
+  (A) exact five-term map construction, (B) finrank/h0 identifications.
 - Added finite-dimensional exact-sequence dimension helpers:
   - `Helpers/ExactSequenceDimension.lean`:
     `alternating_sum_exact_five`,
