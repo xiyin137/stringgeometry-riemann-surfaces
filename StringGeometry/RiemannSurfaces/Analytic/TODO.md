@@ -22,6 +22,7 @@
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/DbarRealSmoothnessPlan.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/HodgeCoreDeepBlockersPlan.md`
   - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/TransitionFactorStrategy.md`
+  - `StringGeometry/RiemannSurfaces/Analytic/ProofIdeas/FiveTermComplementarityPlan.md`
 
 ## Reference Baseline (Griffiths-Harris style)
 - Priority references for the current analytic path:

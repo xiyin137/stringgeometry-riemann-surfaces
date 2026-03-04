@@ -1019,16 +1019,28 @@ theorem exists_evalResidueFinrankIdentifications
     Nonempty (EvalResidueFinrankIdentifications CRS K D p hmap) := by
   sorry
 
+/-- Build five-term data from split existence assumptions:
+map-level exact package and finrank identifications. -/
+theorem exists_evalResidueFiveTermData_of_exists_fiveTermMaps_and_ids
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hexMaps : Nonempty (EvalResidueFiveTermMaps CRS D p))
+    (hexIds : ∀ hmap : EvalResidueFiveTermMaps CRS D p,
+      Nonempty (EvalResidueFinrankIdentifications CRS K D p hmap)) :
+    Nonempty (EvalResidueFiveTermData CRS K D p) := by
+  rcases hexMaps with ⟨hmap⟩
+  rcases hexIds hmap with ⟨hids⟩
+  refine ⟨EvalResidueFiveTermMaps.toData CRS K D p hmap
+    hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅⟩
+
 /-- Deep geometric input: existence of five-term exact-sequence data for the point step. -/
 theorem exists_evalResidueFiveTermData
     (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     Nonempty (EvalResidueFiveTermData CRS K D p) := by
-  classical
-  rcases exists_evalResidueFiveTermMaps CRS D p with ⟨hmap⟩
-  rcases exists_evalResidueFinrankIdentifications CRS K D p hmap with ⟨hids⟩
-  refine ⟨EvalResidueFiveTermMaps.toData CRS K D p hmap
-    hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅⟩
+  exact exists_evalResidueFiveTermData_of_exists_fiveTermMaps_and_ids CRS K D p
+    (exists_evalResidueFiveTermMaps CRS D p)
+    (fun hmap => exists_evalResidueFinrankIdentifications CRS K D p hmap)
 
 /-- Complementarity from split existence assumptions:
 map-level exact data and finrank identifications. -/
