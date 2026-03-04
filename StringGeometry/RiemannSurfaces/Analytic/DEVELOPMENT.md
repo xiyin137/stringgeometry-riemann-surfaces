@@ -76,7 +76,7 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality.lean::residue_theorem` remains open (Stokes-level requirement).
 6. Gate F (RR terminal theorems in `RiemannRoch.lean`):
    - Remaining theorem-level `sorry`s are concentrated at lines currently around
-     `605`, `1057`, `1467`, `1534`, `1554`, each depending on earlier gates (B-D, E).
+     `605`, `1238`, `1648`, `1715`, `1735`, each depending on earlier gates (B-D, E).
    - The point-step complementarity block is now reduced to one explicit deep obligation:
      `exists_evalResidueFiveTermMaps_and_ids`.
      `exists_evalResidueFiveTermData` is now composed from this package.
@@ -114,6 +114,12 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
      five-term data via `toMaps` and `toFinrankIdentifications`.
    - rewired `eval_residue_complementarity` and
      `Helpers/EvaluationMap.h0_add_point_upper` to consume full data directly.
+   - added constructive jump-case five-term constructors:
+     `exists_evalResidueFiveTermData_of_left_jump`,
+     `exists_evalResidueFiveTermData_of_right_jump`,
+     `exists_evalResidueFiveTermData_of_jump_cases`.
+     This reduces the geometric blocker to establishing a jump-case statement,
+     with exact-sequence linear algebra now compile-checked and reusable.
    - refactored twisted-Dolbeault `h¹` API to explicit connection-form input:
      `h1_dolbeault CRS A`, with `serre_duality_h1`/`riemann_roch_classical`
      now parameterized by `(A, hA : IsConnectionFormFor CRS D A)` to avoid

@@ -1048,6 +1048,187 @@ theorem eval_residue_complementarity_of_fiveTermMaps
   exact eval_residue_complementarity_of_fiveTermData CRS K D p
     (EvalResidueFiveTermMaps.toData CRS K D p hmap hdim_V₁ hdim_V₂ hdim_V₄ hdim_V₅)
 
+/-- Construct five-term data in the "left jump" case:
+`h⁰(D+[p]) = h⁰(D)+1` and `h⁰(K-D) = h⁰(K-D-[p])`. -/
+theorem exists_evalResidueFiveTermData_of_left_jump
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hleft : h0 CRS (D + Divisor.point p) = h0 CRS D + 1)
+    (hright : h0 CRS (K.representative + (-D)) =
+      h0 CRS (K.representative + (-(D + Divisor.point p)))) :
+    Nonempty (EvalResidueFiveTermData CRS K D p) := by
+  let a : ℕ := h0 CRS D
+  let c : ℕ := h0 CRS (K.representative + (-D))
+  let T1 : Type := Fin a → ℂ
+  let T2 : Type := T1 × ℂ
+  let T4 : Type := Fin c → ℂ
+  let T5 : Type := T4
+  let l1 : T1 →ₗ[ℂ] T2 := LinearMap.inl ℂ T1 ℂ
+  let l2 : T2 →ₗ[ℂ] ℂ := LinearMap.snd ℂ T1 ℂ
+  let l3 : ℂ →ₗ[ℂ] T4 := 0
+  let l4 : T4 →ₗ[ℂ] T5 := LinearMap.id
+  have hdim1 : Module.finrank ℂ T1 = h0 CRS D := by
+    simpa [T1, a] using (Module.finrank_fin_fun (R := ℂ) (n := a))
+  have hdim2_nat : Module.finrank ℂ T2 = a + 1 := by
+    calc
+      Module.finrank ℂ T2 = Module.finrank ℂ T1 + Module.finrank ℂ ℂ := by
+        simp [T2]
+      _ = a + 1 := by
+        simpa [hdim1, a]
+  have hdim2 : Module.finrank ℂ T2 = h0 CRS (D + Divisor.point p) := by
+    calc
+      Module.finrank ℂ T2 = a + 1 := hdim2_nat
+      _ = h0 CRS (D + Divisor.point p) := by simpa [a] using hleft.symm
+  have hdim4 : Module.finrank ℂ T4 = h0 CRS (K.representative + (-D)) := by
+    simpa [T4, c] using (Module.finrank_fin_fun (R := ℂ) (n := c))
+  have hdim5 : Module.finrank ℂ T5 =
+      h0 CRS (K.representative + (-(D + Divisor.point p))) := by
+    calc
+      Module.finrank ℂ T5 = c := by
+        simpa [T5, T4, c] using (Module.finrank_fin_fun (R := ℂ) (n := c))
+      _ = h0 CRS (K.representative + (-(D + Divisor.point p))) := by
+        simpa [c] using hright
+  have hsurj2 : Function.Surjective l2 := by
+    simpa [l2] using (LinearMap.snd_surjective (R := ℂ) (M := T1) (M₂ := ℂ))
+  have hrange2 : LinearMap.range l2 = ⊤ := LinearMap.range_eq_top.2 hsurj2
+  let hmap : EvalResidueFiveTermMaps CRS D p := {
+    V₁ := T1
+    V₂ := T2
+    V₄ := T4
+    V₅ := T5
+    addCommGroupV₁ := by infer_instance
+    moduleV₁ := by infer_instance
+    finiteDimensionalV₁ := by infer_instance
+    addCommGroupV₂ := by infer_instance
+    moduleV₂ := by infer_instance
+    finiteDimensionalV₂ := by infer_instance
+    addCommGroupV₄ := by infer_instance
+    moduleV₄ := by infer_instance
+    finiteDimensionalV₄ := by infer_instance
+    addCommGroupV₅ := by infer_instance
+    moduleV₅ := by infer_instance
+    finiteDimensionalV₅ := by infer_instance
+    f₁ := l1
+    f₂ := l2
+    f₃ := l3
+    f₄ := l4
+    inj_f₁ := by
+      simpa [l1] using (LinearMap.inl_injective (R := ℂ) (M := T1) (M₂ := ℂ))
+    exact_V₂ := by
+      simpa [l1, l2] using (LinearMap.ker_snd (R := ℂ) (M := T1) (M₂ := ℂ))
+    exact_V₃ := by
+      simpa [l3, hrange2] using (LinearMap.ker_zero : LinearMap.ker (0 : ℂ →ₗ[ℂ] T4) = ⊤)
+    exact_V₄ := by
+      have hker : LinearMap.ker l4 = (⊥ : Submodule ℂ T4) := by
+        simpa [l4] using (LinearMap.ker_id : LinearMap.ker (LinearMap.id : T4 →ₗ[ℂ] T4) = ⊥)
+      have hrange : LinearMap.range l3 = (⊥ : Submodule ℂ T4) := by
+        simp [l3]
+      exact hker.trans hrange.symm
+    surj_f₄ := by
+      intro y
+      exact ⟨y, rfl⟩
+  }
+  exact ⟨EvalResidueFiveTermMaps.toData CRS K D p hmap hdim1 hdim2 hdim4 hdim5⟩
+
+/-- Construct five-term data in the "right jump" case:
+`h⁰(D+[p]) = h⁰(D)` and `h⁰(K-D) = h⁰(K-D-[p]) + 1`. -/
+theorem exists_evalResidueFiveTermData_of_right_jump
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hleft : h0 CRS (D + Divisor.point p) = h0 CRS D)
+    (hright : h0 CRS (K.representative + (-D)) =
+      h0 CRS (K.representative + (-(D + Divisor.point p))) + 1) :
+    Nonempty (EvalResidueFiveTermData CRS K D p) := by
+  let a : ℕ := h0 CRS D
+  let d : ℕ := h0 CRS (K.representative + (-(D + Divisor.point p)))
+  let T1 : Type := Fin a → ℂ
+  let T2 : Type := T1
+  let T5 : Type := Fin d → ℂ
+  let T4 : Type := ℂ × T5
+  let l1 : T1 →ₗ[ℂ] T2 := LinearMap.id
+  let l2 : T2 →ₗ[ℂ] ℂ := 0
+  let l3 : ℂ →ₗ[ℂ] T4 := LinearMap.inl ℂ ℂ T5
+  let l4 : T4 →ₗ[ℂ] T5 := LinearMap.snd ℂ ℂ T5
+  have hdim1 : Module.finrank ℂ T1 = h0 CRS D := by
+    simpa [T1, a] using (Module.finrank_fin_fun (R := ℂ) (n := a))
+  have hdim2 : Module.finrank ℂ T2 = h0 CRS (D + Divisor.point p) := by
+    calc
+      Module.finrank ℂ T2 = a := by
+        simpa [T2, T1, a] using (Module.finrank_fin_fun (R := ℂ) (n := a))
+      _ = h0 CRS (D + Divisor.point p) := by simpa [a] using hleft.symm
+  have hdim5 : Module.finrank ℂ T5 =
+      h0 CRS (K.representative + (-(D + Divisor.point p))) := by
+    simpa [T5, d] using (Module.finrank_fin_fun (R := ℂ) (n := d))
+  have hdim4_nat : Module.finrank ℂ T4 = d + 1 := by
+    calc
+      Module.finrank ℂ T4 = Module.finrank ℂ ℂ + Module.finrank ℂ T5 := by
+        simp [T4]
+      _ = d + 1 := by
+        simpa [hdim5, d, Nat.add_comm]
+  have hdim4 : Module.finrank ℂ T4 = h0 CRS (K.representative + (-D)) := by
+    calc
+      Module.finrank ℂ T4 = d + 1 := hdim4_nat
+      _ = h0 CRS (K.representative + (-D)) := by simpa [d] using hright.symm
+  let hmap : EvalResidueFiveTermMaps CRS D p := {
+    V₁ := T1
+    V₂ := T2
+    V₄ := T4
+    V₅ := T5
+    addCommGroupV₁ := by infer_instance
+    moduleV₁ := by infer_instance
+    finiteDimensionalV₁ := by infer_instance
+    addCommGroupV₂ := by infer_instance
+    moduleV₂ := by infer_instance
+    finiteDimensionalV₂ := by infer_instance
+    addCommGroupV₄ := by infer_instance
+    moduleV₄ := by infer_instance
+    finiteDimensionalV₄ := by infer_instance
+    addCommGroupV₅ := by infer_instance
+    moduleV₅ := by infer_instance
+    finiteDimensionalV₅ := by infer_instance
+    f₁ := l1
+    f₂ := l2
+    f₃ := l3
+    f₄ := l4
+    inj_f₁ := by
+      intro x y hxy
+      simpa [l1] using hxy
+    exact_V₂ := by
+      have hker : LinearMap.ker l2 = (⊤ : Submodule ℂ T2) := by
+        simp [l2]
+      have hrange : LinearMap.range l1 = (⊤ : Submodule ℂ T2) := by
+        simpa [l1] using (LinearMap.range_id : LinearMap.range (LinearMap.id : T1 →ₗ[ℂ] T1) = ⊤)
+      exact hker.trans hrange.symm
+    exact_V₃ := by
+      have hker : LinearMap.ker l3 = (⊥ : Submodule ℂ ℂ) := by
+        dsimp [l3]
+        exact Submodule.ker_inl (R := ℂ) (M := ℂ) (M₂ := T5)
+      have hrange : LinearMap.range l2 = (⊥ : Submodule ℂ ℂ) := by
+        simp [l2]
+      exact hker.trans hrange.symm
+    exact_V₄ := by
+      simpa [l3, l4] using (LinearMap.ker_snd (R := ℂ) (M := ℂ) (M₂ := T5))
+    surj_f₄ := by
+      simpa [l4] using (LinearMap.snd_surjective (R := ℂ) (M := ℂ) (M₂ := T5))
+  }
+  exact ⟨EvalResidueFiveTermMaps.toData CRS K D p hmap hdim1 hdim2 hdim4 hdim5⟩
+
+/-- Reduce five-term-data existence to the two jump-pattern cases. -/
+theorem exists_evalResidueFiveTermData_of_jump_cases
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hcases :
+      (h0 CRS (D + Divisor.point p) = h0 CRS D + 1 ∧
+        h0 CRS (K.representative + (-D)) =
+          h0 CRS (K.representative + (-(D + Divisor.point p)))) ∨
+      (h0 CRS (D + Divisor.point p) = h0 CRS D ∧
+        h0 CRS (K.representative + (-D)) =
+          h0 CRS (K.representative + (-(D + Divisor.point p))) + 1)) :
+    Nonempty (EvalResidueFiveTermData CRS K D p) := by
+  rcases hcases with hleft | hright
+  · exact exists_evalResidueFiveTermData_of_left_jump CRS K D p hleft.1 hleft.2
+  · exact exists_evalResidueFiveTermData_of_right_jump CRS K D p hright.1 hright.2
+
 /-- Deep geometric input for the point step:
 existence of full five-term exact-sequence data with finrank labels. -/
 theorem exists_evalResidueFiveTermData_core
