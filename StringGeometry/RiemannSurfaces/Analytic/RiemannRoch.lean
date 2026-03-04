@@ -1536,6 +1536,19 @@ theorem serre_duality_h1 (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS
     h1_dolbeault CRS A = h0 CRS (K.representative + (-D)) := by
   sorry -- Requires: twisted Dolbeault cohomology, residue pairing, Hodge theory
 
+/-- Divisor-level Serre duality wrapper using a chosen connection form from
+`connectionForm_exists`.
+
+This keeps the unresolved geometric existence input theorem-level while exposing a
+direct divisor-based interface. -/
+theorem serre_duality_h1_of_divisor (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) :
+    ∃ A : Form_01 CRS.toRiemannSurface,
+      IsConnectionFormFor CRS D A ∧
+      h1_dolbeault CRS A = h0 CRS (K.representative + (-D)) := by
+  rcases connectionForm_exists CRS D with ⟨A, hA⟩
+  exact ⟨A, hA, serre_duality_h1 CRS K D A hA⟩
+
 /-- **Riemann-Roch Theorem (classical form)**
 
     h⁰(D) - h¹(D) = deg(D) + 1 - g
@@ -1549,6 +1562,17 @@ theorem riemann_roch_classical (CRS : CompactRiemannSurface)
     (h0 CRS D : ℤ) - (h1_dolbeault CRS A : ℤ) = D.degree + 1 - CRS.genus := by
   rw [serre_duality_h1 CRS K D A hA]
   exact riemann_roch_h0_duality CRS D K hK
+
+/-- Divisor-level Riemann-Roch wrapper using a chosen connection form from
+`connectionForm_exists`. -/
+theorem riemann_roch_classical_of_divisor (CRS : CompactRiemannSurface)
+    (D : Divisor CRS.toRiemannSurface) (K : CanonicalDivisor CRS)
+    (hK : h0 CRS K.representative = CRS.genus) :
+    ∃ A : Form_01 CRS.toRiemannSurface,
+      IsConnectionFormFor CRS D A ∧
+      (h0 CRS D : ℤ) - (h1_dolbeault CRS A : ℤ) = D.degree + 1 - CRS.genus := by
+  rcases connectionForm_exists CRS D with ⟨A, hA⟩
+  exact ⟨A, hA, riemann_roch_classical CRS D K hK A hA⟩
 
 /-- The Euler characteristic χ(O) = 1 - g -/
 theorem euler_characteristic_structure_sheaf (CRS : CompactRiemannSurface)

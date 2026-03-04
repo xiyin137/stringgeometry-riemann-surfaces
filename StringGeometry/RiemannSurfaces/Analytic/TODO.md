@@ -38,6 +38,8 @@
 ## RR Critical-Path Status (2026-03-04)
 - Build check:
   - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch` passes (warning-only).
+  - `lake build StringGeometry.RiemannSurfaces.Analytic.RiemannRoch` rechecked after API cleanup
+    of divisor-level twisted-Dolbeault wrappers (still warning-only).
   - `lake build StringGeometry.RiemannSurfaces.Analytic.Analytic` passes (warning-only).
   - `lake build StringGeometry.RiemannSurfaces.Analytic.Helpers.EvaluationMap` passes (warning-only).
   - `lake build StringGeometry.RiemannSurfaces` passes (warning-only, no new errors).
@@ -66,6 +68,8 @@
       `599`, `1053`, `1462`, `1514`, `1533`.
     - `eval_residue_complementarity` is now reduced to constructing a
       five-term exact-sequence data package; the dimension algebra step is discharged.
+    - divisor-level twisted-Dolbeault wrappers now expose explicit existential witnesses
+      (`∃ A, IsConnectionFormFor ... ∧ ...`) rather than theorem-level `.choose` `let` bindings.
 
 ## Current Concrete Targets (Authoritative)
 1. Gate A:
@@ -84,6 +88,12 @@
    `RiemannRoch.eval_residue_complementarity` end-to-end:
    - combined map+rank package:
      `exists_evalResidueFiveTermMaps_and_ids`.
+5. Connection-form model sanity:
+   resolve the mismatch between globally smooth `Form_01` and the current
+   singular local model in `IsConnectionFormFor`; either:
+   - refactor the connection-form notion to include meromorphic frame/gauge data, or
+   - isolate and formalize a weaker theorem-level interface used by RR without asserting
+     impossible smooth-plus-singularity behavior.
 
 ## Latest Compile-Checked Infrastructure (2026-03-04)
 - Refined Gate F blocker decomposition in `RiemannRoch.lean`:

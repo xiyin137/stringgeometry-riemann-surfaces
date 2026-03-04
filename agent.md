@@ -92,6 +92,8 @@ This file is the working guidance for Codex in this repository.
 14. Missing-library policy:
    - when a needed theorem is absent upstream, stop retrying brittle tactics and build the missing local infrastructure lemma/theorem with stable statement shape,
    - keep that infrastructure reusable and documented in local proof notes/TODO.
+15. For theorem-level wrappers around existence results, prefer explicit existential interfaces (`∃ data, ...`) over statement-level `.choose`/`let` wrappers.
+16. If a blocker comes from a definition-level model mismatch (for example smooth ambient objects paired with required singular local behavior), document it explicitly in module TODO/development notes and prioritize representation refactor before further proof retries.
 
 ## Build and tooling rules
 

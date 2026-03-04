@@ -80,6 +80,14 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - The point-step complementarity block is now reduced to one explicit deep obligation:
      `exists_evalResidueFiveTermMaps_and_ids`.
      `exists_evalResidueFiveTermData` is now composed from this package.
+   - Divisor-level twisted-Dolbeault wrappers were tightened to explicit witness form:
+     `serre_duality_h1_of_divisor` and `riemann_roch_classical_of_divisor` now return
+     `∃ A, IsConnectionFormFor CRS D A ∧ ...` rather than exposing theorem-level `.choose`
+     in statement shape.
+   - Active model-risk note:
+     current `IsConnectionFormFor` asks for local `1/\\bar z` singular behavior in an
+     ambient type `Form_01` that is globally smooth; this mismatch is likely the core blocker
+     behind `connectionForm_exists` and should be resolved via a representation refactor.
 
 ### Immediate hard targets (next pass)
 1. Gate A closure path:
@@ -94,6 +102,10 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/HodgeDecomposition/Core.lean::exact_harmonic01_vanishes`,
    - `HodgeTheory/HodgeDecomposition/Core.lean::closed_exactPair_commonPotential`
      (now reduced by infrastructure to an unconditional mixed-identity gap).
+4. Gate F model repair path:
+   refactor the connection-form encoding so twisted Dolbeault uses a mathematically coherent
+   object (smooth connection in a smooth trivialization + meromorphic gauge data) before
+   attempting to close `connectionForm_exists`/`serre_duality_h1`.
 
 ### Latest infrastructure step (2026-03-04)
 1. Refined RR Gate F dependency decomposition in `RiemannRoch.lean`:
