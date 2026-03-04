@@ -117,6 +117,14 @@ structure Trinion where
   /-- All distinct -/
   distinct : ∀ i j, i ≠ j → boundaries i ≠ boundaries j
 
+/-- Explicit trinion decomposition data attached to a marking.
+
+    This keeps complementary-region choices as explicit input data, avoiding
+    implicit `Classical.choice` from an unproved existence theorem. -/
+structure TrinionDecomposition {g n : ℕ} (P : Marking g n) where
+  /-- The finite set of complementary trinions for this decomposition datum. -/
+  trinions : Finset Trinion
+
 /-- The trinions of a pants decomposition.
 
     The complementary regions of a maximal curve system are trinions
@@ -133,18 +141,11 @@ structure Trinion where
     3. Each component is a trinion (by the count formula)
 
     The theorems below constrain this data to be consistent with Euler characteristic. -/
-theorem Marking.exists_trinions {g n : ℕ} (P : Marking g n) :
-    Nonempty (Finset Trinion) := by
+ theorem Marking.exists_trinions {g n : ℕ} (P : Marking g n) :
+    Nonempty (TrinionDecomposition P) := by
   -- A pants decomposition with 3g-3+n curves has 2g-2+n trinions.
   -- Existence is deferred to later topological infrastructure.
   sorry
-
-/-- The trinions of a pants decomposition. -/
-noncomputable def Marking.trinions {g n : ℕ} (P : Marking g n) : Finset Trinion :=
-  -- In a complete formalization, this would be computed from `P.circles`
-  -- by cutting the surface and identifying complementary regions.
-  -- For now, we choose a witness from the explicit existence theorem above.
-  Classical.choice (Marking.exists_trinions P)
 
 /-- **Theorem**: The number of trinions equals -χ(Σ_{g,n}) = 2g - 2 + n.
 
@@ -154,8 +155,9 @@ noncomputable def Marking.trinions {g n : ℕ} (P : Marking g n) : Finset Trinio
     3. When Σ_{g,n} is cut into T trinions: χ(Σ_{g,n}) = T · (-1)
     4. By Surface.eulerChar_formula: χ(Σ_{g,n}) = 2 - 2g - n
     5. Therefore: T = -(2 - 2g - n) = 2g - 2 + n -/
-theorem Marking.trinions_card {g n : ℕ} (P : Marking g n) (hstable : 2 * g + n > 2) :
-    P.trinions.card = 2 * g - 2 + n := by
+theorem Marking.trinions_card {g n : ℕ} (P : Marking g n)
+    (T : TrinionDecomposition P) (hstable : 2 * g + n > 2) :
+    T.trinions.card = 2 * g - 2 + n := by
   sorry  -- Follows from Euler characteristic additivity
 
 /-- The curve count also follows from Euler characteristic.
@@ -165,8 +167,8 @@ theorem Marking.trinions_card {g n : ℕ} (P : Marking g n) (hstable : 2 * g + n
     - Surface boundary components bound 1 trinion each
     So: 3T = 2·(curves) + n, giving curves = (3T - n)/2 = 3g - 3 + n -/
 theorem Marking.circles_card_from_trinions {g n : ℕ} (P : Marking g n)
-    (hstable : 2 * g + n > 2) :
-    3 * P.trinions.card = 2 * P.circles.card + n := by
+    (T : TrinionDecomposition P) (hstable : 2 * g + n > 2) :
+    3 * T.trinions.card = 2 * P.circles.card + n := by
   sorry  -- Follows from boundary counting
 
 /-!

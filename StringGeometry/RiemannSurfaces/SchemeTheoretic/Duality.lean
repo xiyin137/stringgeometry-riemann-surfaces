@@ -76,23 +76,21 @@ theorem exists_traceMap (C : SmoothProjectiveCurve) :
   -- TODO: Build from Grothendieck-Serre trace in dimension one.
   sorry
 
-/-- The trace map, chosen from the existence theorem. -/
-noncomputable def traceMap : SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ :=
-  Classical.choice (exists_traceMap C)
-
 /-- The trace map is ℂ-linear.
 
     **Type:** The trace map factors through a ℂ-linear map.
     TODO: Once SheafCohomology has Module ℂ structure, express this directly. -/
-theorem traceMap_linear :
+theorem traceMap_linear
+    (tr : SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ) :
     -- The trace map is the composition of an AddGroup hom with evaluation
     -- For now, express that it preserves the identity element (sends 0 to 0)
     Nonempty (∃ (f : SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ),
-      f = traceMap C) := by
-  exact ⟨traceMap C, rfl⟩
+      f = tr) := by
+  exact ⟨tr, rfl⟩
 
 /-- The trace map is surjective (equivalently, H¹(ω_C) ≠ 0 for g ≥ 1). -/
-theorem traceMap_surjective (hg : genus C ≥ 1) : Function.Surjective (traceMap C) := by
+theorem traceMap_surjective (tr : SheafCohomology C.toAlgebraicCurve 1 (canonicalSheaf C).toModule → ℂ)
+    (hg : genus C ≥ 1) : Function.Surjective tr := by
   sorry
 
 /-!
@@ -111,22 +109,12 @@ theorem exists_dualSheaf (C : SmoothProjectiveCurve) (F : CoherentSheaf C.toAlge
   -- TODO: Define as the internal Hom sheaf Hom(F, O_C).
   sorry
 
-/-- The dual coherent sheaf F^∨. -/
-noncomputable def dualSheaf (F : CoherentSheaf C.toAlgebraicCurve) :
-    CoherentSheaf C.toAlgebraicCurve :=
-  Classical.choice (exists_dualSheaf C F)
-
 /-- The tensor product F ⊗ G of coherent sheaves. -/
 theorem exists_tensorCoherent (C : SmoothProjectiveCurve)
     (F G : CoherentSheaf C.toAlgebraicCurve) :
     Nonempty (CoherentSheaf C.toAlgebraicCurve) := by
   -- TODO: Use coherent closure under tensor product.
   sorry
-
-/-- The tensor product coherent sheaf F ⊗ G. -/
-noncomputable def tensorCoherent (F G : CoherentSheaf C.toAlgebraicCurve) :
-    CoherentSheaf C.toAlgebraicCurve :=
-  Classical.choice (exists_tensorCoherent C F G)
 
 /-- The Serre duality pairing.
 
@@ -140,19 +128,12 @@ noncomputable def tensorCoherent (F G : CoherentSheaf C.toAlgebraicCurve) :
 
     For curves, this simplifies to a pairing between H⁰ and H¹. -/
 theorem exists_serrePairing (C : SmoothProjectiveCurve) (F : CoherentSheaf C.toAlgebraicCurve) :
-    Nonempty
-      (GlobalSectionsType C.toAlgebraicCurve
-          (tensorCoherent C (dualSheaf C F) (canonicalSheaf C).toCoherentSheaf).toModule →
-        SheafCohomology C.toAlgebraicCurve 1 F.toModule → ℂ) := by
+    ∃ (Fdual FdualTensorω : CoherentSheaf C.toAlgebraicCurve),
+      Nonempty
+        (GlobalSectionsType C.toAlgebraicCurve FdualTensorω.toModule →
+          SheafCohomology C.toAlgebraicCurve 1 F.toModule → ℂ) := by
   -- TODO: Implement via cup product + evaluation + trace.
   sorry
-
-/-- The Serre duality pairing. -/
-noncomputable def serrePairing (F : CoherentSheaf C.toAlgebraicCurve) :
-    GlobalSectionsType C.toAlgebraicCurve (tensorCoherent C (dualSheaf C F)
-      (canonicalSheaf C).toCoherentSheaf).toModule →
-    SheafCohomology C.toAlgebraicCurve 1 F.toModule → ℂ :=
-  Classical.choice (exists_serrePairing C F)
 
 /-!
 ## Serre Duality Theorem
@@ -177,18 +158,19 @@ The main result: the Serre pairing is perfect.
 
     **Type:** The Serre pairing induces an isomorphism between the cohomology groups.
     We express this as an isomorphism between H¹(F) and H⁰(F^∨ ⊗ ω). -/
-theorem serre_duality (F : CoherentSheaf C.toAlgebraicCurve) :
+theorem serre_duality (F : CoherentSheaf C.toAlgebraicCurve)
+    (Fdual FdualTensorω : CoherentSheaf C.toAlgebraicCurve) :
     -- H¹(C, F) ≅ H⁰(C, F^∨ ⊗ ω_C)^∨ as ℂ-vector spaces
     -- The pairing serrePairing induces a perfect duality
     Nonempty (SheafCohomology C.toAlgebraicCurve 1 F.toModule ≃
-      GlobalSectionsType C.toAlgebraicCurve (tensorCoherent C (dualSheaf C F)
-        (canonicalSheaf C).toCoherentSheaf).toModule) := by
+      GlobalSectionsType C.toAlgebraicCurve FdualTensorω.toModule) := by
   sorry
 
 /-- Dimension form of Serre duality: h¹(F) = h⁰(F^∨ ⊗ ω_C). -/
-theorem serre_duality_dimensions (F : CoherentSheaf C.toAlgebraicCurve) :
+theorem serre_duality_dimensions (F : CoherentSheaf C.toAlgebraicCurve)
+    (Fdual FdualTensorω : CoherentSheaf C.toAlgebraicCurve) :
     h_i C.toProperCurve 1 F =
-    h_i C.toProperCurve 0 (tensorCoherent C (dualSheaf C F) (canonicalSheaf C).toCoherentSheaf) := by
+    h_i C.toProperCurve 0 FdualTensorω := by
   sorry
 
 /-!
@@ -224,9 +206,9 @@ theorem h1_divisor_duality (D : Divisor C.toAlgebraicCurve) :
     ω_C^∨ ⊗ ω_C ≅ O_C
 
     Combined with Serre duality: h¹(ω_C) = h⁰(O_C) = 1. -/
-theorem canonical_self_dual :
-    Nonempty ((tensorCoherent C (dualSheaf C (canonicalSheaf C).toCoherentSheaf)
-      (canonicalSheaf C).toCoherentSheaf).toModule ≅
+theorem canonical_self_dual
+    (ωdual ωdualTensorω : CoherentSheaf C.toAlgebraicCurve) :
+    Nonempty (ωdualTensorω.toModule ≅
       (CoherentSheaf.structureSheaf C.toAlgebraicCurve).toModule) := by
   sorry
 

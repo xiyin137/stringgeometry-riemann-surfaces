@@ -137,20 +137,6 @@ theorem exists_inclusionMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointTy
   -- TODO: Implement as the subsheaf inclusion induced by divisor inequalities.
   sorry
 
-/-- The natural inclusion O(D-[p]) -> O(D). -/
-noncomputable def inclusionMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    (divisorSheaf C (D - Divisor.point p)).toModule ⟶ (divisorSheaf C D).toModule :=
-  Classical.choice (exists_inclusionMorphism C D p)
-
-/-- The inclusion morphism is a monomorphism.
-
-    **Proof:**
-    The natural inclusion of a subsheaf is always injective on stalks.
-    Since it's the identity on the underlying sets, it's clearly mono. -/
-theorem inclusionMorphism_mono (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    Mono (inclusionMorphism C D p) := by
-  sorry
-
 /-!
 ## The Evaluation Morphism
 
@@ -176,65 +162,57 @@ theorem exists_evaluationMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointT
   -- TODO: Implement from stalk-to-residue evaluation at p.
   sorry
 
-/-- The evaluation map O(D) -> k_p at the point p. -/
-noncomputable def evaluationMorphism (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    (divisorSheaf C D).toModule ⟶ skyscraperModule C.toAlgebraicCurve p :=
-  Classical.choice (exists_evaluationMorphism C D p)
+/-!
+## Point Morphism Package
 
-/-- The evaluation morphism is an epimorphism.
+To avoid definition-level `Classical.choice` from unproved existence theorems,
+we keep the two morphisms and exactness witnesses as explicit data.
+-/
 
-    **Proof:**
-    For any element v ∈ κ(p), there exists f ∈ K(C) with f(p) = v
-    (this uses that κ(p) = ℂ and global functions include constants).
+/-- Data package for the point exact sequence
+`0 → O(D-[p]) → O(D) → k_p → 0`. -/
+structure PointMorphismData (C : SmoothProjectiveCurve)
+    (D : Divisor C.toAlgebraicCurve) (p : C.PointType) where
+  /-- Inclusion map `O(D-[p]) ⟶ O(D)`. -/
+  inclusion :
+    (divisorSheaf C (D - Divisor.point p)).toModule ⟶ (divisorSheaf C D).toModule
+  /-- Evaluation map `O(D) ⟶ k_p`. -/
+  evaluation :
+    (divisorSheaf C D).toModule ⟶ skyscraperModule C.toAlgebraicCurve p
+  /-- Inclusion is mono. -/
+  mono_inclusion : Mono inclusion
+  /-- Evaluation is epi. -/
+  epi_evaluation : Epi evaluation
+  /-- Composition vanishes. -/
+  comp_zero : inclusion ≫ evaluation = 0
+  /-- Exactness at the middle term. -/
+  exact :
+    (CategoryTheory.ShortComplex.mk inclusion evaluation comp_zero).Exact
 
-    More precisely, if D(p) ≥ 0, then constant functions in O(D) surject onto κ(p).
-    If D(p) < 0, we can multiply by t_p^{-D(p)} to get an element in O(D) with
-    any prescribed residue class at p. -/
-theorem evaluationMorphism_epi (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    Epi (evaluationMorphism C D p) := by
+/-- Existence of full point-exact-sequence morphism data. -/
+theorem exists_pointMorphismData (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
+    Nonempty (PointMorphismData C D p) := by
   sorry
 
 /-!
 ## Exactness of the Point Sequence
 -/
 
-/-- The composition i ≫ p = 0.
+/-- The composition `i ≫ p` is zero for packaged point morphism data. -/
+theorem PointMorphismData.composition_zero
+    (D : Divisor C.toAlgebraicCurve) (p : C.PointType)
+    (data : PointMorphismData C D p) :
+    data.inclusion ≫ data.evaluation = 0 :=
+  data.comp_zero
 
-    **Proof:**
-    For f ∈ O(D-[p])(U), the inclusion gives f ∈ O(D)(U) (same function).
-    But f satisfies v_p(f) ≥ -(D-[p])(p) = -D(p) + 1 ≥ 1 - D(p).
-
-    The evaluation at p of a function f with v_p(f) ≥ 1 gives zero in the
-    residue field κ(p), because f vanishes at p (has positive valuation
-    after accounting for poles allowed by D).
-
-    More precisely: the evaluation map sends f to its residue class in κ(p).
-    Functions with v_p(f) ≥ 1 - D(p) and D(p) ≥ 0 vanish at p.
-    For D(p) < 0, the normalization t_p^{D(p)} · f is in m_p, hence vanishes. -/
-theorem composition_zero (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
-    inclusionMorphism C D p ≫ evaluationMorphism C D p = 0 := by
-  sorry
-
-/-- The sequence 0 → O(D-[p]) → O(D) → k_p → 0 is exact at the middle term.
-
-    **Proof:**
-    ker(eval) = { f ∈ O(D)(U) : f(p) = 0 in κ(p) }
-             = { f ∈ K(C) : v_q(f) ≥ -D(q) for all q ∈ U, and f "vanishes at p" }
-
-    For f ∈ O(D)(U), "f vanishes at p" means:
-    - If D(p) ≥ 0: f is regular at p and f(p) = 0, i.e., v_p(f) ≥ 1
-    - If D(p) < 0: t_p^{D(p)} · f is regular at p and vanishes, i.e., v_p(f) ≥ 1 - D(p)
-
-    In both cases: v_p(f) ≥ 1 - D(p) = -(D-[p])(p)
-
-    Combined with v_q(f) ≥ -D(q) = -(D-[p])(q) for q ≠ p, this gives f ∈ O(D-[p])(U).
-
-    Therefore ker(eval) = O(D-[p])(U) = im(incl). -/
-theorem pointSequence_exact (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
+/-- Exactness at the middle term for packaged point morphism data. -/
+theorem PointMorphismData.pointSequence_exact
+    (D : Divisor C.toAlgebraicCurve) (p : C.PointType)
+    (data : PointMorphismData C D p) :
     (CategoryTheory.ShortComplex.mk
-      (inclusionMorphism C D p)
-      (evaluationMorphism C D p)
-      (composition_zero C D p)).Exact := by
-  sorry
+      data.inclusion
+      data.evaluation
+      data.comp_zero).Exact :=
+  data.exact
 
 end RiemannSurfaces.SchemeTheoretic

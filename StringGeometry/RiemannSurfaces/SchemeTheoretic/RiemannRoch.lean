@@ -84,30 +84,33 @@ This is the fundamental tool for induction on degree.
     - `evaluationMorphism` : O(D) → k_p via restriction to residue field
     - `composition_zero` : i ≫ p = 0
     - `pointSequence_exact` : exactness at middle term -/
-noncomputable def pointExactSequence (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
+noncomputable def pointExactSequence (D : Divisor C.toAlgebraicCurve) (p : C.PointType)
+    (data : PointMorphismData C D p) :
     ShortExactSeq C.toAlgebraicCurve where
   F' := (divisorSheaf C (D - Divisor.point p)).toCoherentSheaf
   F := (divisorSheaf C D).toCoherentSheaf
   F'' := skyscraperSheaf C.toAlgebraicCurve p
-  i := inclusionMorphism C D p
-  p := evaluationMorphism C D p
-  mono_i := inclusionMorphism_mono C D p
-  epi_p := evaluationMorphism_epi C D p
-  comp_zero := composition_zero C D p
+  i := data.inclusion
+  p := data.evaluation
+  mono_i := data.mono_inclusion
+  epi_p := data.epi_evaluation
+  comp_zero := data.comp_zero
   shortComplex := CategoryTheory.ShortComplex.mk
-    (inclusionMorphism C D p)
-    (evaluationMorphism C D p)
-    (composition_zero C D p)
-  exact := pointSequence_exact C D p
+    data.inclusion
+    data.evaluation
+    data.comp_zero
+  exact := data.exact
 
 /-- The point exact sequence gives additivity of Euler characteristic. -/
 theorem euler_char_point_sequence (D : Divisor C.toAlgebraicCurve) (p : C.PointType) :
     EulerChar C.toProperCurve (divisorSheaf C D).toCoherentSheaf =
     EulerChar C.toProperCurve (divisorSheaf C (D - Divisor.point p)).toCoherentSheaf +
-    EulerChar C.toProperCurve (skyscraperSheaf C.toAlgebraicCurve p) :=
+    EulerChar C.toProperCurve (skyscraperSheaf C.toAlgebraicCurve p) := by
+  classical
+  rcases exists_pointMorphismData C D p with ⟨data⟩
   -- Use additivity of Euler characteristic on the point exact sequence
   -- The exact sequence has F = O(D), F' = O(D-p), F'' = k_p
-  euler_char_additive C.toProperCurve (pointExactSequence C D p)
+  simpa using euler_char_additive C.toProperCurve (pointExactSequence C D p data)
 
 /-!
 ## Euler Characteristic of Skyscraper Sheaves
