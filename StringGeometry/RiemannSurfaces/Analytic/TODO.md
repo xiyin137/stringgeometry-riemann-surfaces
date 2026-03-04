@@ -63,7 +63,7 @@
     - `HodgeTheory/SerreDuality.lean`: `residue_theorem`.
   - Gate F (terminal RR theorems):
     - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
-      `599`, `1054`, `1455`, `1507`, `1530`.
+      `599`, `1053`, `1462`, `1514`, `1533`.
     - `eval_residue_complementarity` is now reduced to constructing a
       five-term exact-sequence data package; the dimension algebra step is discharged.
 
@@ -87,6 +87,14 @@
 
 ## Latest Compile-Checked Infrastructure (2026-03-04)
 - Refined Gate F blocker decomposition in `RiemannRoch.lean`:
+  - added deep-data anchor theorem `exists_evalResidueFiveTermData_core`,
+    with map+id existence now derived from it;
+  - rewired `eval_residue_complementarity` and
+    `Helpers/EvaluationMap.h0_add_point_upper` through full five-term data
+    (`EvalResidueFiveTermData`) directly.
+  - refactored twisted-Dolbeault `h¹` to use explicit connection-form input
+    in the definition (`h1_dolbeault CRS A`), keeping unresolved connection-form
+    existence at theorem level only.
   - added `EvalResidueFinrankIdentifications`,
   - consolidated to theorem-level obligation
     `exists_evalResidueFiveTermMaps_and_ids`,

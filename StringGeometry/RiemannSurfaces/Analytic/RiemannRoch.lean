@@ -1049,6 +1049,14 @@ theorem eval_residue_complementarity_of_fiveTermMaps
     (EvalResidueFiveTermMaps.toData CRS K D p hmap hdim_V₁ hdim_V₂ hdim_V₄ hdim_V₅)
 
 /-- Deep geometric input for the point step:
+existence of full five-term exact-sequence data with finrank labels. -/
+theorem exists_evalResidueFiveTermData_core
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
+    Nonempty (EvalResidueFiveTermData CRS K D p) := by
+  sorry
+
+/-- Deep geometric input for the point step:
 there exists a map-level five-term package together with the matching
 finrank identifications. -/
 theorem exists_evalResidueFiveTermMaps_and_ids
@@ -1056,7 +1064,9 @@ theorem exists_evalResidueFiveTermMaps_and_ids
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     ∃ hmap : EvalResidueFiveTermMaps CRS D p,
       EvalResidueFinrankIdentifications CRS K D p hmap := by
-  sorry
+  rcases exists_evalResidueFiveTermData_core CRS K D p with ⟨hdata⟩
+  exact ⟨EvalResidueFiveTermData.toMaps CRS K D p hdata,
+    EvalResidueFiveTermData.toFinrankIdentifications CRS K D p hdata⟩
 
 /-- Map-level existence follows from the combined deep package. -/
 theorem exists_evalResidueFiveTermMaps
@@ -1106,9 +1116,7 @@ theorem exists_evalResidueFiveTermData
     (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     Nonempty (EvalResidueFiveTermData CRS K D p) := by
-  rcases exists_evalResidueFiveTermMaps_and_ids CRS K D p with ⟨hmap, hids⟩
-  refine ⟨EvalResidueFiveTermMaps.toData CRS K D p hmap
-    hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅⟩
+  exact exists_evalResidueFiveTermData_core CRS K D p
 
 /-- Complementarity from split existence assumptions:
 map-level exact data and finrank identifications. -/
@@ -1157,9 +1165,8 @@ theorem eval_residue_complementarity (CRS : CompactRiemannSurface)
     (h0 CRS (D + Divisor.point p) : ℤ) - (h0 CRS D : ℤ) +
     ((h0 CRS (K.representative + (-D)) : ℤ) -
      (h0 CRS (K.representative + (-(D + Divisor.point p))) : ℤ)) = 1 := by
-  rcases exists_evalResidueFiveTermMaps_and_ids CRS K D p with ⟨hmap, hids⟩
-  exact eval_residue_complementarity_of_fiveTermMaps CRS K D p hmap
-    hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅
+  rcases exists_evalResidueFiveTermData CRS K D p with ⟨hdata⟩
+  exact eval_residue_complementarity_of_fiveTermData CRS K D p hdata
 
 /-- The Euler characteristic step: χ(D + [p]) = χ(D) + 1.
 
@@ -1509,27 +1516,24 @@ theorem connectionForm_exists (CRS : CompactRiemannSurface)
     ∃ A : Form_01 CRS.toRiemannSurface, IsConnectionFormFor CRS D A := by
   sorry -- Requires: smooth triviality of line bundles, partition of unity
 
-/-- h¹(D) via twisted Dolbeault cohomology with values in O(D).
+/-- Twisted Dolbeault `h¹` for an explicit `(0,1)`-form `A`:
+`dim_ℂ H^{0,1}(∂̄ + A)`.
 
-    h¹(D) = dim_ℂ H^{0,1}(O(D)) = dim_ℂ (Ω^{0,1} / im(∂̄_A))
-
-    where A is a (0,1)-connection form for O(D) and ∂̄_A = ∂̄ + A is the
-    twisted ∂̄ operator. The dimension is independent of the choice of A
-    (by gauge equivalence).
-
-    For D = 0, A = 0 gives the standard Dolbeault cohomology `DolbeaultH01`. -/
+In applications to a divisor `D`, `A` is additionally required to satisfy
+`IsConnectionFormFor CRS D A`. Keeping `A` explicit avoids definition-level
+choice from an unresolved existence theorem. -/
 noncomputable def h1_dolbeault (CRS : CompactRiemannSurface)
-    (D : Divisor CRS.toRiemannSurface) : ℕ :=
-  Module.finrank ℂ (TwistedDolbeaultH01 CRS.toRiemannSurface
-    (connectionForm_exists CRS D).choose)
+    (A : Form_01 CRS.toRiemannSurface) : ℕ :=
+  Module.finrank ℂ (TwistedDolbeaultH01 CRS.toRiemannSurface A)
 
 /-- **Serre duality** (analytic): h¹(D) = h⁰(K - D).
 
     This is a THEOREM relating Dolbeault cohomology to sections of the dual bundle,
     NOT a definition. It follows from the residue pairing and Hodge theory. -/
 theorem serre_duality_h1 (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
-    (D : Divisor CRS.toRiemannSurface) :
-    h1_dolbeault CRS D = h0 CRS (K.representative + (-D)) := by
+    (D : Divisor CRS.toRiemannSurface)
+    (A : Form_01 CRS.toRiemannSurface) (hA : IsConnectionFormFor CRS D A) :
+    h1_dolbeault CRS A = h0 CRS (K.representative + (-D)) := by
   sorry -- Requires: twisted Dolbeault cohomology, residue pairing, Hodge theory
 
 /-- **Riemann-Roch Theorem (classical form)**
@@ -1540,9 +1544,10 @@ theorem serre_duality_h1 (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS
     This follows from the h⁰-duality form + Serre duality. -/
 theorem riemann_roch_classical (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (K : CanonicalDivisor CRS)
-    (hK : h0 CRS K.representative = CRS.genus) :
-    (h0 CRS D : ℤ) - (h1_dolbeault CRS D : ℤ) = D.degree + 1 - CRS.genus := by
-  rw [serre_duality_h1 CRS K]
+    (hK : h0 CRS K.representative = CRS.genus)
+    (A : Form_01 CRS.toRiemannSurface) (hA : IsConnectionFormFor CRS D A) :
+    (h0 CRS D : ℤ) - (h1_dolbeault CRS A : ℤ) = D.degree + 1 - CRS.genus := by
+  rw [serre_duality_h1 CRS K D A hA]
   exact riemann_roch_h0_duality CRS D K hK
 
 /-- The Euler characteristic χ(O) = 1 - g -/

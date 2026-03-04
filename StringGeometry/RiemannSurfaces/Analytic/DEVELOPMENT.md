@@ -76,7 +76,7 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality.lean::residue_theorem` remains open (Stokes-level requirement).
 6. Gate F (RR terminal theorems in `RiemannRoch.lean`):
    - Remaining theorem-level `sorry`s are concentrated at lines currently around
-     `599`, `1054`, `1455`, `1507`, `1530`, each depending on earlier gates (B-D, E).
+     `599`, `1053`, `1462`, `1514`, `1533`, each depending on earlier gates (B-D, E).
    - The point-step complementarity block is now reduced to one explicit deep obligation:
      `exists_evalResidueFiveTermMaps_and_ids`.
      `exists_evalResidueFiveTermData` is now composed from this package.
@@ -97,6 +97,15 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 
 ### Latest infrastructure step (2026-03-04)
 1. Refined RR Gate F dependency decomposition in `RiemannRoch.lean`:
+   - added deep-data anchor theorem `exists_evalResidueFiveTermData_core`.
+   - map+id existence (`exists_evalResidueFiveTermMaps_and_ids`) now derives from full
+     five-term data via `toMaps` and `toFinrankIdentifications`.
+   - rewired `eval_residue_complementarity` and
+     `Helpers/EvaluationMap.h0_add_point_upper` to consume full data directly.
+   - refactored twisted-Dolbeault `h¹` API to explicit connection-form input:
+     `h1_dolbeault CRS A`, with `serre_duality_h1`/`riemann_roch_classical`
+     now parameterized by `(A, hA : IsConnectionFormFor CRS D A)` to avoid
+     definition-level witness choice from unresolved existence.
    - added `EvalResidueFinrankIdentifications`,
    - consolidated to theorem-level obligation
      `exists_evalResidueFiveTermMaps_and_ids`,
