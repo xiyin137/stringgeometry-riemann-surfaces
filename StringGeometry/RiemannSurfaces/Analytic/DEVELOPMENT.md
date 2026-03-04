@@ -76,7 +76,7 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality.lean::residue_theorem` remains open (Stokes-level requirement).
 6. Gate F (RR terminal theorems in `RiemannRoch.lean`):
    - Remaining theorem-level `sorry`s are concentrated at lines currently around
-     `605`, `1012`, `1020`, `1364`, `1414`, `1437`, each depending on earlier gates (B-D, E).
+     `599`, `1052`, `1059`, `1451`, `1503`, `1526`, each depending on earlier gates (B-D, E).
    - The point-step complementarity block is now split into two explicit deep obligations:
      1) `exists_evalResidueFiveTermMaps`,
      2) `exists_evalResidueFinrankIdentifications`.

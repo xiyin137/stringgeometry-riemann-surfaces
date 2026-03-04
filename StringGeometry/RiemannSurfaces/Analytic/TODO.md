@@ -63,7 +63,7 @@
     - `HodgeTheory/SerreDuality.lean`: `residue_theorem`.
   - Gate F (terminal RR theorems):
     - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
-      `605`, `1012`, `1020`, `1364`, `1414`, `1437`.
+      `599`, `1052`, `1059`, `1451`, `1503`, `1526`.
     - `eval_residue_complementarity` is now reduced to constructing a
       five-term exact-sequence data package; the dimension algebra step is discharged.
 
@@ -100,6 +100,12 @@
 - Added composition theorem:
   `eval_residue_complementarity_of_exists_fiveTermMaps_and_ids`,
   and rewired `eval_residue_complementarity` through split obligations directly.
+- Added bidirectional packaging helpers between full and split five-term data:
+  - `EvalResidueFiveTermData.toMaps`
+  - `EvalResidueFiveTermData.toFinrankIdentifications`
+  - `exists_evalResidueFiveTermData_of_exists_fiveTermMaps_and_ids`
+  - `exists_evalResidueFiveTermMaps_of_exists_fiveTermData`
+  - `exists_evalResidueFiveTermMapsAndIds_of_exists_fiveTermData`
 - Added finite-dimensional exact-sequence dimension helpers:
   - `Helpers/ExactSequenceDimension.lean`:
     `alternating_sum_exact_five`,

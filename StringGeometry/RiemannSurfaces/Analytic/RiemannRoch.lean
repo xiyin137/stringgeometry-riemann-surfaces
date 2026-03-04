@@ -954,6 +954,50 @@ structure EvalResidueFinrankIdentifications (CRS : CompactRiemannSurface)
   hdim_V₅ : Module.finrank ℂ hmap.V₅ =
     h0 CRS (K.representative + (-(D + Divisor.point p)))
 
+/-- Forget the finrank labels in full five-term data, keeping map-level exact package. -/
+def EvalResidueFiveTermData.toMaps
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hdata : EvalResidueFiveTermData CRS K D p) :
+    EvalResidueFiveTermMaps CRS D p where
+  V₁ := hdata.V₁
+  V₂ := hdata.V₂
+  V₄ := hdata.V₄
+  V₅ := hdata.V₅
+  addCommGroupV₁ := hdata.addCommGroupV₁
+  moduleV₁ := hdata.moduleV₁
+  finiteDimensionalV₁ := hdata.finiteDimensionalV₁
+  addCommGroupV₂ := hdata.addCommGroupV₂
+  moduleV₂ := hdata.moduleV₂
+  finiteDimensionalV₂ := hdata.finiteDimensionalV₂
+  addCommGroupV₄ := hdata.addCommGroupV₄
+  moduleV₄ := hdata.moduleV₄
+  finiteDimensionalV₄ := hdata.finiteDimensionalV₄
+  addCommGroupV₅ := hdata.addCommGroupV₅
+  moduleV₅ := hdata.moduleV₅
+  finiteDimensionalV₅ := hdata.finiteDimensionalV₅
+  f₁ := hdata.f₁
+  f₂ := hdata.f₂
+  f₃ := hdata.f₃
+  f₄ := hdata.f₄
+  inj_f₁ := hdata.inj_f₁
+  exact_V₂ := hdata.exact_V₂
+  exact_V₃ := hdata.exact_V₃
+  exact_V₄ := hdata.exact_V₄
+  surj_f₄ := hdata.surj_f₄
+
+/-- Extract the finrank-identification layer from full five-term data. -/
+def EvalResidueFiveTermData.toFinrankIdentifications
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hdata : EvalResidueFiveTermData CRS K D p) :
+    EvalResidueFinrankIdentifications CRS K D p
+      (EvalResidueFiveTermData.toMaps CRS K D p hdata) where
+  hdim_V₁ := hdata.hdim_V₁
+  hdim_V₂ := hdata.hdim_V₂
+  hdim_V₄ := hdata.hdim_V₄
+  hdim_V₅ := hdata.hdim_V₅
+
 /-- Dimension-only proof of evaluation-residue complementarity from exact-sequence data. -/
 theorem eval_residue_complementarity_of_fiveTermData
     (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
@@ -1032,6 +1076,26 @@ theorem exists_evalResidueFiveTermData_of_exists_fiveTermMaps_and_ids
   rcases hexIds hmap with ⟨hids⟩
   refine ⟨EvalResidueFiveTermMaps.toData CRS K D p hmap
     hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅⟩
+
+/-- Full five-term data yields map-level exact package existence. -/
+theorem exists_evalResidueFiveTermMaps_of_exists_fiveTermData
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hexData : Nonempty (EvalResidueFiveTermData CRS K D p)) :
+    Nonempty (EvalResidueFiveTermMaps CRS D p) := by
+  rcases hexData with ⟨hdata⟩
+  exact ⟨EvalResidueFiveTermData.toMaps CRS K D p hdata⟩
+
+/-- Full five-term data yields a combined split package `(maps, finrank IDs)`. -/
+theorem exists_evalResidueFiveTermMapsAndIds_of_exists_fiveTermData
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hexData : Nonempty (EvalResidueFiveTermData CRS K D p)) :
+    ∃ hmap : EvalResidueFiveTermMaps CRS D p,
+      EvalResidueFinrankIdentifications CRS K D p hmap := by
+  rcases hexData with ⟨hdata⟩
+  exact ⟨EvalResidueFiveTermData.toMaps CRS K D p hdata,
+    EvalResidueFiveTermData.toFinrankIdentifications CRS K D p hdata⟩
 
 /-- Deep geometric input: existence of five-term exact-sequence data for the point step. -/
 theorem exists_evalResidueFiveTermData
