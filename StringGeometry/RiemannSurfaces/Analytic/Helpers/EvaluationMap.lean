@@ -117,6 +117,18 @@ theorem h0_add_point_upper_of_fiveTermMaps (CRS : CompactRiemannSurface)
       hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅
   exact h0_add_point_upper_of_fiveTermData CRS K D p hdata
 
+/-- h⁰(D + [p]) ≤ h⁰(D) + 1 from split map-level existence assumptions. -/
+theorem h0_add_point_upper_of_exists_fiveTermMaps_and_ids (CRS : CompactRiemannSurface)
+    (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hexMaps : Nonempty (EvalResidueFiveTermMaps CRS D p))
+    (hexIds : ∀ hmap : EvalResidueFiveTermMaps CRS D p,
+      Nonempty (EvalResidueFinrankIdentifications CRS K D p hmap)) :
+    h0 CRS (D + Divisor.point p) ≤ h0 CRS D + 1 := by
+  rcases hexMaps with ⟨hmap⟩
+  rcases hexIds hmap with ⟨hids⟩
+  exact h0_add_point_upper_of_fiveTermMaps CRS K D p hmap hids
+
 /-- h⁰(D + [p]) ≤ h⁰(D) + 1.
 
     Any h⁰(D)+2 elements of L(D+[p]) include h⁰(D)+2 evaluation vectors
@@ -131,11 +143,9 @@ theorem h0_add_point_upper (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     h0 CRS (D + Divisor.point p) ≤ h0 CRS D + 1 := by
   obtain ⟨K⟩ := canonical_divisor_exists CRS
-  let hmap : EvalResidueFiveTermMaps CRS D p :=
-    Classical.choice (exists_evalResidueFiveTermMaps CRS D p)
-  let hids : EvalResidueFinrankIdentifications CRS K D p hmap :=
-    Classical.choice (exists_evalResidueFinrankIdentifications CRS K D p hmap)
-  exact h0_add_point_upper_of_fiveTermMaps CRS K D p hmap hids
+  exact h0_add_point_upper_of_exists_fiveTermMaps_and_ids CRS K D p
+    (exists_evalResidueFiveTermMaps CRS D p)
+    (fun hmap => exists_evalResidueFinrankIdentifications CRS K D p hmap)
 
 /-- The full bound: h⁰(D) ≤ h⁰(D + [p]) ≤ h⁰(D) + 1. -/
 theorem h0_add_point_bounds (CRS : CompactRiemannSurface)

@@ -116,6 +116,8 @@
     `h0_add_point_upper_of_fiveTermMaps`, and `h0_add_point_upper` now routes through
     split deep obligations (`exists_evalResidueFiveTermMaps` +
     `exists_evalResidueFinrankIdentifications`) instead of a monolithic data witness.
+  - Added existence-driven criterion theorem:
+    `h0_add_point_upper_of_exists_fiveTermMaps_and_ids`.
   - Remaining deep gap is explicitly isolated to constructing
     `EvalResidueFiveTermData` from analytic geometry/cohomology.
 - Added chart-local `WithinAt` smoothness bridges in
