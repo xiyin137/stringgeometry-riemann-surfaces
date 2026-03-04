@@ -96,6 +96,9 @@
     `EvalResidueFiveTermMaps.toData`.
 - This replaces a monolithic deep blocker with two explicit theorem targets:
   (A) exact five-term map construction, (B) finrank/h0 identifications.
+- Added composition theorem:
+  `eval_residue_complementarity_of_exists_fiveTermMaps_and_ids`,
+  and rewired `eval_residue_complementarity` through split obligations directly.
 - Added finite-dimensional exact-sequence dimension helpers:
   - `Helpers/ExactSequenceDimension.lean`:
     `alternating_sum_exact_five`,
