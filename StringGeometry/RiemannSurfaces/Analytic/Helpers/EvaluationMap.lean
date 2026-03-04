@@ -143,9 +143,8 @@ theorem h0_add_point_upper (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     h0 CRS (D + Divisor.point p) ≤ h0 CRS D + 1 := by
   obtain ⟨K⟩ := canonical_divisor_exists CRS
-  exact h0_add_point_upper_of_exists_fiveTermMaps_and_ids CRS K D p
-    (exists_evalResidueFiveTermMaps CRS D p)
-    (fun hmap => exists_evalResidueFinrankIdentifications CRS K D p hmap)
+  rcases exists_evalResidueFiveTermMaps_and_ids CRS K D p with ⟨hmap, hids⟩
+  exact h0_add_point_upper_of_fiveTermMaps CRS K D p hmap hids
 
 /-- The full bound: h⁰(D) ≤ h⁰(D + [p]) ≤ h⁰(D) + 1. -/
 theorem h0_add_point_bounds (CRS : CompactRiemannSurface)

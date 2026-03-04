@@ -63,7 +63,7 @@
     - `HodgeTheory/SerreDuality.lean`: `residue_theorem`.
   - Gate F (terminal RR theorems):
     - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
-      `599`, `1052`, `1059`, `1451`, `1503`, `1526`.
+      `599`, `1054`, `1455`, `1507`, `1530`.
     - `eval_residue_complementarity` is now reduced to constructing a
       five-term exact-sequence data package; the dimension algebra step is discharged.
 
@@ -80,23 +80,21 @@
    injective-family lower-bound package into a finrank identity path for
    `h1_trivial_eq_genus`.
 4. Gate F:
-   construct the two deep inputs in the analytic track and close
+   construct the deep point-step input in the analytic track and close
    `RiemannRoch.eval_residue_complementarity` end-to-end:
-   - map-level exact package: `exists_evalResidueFiveTermMaps`,
-   - divisor/cohomology rank identifications:
-     `exists_evalResidueFinrankIdentifications`.
+   - combined map+rank package:
+     `exists_evalResidueFiveTermMaps_and_ids`.
 
 ## Latest Compile-Checked Infrastructure (2026-03-04)
 - Refined Gate F blocker decomposition in `RiemannRoch.lean`:
   - added `EvalResidueFinrankIdentifications`,
-  - added theorem-level obligations
-    `exists_evalResidueFiveTermMaps` and
-    `exists_evalResidueFinrankIdentifications`,
+  - consolidated to theorem-level obligation
+    `exists_evalResidueFiveTermMaps_and_ids`,
   - rewired `exists_evalResidueFiveTermData` to be a proved composition
-    of those two obligations through
+    from this package through
     `EvalResidueFiveTermMaps.toData`.
-- This replaces a monolithic deep blocker with two explicit theorem targets:
-  (A) exact five-term map construction, (B) finrank/h0 identifications.
+- This keeps the blocker explicit while avoiding an unnecessarily strong
+  “for all map packages” rank-identification requirement.
 - Added composition theorem:
   `eval_residue_complementarity_of_exists_fiveTermMaps_and_ids`,
   and rewired `eval_residue_complementarity` through split obligations directly.
@@ -121,8 +119,7 @@
     duplicating long-exact algebra).
   - `Helpers/EvaluationMap.lean`:
     `h0_add_point_upper_of_fiveTermMaps`, and `h0_add_point_upper` now routes through
-    split deep obligations (`exists_evalResidueFiveTermMaps` +
-    `exists_evalResidueFinrankIdentifications`) instead of a monolithic data witness.
+    the combined deep obligation `exists_evalResidueFiveTermMaps_and_ids`.
   - Added existence-driven criterion theorem:
     `h0_add_point_upper_of_exists_fiveTermMaps_and_ids`.
   - Remaining deep gap is explicitly isolated to constructing

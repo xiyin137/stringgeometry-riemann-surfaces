@@ -76,11 +76,10 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
    - `HodgeTheory/SerreDuality.lean::residue_theorem` remains open (Stokes-level requirement).
 6. Gate F (RR terminal theorems in `RiemannRoch.lean`):
    - Remaining theorem-level `sorry`s are concentrated at lines currently around
-     `599`, `1052`, `1059`, `1451`, `1503`, `1526`, each depending on earlier gates (B-D, E).
-   - The point-step complementarity block is now split into two explicit deep obligations:
-     1) `exists_evalResidueFiveTermMaps`,
-     2) `exists_evalResidueFinrankIdentifications`.
-     `exists_evalResidueFiveTermData` is now a composed theorem from these two inputs.
+     `599`, `1054`, `1455`, `1507`, `1530`, each depending on earlier gates (B-D, E).
+   - The point-step complementarity block is now reduced to one explicit deep obligation:
+     `exists_evalResidueFiveTermMaps_and_ids`.
+     `exists_evalResidueFiveTermData` is now composed from this package.
 
 ### Immediate hard targets (next pass)
 1. Gate A closure path:
@@ -99,14 +98,12 @@ This document tracks implementation strategy for the analytic Riemann-surface pa
 ### Latest infrastructure step (2026-03-04)
 1. Refined RR Gate F dependency decomposition in `RiemannRoch.lean`:
    - added `EvalResidueFinrankIdentifications`,
-   - added theorem-level obligations
-     `exists_evalResidueFiveTermMaps` and
-     `exists_evalResidueFinrankIdentifications`,
+   - consolidated to theorem-level obligation
+     `exists_evalResidueFiveTermMaps_and_ids`,
    - rewired `exists_evalResidueFiveTermData` as an explicit composition through
      `EvalResidueFiveTermMaps.toData`.
-2. This replaced one monolithic deep theorem obligation with two explicit targets
-   (map-level exact package vs finrank-identification package), without changing
-   downstream theorem APIs.
+2. This keeps the blocker explicit while avoiding an unnecessarily strong
+   “for all map packages” rank-identification requirement.
 3. Added chart-local `WithinAt` smoothness bridges in
    `HodgeTheory/HodgeDecomposition/Core.lean`:
    - `dbarRealSectionCandidate_contMDiffWithinAt_of_chartAt_eventuallyEq_hd`
