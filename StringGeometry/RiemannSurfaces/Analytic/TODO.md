@@ -61,8 +61,11 @@
   - Gate F (terminal RR theorems):
     - `RiemannRoch.lean`: remaining theorem-level `sorry`s around lines
       `598`, `838`, `1137`, `1189`, `1212`.
+    - `eval_residue_complementarity` is now reduced to constructing a
+      five-term exact-sequence data package (`EvalResidueFiveTermData`);
+      the dimension algebra step is discharged.
 
-## Current Next 3 Concrete Targets (Authoritative)
+## Current Concrete Targets (Authoritative)
 1. Gate A:
    implement a selector-independent local-to-global smoothness bridge for
    `dbarRealSectionCandidate_hd` from fixed-chart overlap lemmas
@@ -74,8 +77,23 @@
    add `DolbeaultH01` rank/finite-dimensional bridge lemmas that turn the current
    injective-family lower-bound package into a finrank identity path for
    `h1_trivial_eq_genus`.
+4. Gate F:
+   construct `EvalResidueFiveTermData` in the analytic track (evaluation map,
+   connecting map, exactness, surjectivity) and close
+   `RiemannRoch.eval_residue_complementarity`.
 
 ## Latest Compile-Checked Infrastructure (2026-03-03)
+- Added finite-dimensional exact-sequence dimension helpers:
+  - `Helpers/ExactSequenceDimension.lean`:
+    `alternating_sum_exact_five`,
+    `complementarity_exact_five_int`,
+    `complementarity_exact_five_dim_one`.
+- Added RR point-step factorization infrastructure:
+  - `RiemannRoch.lean`:
+    `EvalResidueFiveTermData`,
+    `eval_residue_complementarity_of_fiveTermData`.
+  - Remaining deep gap is explicitly isolated to constructing
+    `EvalResidueFiveTermData` from analytic geometry/cohomology.
 - Added chart-local `WithinAt` smoothness bridges in
   `HodgeTheory/HodgeDecomposition/Core.lean`:
   - `dbarRealSectionCandidate_contMDiffWithinAt_of_chartAt_eventuallyEq_hd`

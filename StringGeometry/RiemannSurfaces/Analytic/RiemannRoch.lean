@@ -3,6 +3,7 @@ import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.SerreDuality
 import StringGeometry.RiemannSurfaces.Analytic.HodgeTheory.DolbeaultCohomology
 import StringGeometry.RiemannSurfaces.Analytic.Helpers.ArgumentPrinciple
 import StringGeometry.RiemannSurfaces.Analytic.Helpers.LinearCombination
+import StringGeometry.RiemannSurfaces.Analytic.Helpers.ExactSequenceDimension
 
 /-!
 # Riemann-Roch Theorem (Analytic Approach)
@@ -810,6 +811,91 @@ noncomputable def chi (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (K : CanonicalDivisor CRS) : ℤ :=
   (h0 CRS D : ℤ) - (h0 CRS (K.representative + (-D)) : ℤ)
 
+/-- Data package for the five-term exact sequence used in the point step.
+
+This isolates the deep geometric/cohomological construction from the final
+dimension algebra used in `eval_residue_complementarity`. -/
+structure EvalResidueFiveTermData (CRS : CompactRiemannSurface)
+    (K : CanonicalDivisor CRS) (D : Divisor CRS.toRiemannSurface)
+    (p : CRS.toRiemannSurface.carrier) where
+  V₁ : Type
+  V₂ : Type
+  V₄ : Type
+  V₅ : Type
+  [addCommGroupV₁ : AddCommGroup V₁]
+  [moduleV₁ : Module ℂ V₁]
+  [finiteDimensionalV₁ : FiniteDimensional ℂ V₁]
+  [addCommGroupV₂ : AddCommGroup V₂]
+  [moduleV₂ : Module ℂ V₂]
+  [finiteDimensionalV₂ : FiniteDimensional ℂ V₂]
+  [addCommGroupV₄ : AddCommGroup V₄]
+  [moduleV₄ : Module ℂ V₄]
+  [finiteDimensionalV₄ : FiniteDimensional ℂ V₄]
+  [addCommGroupV₅ : AddCommGroup V₅]
+  [moduleV₅ : Module ℂ V₅]
+  [finiteDimensionalV₅ : FiniteDimensional ℂ V₅]
+  f₁ : V₁ →ₗ[ℂ] V₂
+  f₂ : V₂ →ₗ[ℂ] ℂ
+  f₃ : ℂ →ₗ[ℂ] V₄
+  f₄ : V₄ →ₗ[ℂ] V₅
+  inj_f₁ : Function.Injective f₁
+  exact_V₂ : LinearMap.ker f₂ = LinearMap.range f₁
+  exact_V₃ : LinearMap.ker f₃ = LinearMap.range f₂
+  exact_V₄ : LinearMap.ker f₄ = LinearMap.range f₃
+  surj_f₄ : Function.Surjective f₄
+  hdim_V₁ : Module.finrank ℂ V₁ = h0 CRS D
+  hdim_V₂ : Module.finrank ℂ V₂ = h0 CRS (D + Divisor.point p)
+  hdim_V₄ : Module.finrank ℂ V₄ = h0 CRS (K.representative + (-D))
+  hdim_V₅ : Module.finrank ℂ V₅ =
+    h0 CRS (K.representative + (-(D + Divisor.point p)))
+
+attribute [instance] EvalResidueFiveTermData.addCommGroupV₁
+attribute [instance] EvalResidueFiveTermData.moduleV₁
+attribute [instance] EvalResidueFiveTermData.finiteDimensionalV₁
+attribute [instance] EvalResidueFiveTermData.addCommGroupV₂
+attribute [instance] EvalResidueFiveTermData.moduleV₂
+attribute [instance] EvalResidueFiveTermData.finiteDimensionalV₂
+attribute [instance] EvalResidueFiveTermData.addCommGroupV₄
+attribute [instance] EvalResidueFiveTermData.moduleV₄
+attribute [instance] EvalResidueFiveTermData.finiteDimensionalV₄
+attribute [instance] EvalResidueFiveTermData.addCommGroupV₅
+attribute [instance] EvalResidueFiveTermData.moduleV₅
+attribute [instance] EvalResidueFiveTermData.finiteDimensionalV₅
+
+/-- Dimension-only proof of evaluation-residue complementarity from exact-sequence data. -/
+theorem eval_residue_complementarity_of_fiveTermData
+    (CRS : CompactRiemannSurface) (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hdata : EvalResidueFiveTermData CRS K D p) :
+    (h0 CRS (D + Divisor.point p) : ℤ) - (h0 CRS D : ℤ) +
+    ((h0 CRS (K.representative + (-D)) : ℤ) -
+     (h0 CRS (K.representative + (-(D + Divisor.point p))) : ℤ)) = 1 := by
+  classical
+  let V₁ := hdata.V₁
+  let V₂ := hdata.V₂
+  let V₄ := hdata.V₄
+  let V₅ := hdata.V₅
+  letI : AddCommGroup V₁ := hdata.addCommGroupV₁
+  letI : Module ℂ V₁ := hdata.moduleV₁
+  letI : FiniteDimensional ℂ V₁ := hdata.finiteDimensionalV₁
+  letI : AddCommGroup V₂ := hdata.addCommGroupV₂
+  letI : Module ℂ V₂ := hdata.moduleV₂
+  letI : FiniteDimensional ℂ V₂ := hdata.finiteDimensionalV₂
+  letI : AddCommGroup V₄ := hdata.addCommGroupV₄
+  letI : Module ℂ V₄ := hdata.moduleV₄
+  letI : FiniteDimensional ℂ V₄ := hdata.finiteDimensionalV₄
+  letI : AddCommGroup V₅ := hdata.addCommGroupV₅
+  letI : Module ℂ V₅ := hdata.moduleV₅
+  letI : FiniteDimensional ℂ V₅ := hdata.finiteDimensionalV₅
+  have hdim :
+      (Module.finrank ℂ V₂ : ℤ) - Module.finrank ℂ V₁ +
+      ((Module.finrank ℂ V₄ : ℤ) - Module.finrank ℂ V₅) = 1 := by
+    exact complementarity_exact_five_dim_one
+      (f₁ := hdata.f₁) (f₂ := hdata.f₂) (f₃ := hdata.f₃) (f₄ := hdata.f₄)
+      hdata.inj_f₁ hdata.exact_V₂ hdata.exact_V₃ hdata.exact_V₄ hdata.surj_f₄ (by simp)
+  rw [hdata.hdim_V₁, hdata.hdim_V₂, hdata.hdim_V₄, hdata.hdim_V₅] at hdim
+  simpa [sub_eq_add_neg, add_assoc, add_left_comm, add_comm] using hdim
+
 /-- **Evaluation-residue complementarity.**
 
     For any divisor D and point p on a compact Riemann surface with canonical
@@ -841,7 +927,11 @@ theorem eval_residue_complementarity (CRS : CompactRiemannSurface)
     (h0 CRS (D + Divisor.point p) : ℤ) - (h0 CRS D : ℤ) +
     ((h0 CRS (K.representative + (-D)) : ℤ) -
      (h0 CRS (K.representative + (-(D + Divisor.point p))) : ℤ)) = 1 := by
-  sorry -- Requires: residue pairing / ∂̄-equation solvability / sheaf cohomology
+  -- Remaining deep requirement:
+  -- construct the five-term exact-sequence package from analytic geometry.
+  have hdata : EvalResidueFiveTermData CRS K D p := by
+    sorry
+  exact eval_residue_complementarity_of_fiveTermData CRS K D p hdata
 
 /-- The Euler characteristic step: χ(D + [p]) = χ(D) + 1.
 

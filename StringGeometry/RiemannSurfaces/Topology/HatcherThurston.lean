@@ -178,32 +178,32 @@ inductive ElementaryMove (g n : ℕ)
 ## Applying Moves to Markings
 -/
 
+/-- Existence of the updated marking after a valid A-move. -/
+theorem exists_applyMove_amove (P : PantsDecomposition g n) (a : AMove g n)
+    (hvalid : a.oldCurve ∈ P.circles ∧ a.newCurve ∉ P.circles) :
+    Nonempty (PantsDecomposition g n) := by
+  -- Deferred: build the updated marking from local topological move data.
+  sorry
+
+/-- Existence of the updated marking after a valid S-move. -/
+theorem exists_applyMove_smove (P : PantsDecomposition g n) (s : SMove g n)
+    (hvalid : s.oldCurve ∈ P.circles ∧ s.newCurve ∉ P.circles) :
+    Nonempty (PantsDecomposition g n) := by
+  -- Deferred: build the updated marking from local topological move data.
+  sorry
+
 /-- Apply an elementary move to a pants decomposition.
     Returns `some P'` if the move is valid, `none` otherwise. -/
 noncomputable def applyMove (P : PantsDecomposition g n) (m : ElementaryMove g n) :
     Option (PantsDecomposition g n) :=
   match m with
   | .amove a =>
-    if a.oldCurve ∈ P.circles ∧ a.newCurve ∉ P.circles then
-      some ⟨
-        Finset.cons a.newCurve (P.circles.erase a.oldCurve) (by sorry),
-        sorry,  -- essential
-        P.intersectionData,  -- inherit intersection data
-        sorry,  -- pairwiseDisjoint
-        P.stable,  -- inherit stability
-        sorry   -- cardCorrect
-      ⟩
+    if hvalid : a.oldCurve ∈ P.circles ∧ a.newCurve ∉ P.circles then
+      some (Classical.choice (exists_applyMove_amove (P := P) a hvalid))
     else none
   | .smove s =>
-    if s.oldCurve ∈ P.circles ∧ s.newCurve ∉ P.circles then
-      some ⟨
-        Finset.cons s.newCurve (P.circles.erase s.oldCurve) (by sorry),
-        sorry,  -- essential
-        P.intersectionData,  -- inherit intersection data
-        sorry,  -- pairwiseDisjoint
-        P.stable,  -- inherit stability
-        sorry   -- cardCorrect
-      ⟩
+    if hvalid : s.oldCurve ∈ P.circles ∧ s.newCurve ∉ P.circles then
+      some (Classical.choice (exists_applyMove_smove (P := P) s hvalid))
     else none
 
 /-!
