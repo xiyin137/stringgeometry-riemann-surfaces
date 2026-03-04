@@ -109,6 +109,10 @@
   - `Helpers/EvaluationMap.lean`:
     `h0_add_point_upper_of_fiveTermData` (dimension-step reuse without
     duplicating long-exact algebra).
+  - `Helpers/EvaluationMap.lean`:
+    `h0_add_point_upper_of_fiveTermMaps`, and `h0_add_point_upper` now routes through
+    split deep obligations (`exists_evalResidueFiveTermMaps` +
+    `exists_evalResidueFinrankIdentifications`) instead of a monolithic data witness.
   - Remaining deep gap is explicitly isolated to constructing
     `EvalResidueFiveTermData` from analytic geometry/cohomology.
 - Added chart-local `WithinAt` smoothness bridges in

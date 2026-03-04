@@ -275,6 +275,18 @@ def connected (P Q : PantsDecomposition g n) : Prop :=
 theorem connected_refl (P : PantsDecomposition g n) : connected P P :=
   ⟨PantsPath.refl P⟩
 
+/-- Adjacency gives connectedness in one step. -/
+theorem connected_of_adjacent {P Q : PantsDecomposition g n}
+    (h : adjacent P Q) : connected P Q :=
+  ⟨PantsPath.step h (PantsPath.refl Q)⟩
+
+/-- Connectedness is transitive via path concatenation. -/
+theorem connected_trans {P Q R : PantsDecomposition g n}
+    (hPQ : connected P Q) (hQR : connected Q R) : connected P R := by
+  rcases hPQ with ⟨pathPQ⟩
+  rcases hQR with ⟨pathQR⟩
+  exact ⟨pathPQ.concat pathQR⟩
+
 /-!
 ## The Hatcher-Thurston Theorem
 -/
@@ -359,6 +371,23 @@ theorem pantsDistance_pos_of_ne (P Q : PantsDecomposition g n)
   refine Nat.pos_iff_ne_zero.mpr ?_
   intro hzero
   exact hne ((pantsDistance_eq_zero_iff P Q hconn).mp hzero)
+
+/-- Triangle inequality for pants distance on connected triples. -/
+theorem pantsDistance_triangle_of_connected (P Q R : PantsDecomposition g n)
+    (hPQ : connected P Q) (hQR : connected Q R) :
+    pantsDistance P R ≤ pantsDistance P Q + pantsDistance Q R := by
+  rcases pants_distance_eq_min_length (P := P) (Q := Q) hPQ with ⟨pathPQ, hlenPQ⟩
+  rcases pants_distance_eq_min_length (P := Q) (Q := R) hQR with ⟨pathQR, hlenQR⟩
+  have hle : pantsDistance P R ≤ (pathPQ.concat pathQR).length :=
+    pantsDistance_le_length (path := pathPQ.concat pathQR)
+  have hlen :
+      (pathPQ.concat pathQR).length = pantsDistance P Q + pantsDistance Q R := by
+    calc
+      (pathPQ.concat pathQR).length = pathPQ.length + pathQR.length :=
+        PantsPath.length_concat pathPQ pathQR
+      _ = pantsDistance P Q + pathQR.length := by simp [hlenPQ]
+      _ = pantsDistance P Q + pantsDistance Q R := by simp [hlenQR]
+  simpa [hlen] using hle
 
 /-!
 ## Quasi-isometry to Weil-Petersson Metric (Brock)

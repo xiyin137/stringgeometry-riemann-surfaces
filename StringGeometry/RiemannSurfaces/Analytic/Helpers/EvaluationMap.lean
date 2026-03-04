@@ -105,6 +105,18 @@ theorem h0_add_point_upper_of_fiveTermData (CRS : CompactRiemannSurface)
     linarith
   exact_mod_cast hstep'
 
+/-- h⁰(D + [p]) ≤ h⁰(D) + 1 from map-level five-term data plus finrank identifications. -/
+theorem h0_add_point_upper_of_fiveTermMaps (CRS : CompactRiemannSurface)
+    (K : CanonicalDivisor CRS)
+    (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier)
+    (hmap : EvalResidueFiveTermMaps CRS D p)
+    (hids : EvalResidueFinrankIdentifications CRS K D p hmap) :
+    h0 CRS (D + Divisor.point p) ≤ h0 CRS D + 1 := by
+  have hdata : EvalResidueFiveTermData CRS K D p :=
+    EvalResidueFiveTermMaps.toData CRS K D p hmap
+      hids.hdim_V₁ hids.hdim_V₂ hids.hdim_V₄ hids.hdim_V₅
+  exact h0_add_point_upper_of_fiveTermData CRS K D p hdata
+
 /-- h⁰(D + [p]) ≤ h⁰(D) + 1.
 
     Any h⁰(D)+2 elements of L(D+[p]) include h⁰(D)+2 evaluation vectors
@@ -119,10 +131,11 @@ theorem h0_add_point_upper (CRS : CompactRiemannSurface)
     (D : Divisor CRS.toRiemannSurface) (p : CRS.toRiemannSurface.carrier) :
     h0 CRS (D + Divisor.point p) ≤ h0 CRS D + 1 := by
   obtain ⟨K⟩ := canonical_divisor_exists CRS
-  have hdata :
-      EvalResidueFiveTermData CRS K D p :=
-    Classical.choice (exists_evalResidueFiveTermData CRS K D p)
-  exact h0_add_point_upper_of_fiveTermData CRS K D p hdata
+  let hmap : EvalResidueFiveTermMaps CRS D p :=
+    Classical.choice (exists_evalResidueFiveTermMaps CRS D p)
+  let hids : EvalResidueFinrankIdentifications CRS K D p hmap :=
+    Classical.choice (exists_evalResidueFinrankIdentifications CRS K D p hmap)
+  exact h0_add_point_upper_of_fiveTermMaps CRS K D p hmap hids
 
 /-- The full bound: h⁰(D) ≤ h⁰(D + [p]) ≤ h⁰(D) + 1. -/
 theorem h0_add_point_bounds (CRS : CompactRiemannSurface)
